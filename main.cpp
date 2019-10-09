@@ -12,9 +12,10 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 float vertices[] = {
-        -0.61f, -0.61f, +0.00f,
-        +0.61f, -0.61f, +0.00f,
-        +0.00f, +0.61f, +0.00f,
+        -0.61f, +0.61f, -1.00f,
+        +0.61f, -0.61f, -1.00f,
+        +0.00f, +0.61f, -2.00f,
+        +0.00f, +0.61f, -1.00f,
 };
 
 unsigned int VAO_Handle;
@@ -65,6 +66,8 @@ int main() {
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER,0);
+
+    std::cout << "Max texture units: " << GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS << std::endl;
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
