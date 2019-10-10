@@ -11,4 +11,14 @@ Requirements in sets of prioirty, as per spec:
 * Set 3:
     * Another format is supported (including texturing)
     * Instances can be removed
-    * Bizarrely, sharing of textures between files
+    * Multiple different objects can have their own textures
+
+* Set 4:
+    * Excellent memory management
+    * Broken & huge collada files can be successfully loaded
+    * All objects regardless of initial file format can be exported
+    into an excellent file format
+    * Arguments and evaluation of the file format are sound
+
+For the optimised file format, encoding and decoding via OpenGL
+computer shaders would be peak, with the final format being ultra-compressed
