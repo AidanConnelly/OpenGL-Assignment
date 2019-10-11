@@ -15,7 +15,7 @@ Requirements in sets of prioirty, as per spec:
 
 * Set 4:
     * Excellent memory management
-    * Broken & huge collada files can be successfully loaded
+    * Invalid & huge collada files can be successfully loaded
     * All objects regardless of initial file format can be exported
     into an excellent file format
     * Arguments and evaluation of the file format are sound

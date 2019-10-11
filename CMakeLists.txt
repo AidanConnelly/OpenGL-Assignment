@@ -4,7 +4,7 @@ project(OpenGLSetup)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES main.cpp GLAD/src/glad.c)
-set(HEADER_FILES shader.h shaderProgram.h)
+set(HEADER_FILES shader.h shaderProgram.h experiments/preliminary/fileThroughput.cpp experiments/preliminary/fileThroughput.h)
 
 set(dir ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${dir}/build)
