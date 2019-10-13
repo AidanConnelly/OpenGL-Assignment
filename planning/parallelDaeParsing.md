@@ -46,3 +46,12 @@ openGLesque data structures.
 This seems an accessible resource however I don't have large confidence in the accuracy:
 https://www.codeproject.com/Articles/625701/COLLADA-TinyXML-and-OpenGL
 
+Basically it seems everything is going to be a buffer in a node with an ID which is then referenced by another node.
+So:
+ * SERIAL - get tree from XML
+ * PARALLEL FILTER - ignore what we don't understand
+ * PARALLEL MAP - transform into openGLesque data & IDs
+ * PARALLEL INDEX - sort IDs
+ * SERIAL REDUCE INDEX - reduce ID index lists
+ * (?) MAP? - make pointers point where they should, now ready to load into GL DSes
+
