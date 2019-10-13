@@ -2,14 +2,15 @@
 #include <GLFW/glfw3.h>
 #include "shader.h"
 #include "shaderProgram.h"
+#include "experiments/preliminary/fileThroughput.h"
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 void processInput(GLFWwindow *window);
 
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 32;
+const unsigned int SCR_HEIGHT = 32;
 
 float vertices[] = {
         -0.61f, +0.61f, -1.00f,
@@ -77,6 +78,9 @@ int main() {
     std::cout << "\n";
     std::cout << (int)(us0 | seven);
     std::cout << "\n";
+
+    fileThroughput experiment;
+    experiment.runExperiment();
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
