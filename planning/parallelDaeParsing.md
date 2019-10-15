@@ -11,7 +11,7 @@ final serial combine.
 
 Alg1:
 Stack machine:
-
+```
 State       | Action | Next state                  | Comment
 ------------+--------+-----------------------------+---------
 Start       | <      | TagOpened                   |
@@ -32,7 +32,7 @@ DQuote      | '      | DQuote                      |
 SQuote      | "      | SQuote                      |
 DQuote      | "      | DQuote, stack--, <PREVIOUS> |
 SQuote      | '      | SQuote, stack--, <PREVIOUS> |
-
+```
 However while parsing the XML using this stack machine, the raw binary can also be split into (via indexing of course),
 different individual nodes which can be parsed in a top-down or bottom-up manner. Some of the nodes can be ignored,
 either in parallel or serial, and then finally those that are relevant somehow have to be translated to VAOs & VBOs
@@ -52,6 +52,7 @@ So:
  * PARALLEL FILTER - ignore what we don't understand
  * PARALLEL MAP - transform into openGLesque data & IDs
  * PARALLEL INDEX - sort IDs
+ * SYNCHRONISE
  * SERIAL REDUCE INDEX - reduce ID index lists
  * (?) MAP? - make pointers point where they should, now ready to load into GL DSes
 

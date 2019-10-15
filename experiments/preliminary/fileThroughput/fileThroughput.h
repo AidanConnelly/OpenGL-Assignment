@@ -12,6 +12,7 @@
 #include <chrono>
 #include <functional>
 #include <vector>
+#include "../prototypeParsers/prototypeDaeParser.h"
 
 class fileThroughput {
 public:
@@ -28,10 +29,12 @@ public:
         }
     }
 
-    static void getBytes() {
+    static std::vector<char> getBytes() {
+        std::vector<char> readed;
+        std::cout << readed.size() << std::endl;
         for (int i = 0; i < 1; i++) {
 
-            std::ifstream myfile("D:\\reasonableSize.obj");
+            std::ifstream myfile("resources\\largish.dae");
 
             int timesRead = 0;
 
@@ -41,11 +44,18 @@ public:
             while (!myfile.eof()) {
                 timesRead++;
                 myfile.read(buffer, maxNChars); // read to buffer
+                int charsReaded = myfile.gcount();
+                readed.insert(readed.end(), buffer, buffer + charsReaded);
             }
             std::cout << timesRead << std::endl;
             myfile.close();
         }
+        return readed;
+    }
 
+    static void read4objs(){
+        std::vector<char> toParse = fileThroughput::getBytes();
+        std::vector<xmlNode> results = prototypeDaeParser::parse(toParse);
     }
 
     static void runExperiment() {
@@ -61,8 +71,9 @@ public:
             for(auto &j: largeArs){
                 free(j);
             }
-            printFunctionExecutionTime(getBytes);
-            printFunctionExecutionTime(getLineByLine);
+            printFunctionExecutionTime(read4objs);
+//            printFunctionExecutionTime(getBytes);
+//            printFunctionExecutionTime(getLineByLine);
         }
     }
 

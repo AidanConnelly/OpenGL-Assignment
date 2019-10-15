@@ -2,7 +2,8 @@
 #include <GLFW/glfw3.h>
 #include "shader.h"
 #include "shaderProgram.h"
-#include "experiments/preliminary/fileThroughput.h"
+#include "experiments/preliminary/fileThroughput/fileThroughput.h"
+#include "experiments/preliminary/prototypeParsers/prototypeDaeParser.h"
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -74,13 +75,40 @@ int main() {
     unsigned us0 = 0;
     int seven = 7;
 
-    std::cout << (int)(s0 | seven);
+    std::cout << (int) (s0 | seven);
     std::cout << "\n";
-    std::cout << (int)(us0 | seven);
+    std::cout << (int) (us0 | seven);
     std::cout << "\n";
 
+    std::string stringToP = R"(
+
+<?x x="x" x="x"?>
+<x x="x" x="x" x="x">
+  <x>
+    <x>
+      <x>Blender User</x>
+    </x>
+  </x>
+</x>
+
+)";
+    std::vector<char> data(stringToP.begin(), stringToP.end());
+
+    fileThroughput::runExperiment();
+    exit(-1);
+
+    std::vector<char> toParse = fileThroughput::getBytes();
+    std::vector<xmlNode> results = prototypeDaeParser::parse(toParse);
+
+    for (xmlNode &r : results) {
+        printf("%d\t-> %d\t",r.startIndex,r.endIndex);
+        for(int i = r.startIndex;i<=r.endIndex;i++){
+            std::cout << toParse[i];
+        }
+        std::cout << std::endl;
+    }
+
     fileThroughput experiment;
-    experiment.runExperiment();
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
