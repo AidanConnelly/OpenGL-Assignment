@@ -1,6 +1,13 @@
+#ifdef __MINGW32__
+#include "glad/glad.h"
+#include <GLFW/glfw3.h>
+#endif
+
+#ifndef __MINGW32__
 #include "GL/glew.h"
 #include "GL/freeglut.h"
-#include <GLFW/glfw3.h>
+#endif
+
 #include "shader.h"
 #include "shaderProgram.h"
 #include "experiments/preliminary/fileThroughput/fileThroughput.h"

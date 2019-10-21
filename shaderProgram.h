@@ -1,8 +1,17 @@
 //
 // Created by m on 02/10/2019.
 //
+#ifdef __MINGW32__
+#include "glad/glad.h"
+#include <GLFW/glfw3.h>
+#endif
+
+#ifndef __MINGW32__
 #include "GL/glew.h"
 #include "GL/freeglut.h"
+#endif
+
+
 #include "shader.h"
 #ifndef OPENGLSETUP_SHADERPROGRAM_H
 #define OPENGLSETUP_SHADERPROGRAM_H

@@ -4,8 +4,18 @@
 
 #ifndef OPENGLSETUP_SHADERTYPE_H
 #define OPENGLSETUP_SHADERTYPE_H
+
+#ifdef __MINGW32__
+#include "glad/glad.h"
+#include <GLFW/glfw3.h>
+#endif
+
+#ifndef __MINGW32__
 #include "GL/glew.h"
 #include "GL/freeglut.h"
+#endif
+
+
 class ShaderType{
 public:
     virtual char * GetAsString() const =0 ;
