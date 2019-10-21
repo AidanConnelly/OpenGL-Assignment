@@ -35,9 +35,7 @@ unsigned int VBO_Handle;
 int main() {
     const char * flt = "-9900.001e-11 ";
     int index = 0;
-    float f = parseAFloat(&index, flt);
     std::cout << std::endl;
-    std::cout << f;
     std::cout << std::endl;
 	std::cout << "Max texture units: " << GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS << std::endl;
 
@@ -51,6 +49,24 @@ int main() {
 	std::cout << "\n";
 
 	std::string stringToP = R"(
+
+<a>
+    <b>
+        <c/>
+        <c/>
+        <c/>
+    </b>
+    <d>
+        <f>
+            <i/>
+        </f>
+	    <f>
+        </f>
+    </d>
+    <b>
+        <c/>
+    </b>
+</a>
 
 <?x x="x" x="x"?>
 <x x="x" x="x" x="x">
@@ -68,7 +84,8 @@ int main() {
 	std::vector<xmlNode> results = prototypeDaeParser::parse(toParse);
 
 	for (xmlNode &r : results) {
-		printf("%d\t-> %d\t", r.startIndex, r.endIndex);
+		printf("%d |%s \t|\t%d\t-> %d\t", r.children.size(),r.tagName.c_str(), r.startIndex, r.endIndex);
+		std::cout<< r.children.size()<<" |"<<r.tagName<<" \t|"<<r.startIndex<<"\t->\t"<<r.endIndex<<"\t ";
 		for (int i = r.startIndex; i <= r.endIndex; i++) {
 			std::cout << toParse[i];
 		}

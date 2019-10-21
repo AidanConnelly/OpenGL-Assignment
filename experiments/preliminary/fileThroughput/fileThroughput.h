@@ -34,7 +34,7 @@ public:
         std::cout << readed.size() << std::endl;
         for (int i = 0; i < 1; i++) {
 
-            std::ifstream myfile("C:\\Users\\aidan\\Documents\\soft356a3\\resources\\largish.dae");
+            std::ifstream myfile("C:\\Users\\aidan\\Documents\\soft356a3\\resources\\singleTriangle.dae");
 
             int timesRead = 0;
 

@@ -6,7 +6,7 @@
 #ifndef OPENGLSETUP_STRINGTOFLOATFAST_H
 #define OPENGLSETUP_STRINGTOFLOATFAST_H
 
-float inline parseAFloat(int *index, const char *buffer) {
+float inline parseAFloat(int *index, std::vector<char> buffer) {
     //Assume no leading chars not part of the float
     float multiplicativeCoef = 1.0f;
     float additiveCoef = 0.0f;

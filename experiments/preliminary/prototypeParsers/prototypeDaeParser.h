@@ -1,11 +1,20 @@
 //
 // Created by m on 14/10/2019.
 //
-#include <utility>
-#include <vector>
+
+
+#include <algorithm>
+#include <cctype>
+#include <iostream>
 #include <string>
+#include <vector>
+
+#include <utility>
 #include <exception>
 #include <stdexcept>
+#include <functional>
+//#include <d2d1helper.h>
+#include <iterator>
 
 #ifndef OPENGLSETUP_PROTOTYPEDAEPARSER_H
 #define OPENGLSETUP_PROTOTYPEDAEPARSER_H
@@ -23,6 +32,8 @@ struct xmlNode {
     unsigned startIndex;
     unsigned endIndex;
     std::vector<xmlNode> children;
+    std::string tagName;
+    std::vector<float> floatsIfApplicable;
 };
 
 struct xmlParsingStackMember {
@@ -34,10 +45,11 @@ struct xmlParsingStackMember {
 
 class prototypeDaeParser {
 public:
-    static std::vector<xmlNode> parse(std::vector<char> buffer) {
-        std::vector<xmlNode> nodes = parseNodes(buffer);
-        return nodes;
-    }
+    static std::vector<xmlNode> parse(std::vector<char> buffer);
+
+    static std::vector<xmlNode> parseNodeTagNames(std::vector<char> &buffer, const std::vector<xmlNode> &nodes);
+
+    static std::vector<xmlNode> filterByTagName(const std::vector<xmlNode> &nodes, std::string& tagName);
 
 private:
     static void checkForQuotes(char thisChar, int *stackPos, std::vector<xmlParsingStackMember> *stack,
@@ -150,6 +162,15 @@ private:
         return nodes;
     }
 
+    static std::vector<xmlNode> mapXmlNodes(const std::vector<xmlNode> input, std::function<xmlNode(xmlNode)> toMap) {
+        //TODO: make parallel
+        std::vector<xmlNode> toReturn;
+        std::transform(input.begin(), input.end(), std::back_inserter(toReturn),
+                       [&](xmlNode node) -> xmlNode { return toMap(node); });
+        return toReturn;
+    }
+
+    static void parseFloatArrays(std::vector<char> buffer, const std::vector<xmlNode>& floatArrays);
 };
 
 
