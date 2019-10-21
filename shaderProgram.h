@@ -1,7 +1,8 @@
 //
 // Created by m on 02/10/2019.
 //
-#include <glad/glad.h>
+#include "GL/glew.h"
+#include "GL/freeglut.h"
 #include "shader.h"
 #ifndef OPENGLSETUP_SHADERPROGRAM_H
 #define OPENGLSETUP_SHADERPROGRAM_H

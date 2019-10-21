@@ -4,7 +4,8 @@
 
 #ifndef OPENGLSETUP_SHADERTYPE_H
 #define OPENGLSETUP_SHADERTYPE_H
-
+#include "GL/glew.h"
+#include "GL/freeglut.h"
 class ShaderType{
 public:
     virtual char * GetAsString() const =0 ;
@@ -30,11 +31,4 @@ class FragmentShaderType:public ShaderType{
         return GL_FRAGMENT_SHADER;
     }
 };
-
-#include <glad/glad.h>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-
 #endif //OPENGLSETUP_SHADERTYPE_H

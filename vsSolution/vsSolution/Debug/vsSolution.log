@@ -1,0 +1,13 @@
+﻿  fileThroughput.cpp
+c:\users\aidan\documents\soft356a3\experiments\preliminary\filethroughput\filethroughput.h(47): warning C4244: 'initializing': conversion from 'std::streamsize' to 'int', possible loss of data
+  Generating Code...
+  Compiling...
+  main.cpp
+c:\users\aidan\documents\soft356a3\shader.h(43): warning C4101: 'infoLog': unreferenced local variable
+c:\users\aidan\documents\soft356a3\shader.h(42): warning C4101: 'success': unreferenced local variable
+c:\users\aidan\documents\soft356a3\experiments\preliminary\filethroughput\filethroughput.h(47): warning C4244: 'initializing': conversion from 'std::streamsize' to 'int', possible loss of data
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\stringtofloatfast.h(53): warning C4244: '*=': conversion from 'double' to 'float', possible loss of data
+c:\users\aidan\documents\soft356a3\main.cpp(65): warning C4018: '<=': signed/unsigned mismatch
+  Generating Code...
+  vsSolution.vcxproj -> C:\Users\aidan\Documents\soft356a3\vsSolution\Debug\vsSolution.exe
+  vsSolution.vcxproj -> C:\Users\aidan\Documents\soft356a3\vsSolution\Debug\vsSolution.pdb (Partial PDB)

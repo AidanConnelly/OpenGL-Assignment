@@ -22,9 +22,10 @@ enum XMLParseState {
 struct xmlNode {
     unsigned startIndex;
     unsigned endIndex;
+    std::vector<xmlNode> children;
 };
 
-struct xmlParsingStackMember{
+struct xmlParsingStackMember {
     xmlParsingStackMember(XMLParseState state, xmlNode node);
 
     xmlNode node;
@@ -35,11 +36,12 @@ class prototypeDaeParser {
 public:
     static std::vector<xmlNode> parse(std::vector<char> buffer) {
         std::vector<xmlNode> nodes = parseNodes(buffer);
-       return nodes;
+        return nodes;
     }
 
 private:
-    static void checkForQuotes(char thisChar, int *stackPos, std::vector<xmlParsingStackMember> *stack, xmlParsingStackMember *state) {
+    static void checkForQuotes(char thisChar, int *stackPos, std::vector<xmlParsingStackMember> *stack,
+                               xmlParsingStackMember *state) {
         int newStackPos;
         switch (thisChar) {
             case '"':
@@ -65,7 +67,7 @@ private:
         std::vector<xmlParsingStackMember> stack = std::vector<xmlParsingStackMember>();
         xmlParsingStackMember state = xmlParsingStackMember(Start, xmlNode());
         int stackPos = 0;
-        for (unsigned i =0 ;i<buffer.size();i++){
+        for (unsigned i = 0; i < buffer.size(); i++) {
             char thisChar = buffer[i];
             switch (state.state) {
                 case XMLParseState::Start:
@@ -78,11 +80,9 @@ private:
                 case XMLParseState::TagOpened:
                     if (thisChar == '/') {
                         state.state = XMLParseState::EndTag;
-                    }
-                    else if(thisChar=='?'){
+                    } else if (thisChar == '?') {
                         state.state = XMLParseState::Start;
-                    }
-                    else {
+                    } else {
                         state.state = XMLParseState::NotEndTag;
                     }
                     break;
@@ -91,10 +91,14 @@ private:
                         case '/':
                             //Next char will be ">", which shouldn't be a problem for the parser
                             state.node.endIndex = i;
-                            if(state.node.endIndex < state.node.startIndex){
+                            if (state.node.endIndex < state.node.startIndex) {
                                 throw std::invalid_argument("");
                             }
                             nodes.push_back(state.node);
+
+                            if (stackPos > 0) {
+                                stack[stackPos - 1].node.children.push_back(state.node);
+                            }
                             state.state = XMLParseState::Start;
                             break;
                         case '>':
@@ -115,8 +119,11 @@ private:
                         state = stack[stackPos];
                         stack.pop_back();
                         state.node.endIndex = i;
-                        if(state.node.endIndex < state.node.startIndex){
+                        if (state.node.endIndex < state.node.startIndex) {
                             throw std::invalid_argument("");
+                        }
+                        if (stackPos > 0) {
+                            stack[stackPos - 1].node.children.push_back(state.node);
                         }
                         nodes.push_back(state.node);
                     } else {
@@ -131,7 +138,7 @@ private:
                     }
                     break;
                 case XMLParseState::SQuote:
-                    if(thisChar=='\''){
+                    if (thisChar == '\'') {
                         stackPos--;
                         state = stack[stackPos];
                         stack.pop_back();

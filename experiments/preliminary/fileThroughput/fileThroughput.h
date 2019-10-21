@@ -34,12 +34,12 @@ public:
         std::cout << readed.size() << std::endl;
         for (int i = 0; i < 1; i++) {
 
-            std::ifstream myfile("resources\\largish.dae");
+            std::ifstream myfile("C:\\Users\\aidan\\Documents\\soft356a3\\resources\\largish.dae");
 
             int timesRead = 0;
 
             //512 KB chunks for fast opening of smaller files
-            int maxNChars = 512 * 1024;
+            const int maxNChars = 512 * 1024;
             char buffer[maxNChars]; // create a buffer
             while (!myfile.eof()) {
                 timesRead++;
@@ -71,7 +71,7 @@ public:
             for(auto &j: largeArs){
                 free(j);
             }
-            printFunctionExecutionTime(read4objs);
+//            printFunctionExecutionTime(read4objs);
 //            printFunctionExecutionTime(getBytes);
 //            printFunctionExecutionTime(getLineByLine);
         }

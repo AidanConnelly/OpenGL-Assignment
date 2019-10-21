@@ -1,9 +1,11 @@
-#include <glad/glad.h>
+#include "GL/glew.h"
+#include "GL/freeglut.h"
 #include <GLFW/glfw3.h>
 #include "shader.h"
 #include "shaderProgram.h"
 #include "experiments/preliminary/fileThroughput/fileThroughput.h"
 #include "experiments/preliminary/prototypeParsers/prototypeDaeParser.h"
+#include "experiments/preliminary/prototypeParsers/stringToFloatFast.h"
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -24,6 +26,48 @@ unsigned int VAO_Handle;
 unsigned int VBO_Handle;
 
 int main() {
+    const char * flt = "-9900.001e-11 ";
+    int index = 0;
+    float f = parseAFloat(&index, flt);
+    std::cout << std::endl;
+    std::cout << f;
+    std::cout << std::endl;
+	std::cout << "Max texture units: " << GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS << std::endl;
+
+	int s0 = 0;
+	unsigned us0 = 0;
+	int seven = 7;
+
+	std::cout << (int)(s0 | seven);
+	std::cout << "\n";
+	std::cout << (int)(us0 | seven);
+	std::cout << "\n";
+
+	std::string stringToP = R"(
+
+<?x x="x" x="x"?>
+<x x="x" x="x" x="x">
+  <x>
+    <x>
+      <x>Blender User</x>
+    </x>
+  </x>
+</x>
+
+)";
+	std::vector<char> data(stringToP.begin(), stringToP.end());
+
+	std::vector<char> toParse = fileThroughput::getBytes();
+	std::vector<xmlNode> results = prototypeDaeParser::parse(toParse);
+
+	for (xmlNode &r : results) {
+		printf("%d\t-> %d\t", r.startIndex, r.endIndex);
+		for (int i = r.startIndex; i <= r.endIndex; i++) {
+			std::cout << toParse[i];
+		}
+		std::cout << std::endl;
+	}
+
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -38,13 +82,7 @@ int main() {
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-
+	
     const ShaderType &vertexShaderType = VertexShaderType();
     Shader vShader = Shader("shaders\\vertex.glsl", &vertexShaderType);
 
@@ -69,46 +107,7 @@ int main() {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    std::cout << "Max texture units: " << GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS << std::endl;
 
-    int s0 = 0;
-    unsigned us0 = 0;
-    int seven = 7;
-
-    std::cout << (int) (s0 | seven);
-    std::cout << "\n";
-    std::cout << (int) (us0 | seven);
-    std::cout << "\n";
-
-    std::string stringToP = R"(
-
-<?x x="x" x="x"?>
-<x x="x" x="x" x="x">
-  <x>
-    <x>
-      <x>Blender User</x>
-    </x>
-  </x>
-</x>
-
-)";
-    std::vector<char> data(stringToP.begin(), stringToP.end());
-
-    fileThroughput::runExperiment();
-    exit(-1);
-
-    std::vector<char> toParse = fileThroughput::getBytes();
-    std::vector<xmlNode> results = prototypeDaeParser::parse(toParse);
-
-    for (xmlNode &r : results) {
-        printf("%d\t-> %d\t",r.startIndex,r.endIndex);
-        for(int i = r.startIndex;i<=r.endIndex;i++){
-            std::cout << toParse[i];
-        }
-        std::cout << std::endl;
-    }
-
-    fileThroughput experiment;
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
