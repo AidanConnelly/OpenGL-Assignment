@@ -1,3 +1,4 @@
+Sin texturas:
 
 ```
 Find all scene tags
@@ -24,4 +25,11 @@ Find all library_geometries tags
        | attributes like offset & set, and most importantly the source attribute,
        | remove the tag and find the corresponding source tag.
  
+```
+
+Por texturas:
+```
+Find all Image tags, note ID
+ → Find init_from child tags to get the file, (begin loading in another thread via queue?)
+ → Find S, T params/ accessors
 ```
