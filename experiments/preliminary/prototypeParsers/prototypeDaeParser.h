@@ -22,6 +22,10 @@
 #include "bufferParseResult.h"
 #include "typedefs.h"
 
+struct parseNodeTagsResult{
+
+};
+
 class prototypeDaeParser {
 public:
     static xmlNodeSet parse(std::vector<char> buffer);
@@ -29,19 +33,24 @@ public:
 private:
     static xmlNodeSet parseNodeTagNames(std::vector<char> &buffer, const xmlNodeSet &nodes);
 
-    static xmlNodeSet filterByTagName(const xmlNodeSet &nodes, const std::string& tagName);
+    static xmlNodeSet filterByTagName(const xmlNodeSet &nodes, const std::string &tagName);
 
     static void checkForQuotes(char thisChar, int *stackPos, parseStack *stack, xmlParsingStackMember *state);
 
     static xmlNodeSet parseNodes(const std::vector<char> &buffer);
 
-    static xmlNodeSet mapXmlNodes(const xmlNodeSet &input, std::function<xmlNode(const xmlNode&)> toMap);
+    static xmlNodeSet mapXmlNodes(const xmlNodeSet &input, std::function<xmlNode(const xmlNode &)> toMap);
 
     static xmlNodeSet parseFloatArrays(std::vector<char> buffer, const xmlNodeSet &floatArrays);
 
     static xmlNodeSet parseIndexBuffer(std::vector<char> buffer, const xmlNodeSet &indexBuffer);
 
     static bufferParseResult parseLargeBuffers(const std::vector<char> &buffer, const xmlNodeSet &nodesWithTagName);
+
+    static xmlNodeSet parseMeshTags(std::vector<char> buffer, xmlNodeSet nodes);
+
+    static std::vector<parseNodeTagsResult> parseNodeTags(std::vector<char> buffer, xmlNodeSet nodes);
+
 };
 
 #endif //OPENGLSETUP_PROTOTYPEDAEPARSER_H

@@ -24,13 +24,24 @@ xmlNodeSet prototypeDaeParser::parseNodeTagNames(std::vector<char> &buffer, cons
 
 xmlNodeSet prototypeDaeParser::parse(std::vector<char> buffer) {
     xmlNodeSet nodes = parseNodes(buffer);
-    xmlNodeSet nodesWithTagName = parseNodeTagNames(buffer, nodes);
-
-    bufferParseResult result = parseLargeBuffers(buffer, nodesWithTagName);
-
+    xmlNodeSet nodesWithTagNames = parseNodeTagNames(buffer, nodes);
+    bufferParseResult result = parseLargeBuffers(buffer, nodesWithTagNames);
+    auto nodeParseResults = parseNodeTags(buffer, nodesWithTagNames);
+    auto meshParseResults = parseMeshTags(buffer, nodesWithTagNames);
     std::cout << result.floatArrays.size();
-    return nodesWithTagName;
+    return nodesWithTagNames;
 }
+
+std::vector<parseNodeTagsResult> prototypeDaeParser::parseNodeTags(std::vector<char> buffer, xmlNodeSet nodes) {
+    //todo find all node tags, inside: parse matrix tag, parse instance_geometry child tags
+
+}
+
+xmlNodeSet prototypeDaeParser::parseMeshTags(std::vector<char> buffer, xmlNodeSet nodes) {
+    //todo all mesh tags, process those
+
+}
+
 
 bufferParseResult prototypeDaeParser::parseLargeBuffers(const std::vector<char> &buffer, const xmlNodeSet &nodesWithTagName) {
     xmlNodeSet floatArrays = filterByTagName(nodesWithTagName, "float_array");
@@ -43,7 +54,7 @@ bufferParseResult prototypeDaeParser::parseLargeBuffers(const std::vector<char> 
     return result;
 }
 
-xmlNodeSet prototypeDaeParser::filterByTagName(const xmlNodeSet &nodes, const std::string& tagName) {
+xmlNodeSet prototypeDaeParser::filterByTagName(const xmlNodeSet &nodes, const std::string &tagName) {
     xmlNodeSet toReturn;
     for (auto const &node: nodes) {
         if (node.tagName == tagName) {
