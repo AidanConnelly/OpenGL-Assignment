@@ -111,14 +111,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\experiments\preliminary\fileThroughput\fileThroughput.cpp" />
-    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\prototypeDaeParser.cpp" />
+    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\daeParser.cpp" />
     <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\prototypeObjParser.cpp" />
     <ClCompile Include="..\..\main.cpp" />
     <ClCompile Include="..\..\shaderType.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\experiments\preliminary\fileThroughput\fileThroughput.h" />
-    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\prototypeDaeParser.h" />
+    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\daeParser.h" />
     <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\prototypeObjParser.h" />
     <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\stringToFloatFast.h" />
     <ClInclude Include="..\..\shader.h" />

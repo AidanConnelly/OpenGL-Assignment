@@ -12,6 +12,7 @@
 class Shader {
 public:
     unsigned int shader;
+
     Shader(const char *path, const ShaderType *shaderType) {
 
         //debug statement

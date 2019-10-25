@@ -21,7 +21,7 @@
     <ClCompile Include="..\..\shaderType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\prototypeDaeParser.cpp">
+    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\daeParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\prototypeObjParser.cpp">
@@ -41,7 +41,7 @@
     <ClInclude Include="..\..\shaderType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\prototypeDaeParser.h">
+    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\daeParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\prototypeObjParser.h">

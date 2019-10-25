@@ -55,7 +55,7 @@ public:
 
     static void read4objs(){
         std::vector<char> toParse = fileThroughput::getBytes();
-        std::vector<xmlNode> results = prototypeDaeParser::parse(toParse);
+        xmlNodeSet results = prototypeDaeParser::parse(toParse);
     }
 
     static void runExperiment() {
