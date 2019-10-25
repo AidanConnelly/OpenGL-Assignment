@@ -11,9 +11,6 @@
 #include "shader.h"
 #include "shaderProgram.h"
 #include "experiments/preliminary/fileThroughput/fileThroughput.h"
-#include "experiments/preliminary/prototypeParsers/prototypeDaeParser.h"
-#include "experiments/preliminary/prototypeParsers/stringToFloatFast.h"
-#include "experiments/preliminary/prototypeParsers/xmlNode.h"
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);

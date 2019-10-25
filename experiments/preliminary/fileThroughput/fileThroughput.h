@@ -13,6 +13,7 @@
 #include <functional>
 #include <vector>
 #include "../prototypeParsers/prototypeDaeParser.h"
+#include "../prototypeParsers/typedefs.h"
 
 class fileThroughput {
 public:

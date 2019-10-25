@@ -31,5 +31,25 @@ Por texturas:
 ```
 Find all Image tags, note ID
  → Find init_from child tags to get the file, (begin loading in another thread via queue?)
- → Find S, T params/ accessors
+Find S, T params/ accessors
+Find bind_material tags?
+Eugh
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

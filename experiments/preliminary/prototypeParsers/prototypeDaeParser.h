@@ -18,37 +18,9 @@
 #include <functional>
 #include <iterator>
 #include "xmlNode.h"
-
-typedef std::vector<xmlNode> xmlNodeSet;
-
-struct bufferParseResult {
-    bufferParseResult(xmlNodeSet floatArrays, xmlNodeSet indexArrays) {
-        this->floatArrays = std::move(floatArrays);
-        this->indexArrays = std::move(indexArrays);
-    }
-
-    xmlNodeSet floatArrays;
-    xmlNodeSet indexArrays;
-};
-
-enum XMLParseState {
-    Start,
-    TagOpened,
-    NotEndTag,
-    EndTag,
-    DQuote,
-    SQuote
-};
-
-struct xmlParsingStackMember {
-    xmlParsingStackMember(XMLParseState state, xmlNode node);
-
-    xmlNode node;
-    XMLParseState state;
-};
-
-typedef std::vector<xmlParsingStackMember> parseStack;
-
+#include "xmlParsingStackMember.h"
+#include "bufferParseResult.h"
+#include "typedefs.h"
 
 class prototypeDaeParser {
 public:
@@ -71,6 +43,5 @@ private:
 
     static bufferParseResult parseLargeBuffers(const std::vector<char> &buffer, const xmlNodeSet &nodesWithTagName);
 };
-
 
 #endif //OPENGLSETUP_PROTOTYPEDAEPARSER_H

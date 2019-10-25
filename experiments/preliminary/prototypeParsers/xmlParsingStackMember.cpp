@@ -1,0 +1,11 @@
+//
+// Created by aidan on 25/10/2019.
+//
+
+
+#ifndef OPENGLSETUP_XMLPARSINGSTACK_CPP
+#define OPENGLSETUP_XMLPARSINGSTACK_CPP
+
+#include "xmlNode.h"
+
+#endif //OPENGLSETUP_XMLPARSINGSTACK_CPP

@@ -5,11 +5,9 @@
 #include "prototypeDaeParser.h"
 #include "stringToFloatFast.h"
 #include "xmlNode.h"
-
-xmlParsingStackMember::xmlParsingStackMember(XMLParseState state, xmlNode node) {
-    this->state = state;
-    this->node = node;
-}
+#include "bufferParseResult.h"
+#include "typedefs.h"
+#include "XMLParseState.h"
 
 xmlNodeSet prototypeDaeParser::parseNodeTagNames(std::vector<char> &buffer, const xmlNodeSet &nodes) {
     return mapXmlNodes(nodes, [&](xmlNode node) -> xmlNode {

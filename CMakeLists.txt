@@ -4,7 +4,24 @@ project(OpenGLSetup)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES main.cpp GLAD/src/glad.c)
-set(HEADER_FILES shader.h shaderProgram.h experiments/preliminary/fileThroughput/fileThroughput.cpp experiments/preliminary/fileThroughput/fileThroughput.h experiments/preliminary/prototypeParsers/prototypeDaeParser.cpp experiments/preliminary/prototypeParsers/prototypeDaeParser.h experiments/preliminary/prototypeParsers/prototypeObjParser.cpp experiments/preliminary/prototypeParsers/prototypeObjParser.h experiments/preliminary/prototypeParsers/stringToFloatFast.h experiments/preliminary/prototypeParsers/stringToFloatFast.cpp)
+set(HEADER_FILES
+        shader.h
+        shaderProgram.h
+        experiments/preliminary/fileThroughput/fileThroughput.cpp
+        experiments/preliminary/fileThroughput/fileThroughput.h
+        experiments/preliminary/prototypeParsers/prototypeDaeParser.cpp
+        experiments/preliminary/prototypeParsers/prototypeDaeParser.h
+        experiments/preliminary/prototypeParsers/prototypeObjParser.cpp
+        experiments/preliminary/prototypeParsers/prototypeObjParser.h
+        experiments/preliminary/prototypeParsers/stringToFloatFast.cpp
+        experiments/preliminary/prototypeParsers/stringToFloatFast.h
+        experiments/preliminary/prototypeParsers/XMLParseState.cpp
+        experiments/preliminary/prototypeParsers/XMLParseState.h
+        experiments/preliminary/prototypeParsers/xmlParsingStackMember.cpp
+        experiments/preliminary/prototypeParsers/xmlParsingStackMember.h
+        experiments/preliminary/prototypeParsers/typedefs.cpp
+        experiments/preliminary/prototypeParsers/typedefs.h
+        )
 
 set(dir ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${dir}/build)
