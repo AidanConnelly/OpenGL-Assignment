@@ -21,35 +21,45 @@
 #include "xmlParsingStackMember.h"
 #include "bufferParseResult.h"
 #include "typedefs.h"
+#include "glm/glm.hpp"
 
-struct parseNodeTagsResult{
+struct parseNodeTagsResult {
+    parseNodeTagsResult(xmlNode node, std::vector<xmlNode> vector);
 
+    glm::mat4 transform;
+    std::vector<std::string> IDs;
 };
 
 class prototypeDaeParser {
 public:
-    static xmlNodeSet parse(std::vector<char> buffer);
+    static xmlNodeVector parse(std::vector<char> buffer);
 
 private:
-    static xmlNodeSet parseNodeTagNames(std::vector<char> &buffer, const xmlNodeSet &nodes);
+    static void parseNodeTagNames(std::vector<char> &buffer, xmlNodeStore &nodes);
 
-    static xmlNodeSet filterByTagName(const xmlNodeSet &nodes, const std::string &tagName);
+    static xmlNodeVector filterByTagName(const xmlNodeVector &nodes, const std::string &tagName);
+
+    static xmlNodeVector filterByTagName(const std::vector<xmlNode *> &nodes, const std::string &tagName);
 
     static void checkForQuotes(char thisChar, int *stackPos, parseStack *stack, xmlParsingStackMember *state);
 
-    static xmlNodeSet parseNodes(const std::vector<char> &buffer);
+    static xmlNodeStore parseNodes(const std::vector<char> &buffer);
 
-    static xmlNodeSet mapXmlNodes(const xmlNodeSet &input, std::function<xmlNode(const xmlNode &)> toMap);
+    static xmlNodeVector mapXmlNodes(const xmlNodeVector &input, std::function<xmlNode(const xmlNode &)> toMap);
 
-    static xmlNodeSet parseFloatArrays(std::vector<char> buffer, const xmlNodeSet &floatArrays);
+    static void alterXmlNodes(xmlNodeStore &input, std::function<void(xmlNode *)> toMap);
 
-    static xmlNodeSet parseIndexBuffer(std::vector<char> buffer, const xmlNodeSet &indexBuffer);
+    static xmlNodeVector parseFloatArrays(std::vector<char> buffer, const xmlNodeVector &floatArrays);
 
-    static bufferParseResult parseLargeBuffers(const std::vector<char> &buffer, const xmlNodeSet &nodesWithTagName);
+    static xmlNodeVector parseIndexBuffer(std::vector<char> buffer, const xmlNodeVector &indexBuffer);
 
-    static xmlNodeSet parseMeshTags(std::vector<char> buffer, xmlNodeSet nodes);
+    static bufferParseResult parseLargeBuffers(const std::vector<char> &buffer, const xmlNodeVector &nodesWithTagName);
 
-    static std::vector<parseNodeTagsResult> parseNodeTags(std::vector<char> buffer, xmlNodeSet nodes);
+    static xmlNodeVector parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes);
+
+    static std::vector<parseNodeTagsResult> parseNodeTags(std::vector<char> buffer, xmlNodeVector nodes);
+
+    static xmlNode getSoleByTag(const xmlNodeStore& toSearchIn, std::string toSearchFor);
 
 };
 

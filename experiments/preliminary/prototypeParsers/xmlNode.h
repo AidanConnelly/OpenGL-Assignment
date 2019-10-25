@@ -5,16 +5,21 @@
 #ifndef OPENGLSETUP_XMLNODE_H
 #define OPENGLSETUP_XMLNODE_H
 
+#include<stdio.h>
 #include<vector>
 #include<string>
 
 struct xmlNode {
     unsigned startIndex;
     unsigned endIndex;
-    std::vector<xmlNode> children;
+    std::vector<xmlNode *> children;
     std::string tagName;
     std::vector<float> floatsIfApplicable;
     std::vector<int> indexesIfApplicable;
+
+    ~xmlNode() {
+        printf("+");
+    }
 };
 
 #endif //OPENGLSETUP_XMLNODE_H

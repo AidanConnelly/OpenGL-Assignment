@@ -7,8 +7,10 @@
 
 #include "xmlNode.h"
 #include "xmlParsingStackMember.h"
+#include <list>
 
-typedef std::vector<xmlNode> xmlNodeSet;
+typedef std::vector<xmlNode> xmlNodeVector;
+typedef std::vector<xmlNode*> xmlNodeStore;
 typedef std::vector<xmlParsingStackMember> parseStack;
 
 #endif //OPENGLSETUP_TYPEDEFS_H

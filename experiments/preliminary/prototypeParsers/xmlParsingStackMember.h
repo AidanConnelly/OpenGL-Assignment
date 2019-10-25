@@ -9,13 +9,17 @@
 #include "xmlNode.h"
 
 struct xmlParsingStackMember {
-    xmlParsingStackMember(XMLParseState state, xmlNode node){
+    xmlParsingStackMember(XMLParseState state, xmlNode* node){
         this->state = state;
         this->node = node;
     }
 
-    xmlNode node;
+    //Pointer to prevent collection
+    xmlNode * node;
     XMLParseState state;
+
+    ~xmlParsingStackMember(){
+    }
 };
 
 #endif //OPENGLSETUP_XMLPARSINGSTACKMEMBER_H
