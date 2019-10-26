@@ -3,8 +3,8 @@
 //
 
 
-#ifndef OPENGLSETUP_PROTOTYPEDAEPARSER_H
-#define OPENGLSETUP_PROTOTYPEDAEPARSER_H
+#ifndef OPENGLSETUP_DAEPARSER_H
+#define OPENGLSETUP_DAEPARSER_H
 
 #include <algorithm>
 #include <cctype>
@@ -54,9 +54,13 @@ struct meshParseResult {
     std::vector<vertexDef> vertexes;
     std::vector<triangle> triangles;
     std::string meshID;
+
+    ~meshParseResult(){
+        //todo
+    }
 };
 
-class prototypeDaeParser {
+class daeParser {
 public:
     static xmlNodeVector parse(std::vector<char> buffer);
 
@@ -94,6 +98,7 @@ private:
     static float getViaParam(std::string toGet, xmlNode source, xmlNode parsedFloatArray, unsigned index);
 
 
+    static std::string removeLeadingHash(const std::string &toRemove);
 };
 
-#endif //OPENGLSETUP_PROTOTYPEDAEPARSER_H
+#endif //OPENGLSETUP_DAEPARSER_H

@@ -2,7 +2,7 @@
 // Created by m on 14/10/2019.
 //
 
-#include "prototypeDaeParser.h"
+#include "daeParser.h"
 #include "stringToFloatFast.h"
 #include "xmlNode.h"
 #include "bufferParseResult.h"
@@ -10,7 +10,7 @@
 #include "XMLParseState.h"
 #include <glm/gtc/type_ptr.hpp>
 
-void prototypeDaeParser::parseNodeTagNames(std::vector<char> &buffer, xmlNodeStore &nodes) {
+void daeParser::parseNodeTagNames(std::vector<char> &buffer, xmlNodeStore &nodes) {
     alterXmlNodes(nodes, [&](xmlNode *node) -> xmlNode {
         int index = node->startIndex + 1;
         char character = buffer[index];
@@ -23,7 +23,7 @@ void prototypeDaeParser::parseNodeTagNames(std::vector<char> &buffer, xmlNodeSto
     });
 }
 
-xmlNodeVector prototypeDaeParser::parse(std::vector<char> buffer) {
+xmlNodeVector daeParser::parse(std::vector<char> buffer) {
     xmlNodeStore nodes = parseNodes(buffer);
     parseNodeTagNames(buffer, nodes);
     xmlNodeVector asVec;
@@ -33,7 +33,7 @@ xmlNodeVector prototypeDaeParser::parse(std::vector<char> buffer) {
     );
     bufferParseResult result = parseLargeBuffers(buffer, asVec);
     auto nodeParseResults = parseNodeTags(buffer, asVec);
-    auto meshParseResults = parseMeshTags(buffer, asVec);
+    auto meshParseResults = parseMeshTags(buffer, asVec, result);
     std::cout << result.floatArrays.size();
     return asVec;
 }
@@ -41,7 +41,7 @@ xmlNodeVector prototypeDaeParser::parse(std::vector<char> buffer) {
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-use-emplace"
 
-std::vector<parseNodeTagsResult> prototypeDaeParser::parseNodeTags(std::vector<char> buffer, xmlNodeVector nodes) {
+std::vector<parseNodeTagsResult> daeParser::parseNodeTags(std::vector<char> buffer, xmlNodeVector nodes) {
     std::vector<parseNodeTagsResult> toReturn;
     //todo find all node tags, inside: parse matrix tag, parse instance_geometry child tags
     auto nodeTags = filterByTagName(nodes, "node");
@@ -56,7 +56,7 @@ std::vector<parseNodeTagsResult> prototypeDaeParser::parseNodeTags(std::vector<c
 
 #pragma clang diagnostic pop
 
-std::vector<meshParseResult> prototypeDaeParser::parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes, bufferParseResult largeBuffers) {
+std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes, bufferParseResult largeBuffers) {
     //todo all mesh tags, process those
     std::vector<xmlNode> tags = filterByTagName(nodes, "mesh");
     for (auto &tag : tags) {
@@ -95,22 +95,22 @@ std::vector<meshParseResult> prototypeDaeParser::parseMeshTags(std::vector<char>
             }
 
             const std::string &verticesID = vertexInputTag.getAttribute("source", buffer);
-            auto vertexTag = getSoleByAttrib(tag.children, "id", verticesID, buffer);
+            auto vertexTag = getSoleByAttrib(tag.children, "id",removeLeadingHash(verticesID), buffer);
             const std::string &inputID = vertexTag.children[0]->getAttribute("source", buffer);
-            auto positionSourceTag = getSoleByAttrib(tag.children, "id", inputID, buffer);
+            auto positionSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(inputID), buffer);
 
             const std::string &normalSourceId = normalInputTag.getAttribute("source", buffer);
-            auto normalSourceTag = getSoleByAttrib(tag.children, "id", normalSourceId, buffer);
+            auto normalSourceTag = getSoleByAttrib(tag.children, "id",removeLeadingHash(normalSourceId), buffer);
 
             const std::string &tCoordSourceId = tCoordInputTag.getAttribute("source", buffer);
-            auto tCoordSourceTag = getSoleByAttrib(tag.children, "id", tCoordSourceId, buffer);
+            auto tCoordSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(tCoordSourceId), buffer);
 
-            for(int triangleIndex = 0;triangleIndex<triangleCount;triangleIndex++) {
+            for (int triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++) {
 //region Region_1
                 for (int i = 0; i < 3; i++) {
                     vertexDef building{};
 
-                    unsigned vertexIndex = 3* triangleIndex+i;
+                    unsigned vertexIndex = 3 * triangleIndex + i;
                     unsigned positnIndex = pTag.indexesIfApplicable[vertexIndex + vertexOffset];
                     unsigned normalIndex = pTag.indexesIfApplicable[vertexIndex + normalOffset];
                     unsigned tCoordIndex = pTag.indexesIfApplicable[vertexIndex + tCoordOffset];
@@ -146,9 +146,9 @@ std::vector<meshParseResult> prototypeDaeParser::parseMeshTags(std::vector<char>
                     thisResult.vertexes.push_back(building);
                 }
                 triangle constructed{};
-                constructed.v1i = thisResult.vertexes.size()-3;
-                constructed.v2i = thisResult.vertexes.size()-2;
-                constructed.v3i = thisResult.vertexes.size()-1;
+                constructed.v1i = thisResult.vertexes.size() - 3;
+                constructed.v2i = thisResult.vertexes.size() - 2;
+                constructed.v3i = thisResult.vertexes.size() - 1;
                 thisResult.triangles.push_back(constructed);
             }
 //endregion Region_1
@@ -174,7 +174,7 @@ std::vector<meshParseResult> prototypeDaeParser::parseMeshTags(std::vector<char>
     }
 }
 
-xmlNode prototypeDaeParser::soleLargeFloatChild(xmlNode parent, bufferParseResult bpr) {
+xmlNode daeParser::soleLargeFloatChild(xmlNode parent, bufferParseResult bpr) {
     for (auto &b: parent.children) {
         for (auto &a: bpr.floatArrays) {
             if (&a.id == &b->id) {
@@ -184,12 +184,12 @@ xmlNode prototypeDaeParser::soleLargeFloatChild(xmlNode parent, bufferParseResul
     }
 }
 
-float prototypeDaeParser::getViaParam(std::string toGet, xmlNode source, xmlNode parsedFloatArray, unsigned index) {
+float daeParser::getViaParam(std::string toGet, xmlNode source, xmlNode parsedFloatArray, unsigned index) {
     //todo
 }
 
-xmlNode prototypeDaeParser::getSoleByAttrib(const xmlNodeStore &lookIn, std::string attrib, std::string value,
-                                            std::vector<char> buffer) {
+xmlNode daeParser::getSoleByAttrib(const xmlNodeStore &lookIn, std::string attrib, std::string value,
+                                   std::vector<char> buffer) {
     for (auto &node:lookIn) {
         if (node->getAttribute(attrib, buffer) == value) {
             return *node;
@@ -198,7 +198,7 @@ xmlNode prototypeDaeParser::getSoleByAttrib(const xmlNodeStore &lookIn, std::str
     throw std::invalid_argument("no match");
 }
 
-xmlNode prototypeDaeParser::getSoleByTag(const xmlNodeStore &toSearchIn, std::string toSearchFor) {
+xmlNode daeParser::getSoleByTag(const xmlNodeStore &toSearchIn, std::string toSearchFor) {
     auto x = filterByTagName(toSearchIn, toSearchFor);
     if (x.size() != 1) {
         throw std::invalid_argument("not single");
@@ -206,7 +206,7 @@ xmlNode prototypeDaeParser::getSoleByTag(const xmlNodeStore &toSearchIn, std::st
     return x[0];
 }
 
-bufferParseResult prototypeDaeParser::parseLargeBuffers(const std::vector<char> &buffer, const xmlNodeVector &nodesWithTagName) {
+bufferParseResult daeParser::parseLargeBuffers(const std::vector<char> &buffer, const xmlNodeVector &nodesWithTagName) {
     xmlNodeVector floatArrays = filterByTagName(nodesWithTagName, "float_array");
     floatArrays = parseFloatArrays(buffer, floatArrays);
 
@@ -217,7 +217,7 @@ bufferParseResult prototypeDaeParser::parseLargeBuffers(const std::vector<char> 
     return result;
 }
 
-xmlNodeVector prototypeDaeParser::filterByTagName(const xmlNodeVector &nodes, const std::string &tagName) {
+xmlNodeVector daeParser::filterByTagName(const xmlNodeVector &nodes, const std::string &tagName) {
     xmlNodeVector toReturn;
     for (auto const &node: nodes) {
         if (node.tagName == tagName) {
@@ -227,7 +227,7 @@ xmlNodeVector prototypeDaeParser::filterByTagName(const xmlNodeVector &nodes, co
     return toReturn;
 }
 
-xmlNodeVector prototypeDaeParser::filterByTagName(const std::vector<xmlNode *> &nodes, const std::string &tagName) {
+xmlNodeVector daeParser::filterByTagName(const std::vector<xmlNode *> &nodes, const std::string &tagName) {
     xmlNodeVector toReturn;
     for (auto const &node: nodes) {
         if (node->tagName == tagName) {
@@ -237,7 +237,7 @@ xmlNodeVector prototypeDaeParser::filterByTagName(const std::vector<xmlNode *> &
     return toReturn;
 }
 
-xmlNodeVector prototypeDaeParser::parseFloatArrays(std::vector<char> buffer, const xmlNodeVector &floatArrays) {
+xmlNodeVector daeParser::parseFloatArrays(std::vector<char> buffer, const xmlNodeVector &floatArrays) {
     return mapXmlNodes(floatArrays, [&](xmlNode node) -> xmlNode {
         int index = node.startIndex;
         while (buffer[index] != '>') {
@@ -255,7 +255,7 @@ xmlNodeVector prototypeDaeParser::parseFloatArrays(std::vector<char> buffer, con
 
 }
 
-void prototypeDaeParser::checkForQuotes(char thisChar, int *stackPos, parseStack *stack, xmlParsingStackMember *state) {
+void daeParser::checkForQuotes(char thisChar, int *stackPos, parseStack *stack, xmlParsingStackMember *state) {
     int newStackPos;
     switch (thisChar) {
         case '"':
@@ -276,7 +276,7 @@ void prototypeDaeParser::checkForQuotes(char thisChar, int *stackPos, parseStack
 }
 
 
-xmlNodeStore prototypeDaeParser::parseNodes(const std::vector<char> &buffer) {
+xmlNodeStore daeParser::parseNodes(const std::vector<char> &buffer) {
     xmlNodeStore nodes = {};
     //Loop over buffer
     parseStack stack = std::vector<xmlParsingStackMember>();
@@ -366,7 +366,7 @@ xmlNodeStore prototypeDaeParser::parseNodes(const std::vector<char> &buffer) {
     return nodes;
 }
 
-xmlNodeVector prototypeDaeParser::mapXmlNodes(const xmlNodeVector &input, std::function<xmlNode(const xmlNode &)> toMap) {
+xmlNodeVector daeParser::mapXmlNodes(const xmlNodeVector &input, std::function<xmlNode(const xmlNode &)> toMap) {
     //TODO: make parallel
     xmlNodeVector toReturn;
     std::transform(input.begin(), input.end(), std::back_inserter(toReturn),
@@ -374,14 +374,14 @@ xmlNodeVector prototypeDaeParser::mapXmlNodes(const xmlNodeVector &input, std::f
     return toReturn;
 }
 
-void prototypeDaeParser::alterXmlNodes(xmlNodeStore &input, std::function<void(xmlNode *)> toMap) {
+void daeParser::alterXmlNodes(xmlNodeStore &input, std::function<void(xmlNode *)> toMap) {
     //TODO: make parallel
     for (auto &i : input) {
         toMap(i);
     }
 }
 
-xmlNodeVector prototypeDaeParser::parseIndexBuffer(const std::vector<char> buffer, const xmlNodeVector &indexBuffer) {
+xmlNodeVector daeParser::parseIndexBuffer(const std::vector<char> buffer, const xmlNodeVector &indexBuffer) {
     return mapXmlNodes(indexBuffer, [&](xmlNode node) -> xmlNode {
         int index = node.startIndex;
         while (buffer[index] != '>') {
@@ -396,6 +396,10 @@ xmlNodeVector prototypeDaeParser::parseIndexBuffer(const std::vector<char> buffe
         node.indexesIfApplicable = indexes;
         return node;
     });
+}
+
+std::string daeParser::removeLeadingHash(const std::string &toRemove) {
+    return toRemove.substr(1, toRemove.size() - 1);
 }
 
 parseNodeTagsResult::parseNodeTagsResult(xmlNode matrix, xmlNodeVector instance_geometryTags, std::vector<char> buffer) {

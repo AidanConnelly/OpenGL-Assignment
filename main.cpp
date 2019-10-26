@@ -79,7 +79,7 @@ int main() {
 	std::vector<char> data(stringToP.begin(), stringToP.end());
 
 	std::vector<char> toParse = fileThroughput::getBytes();
-	xmlNodeVector results = prototypeDaeParser::parse(toParse);
+	xmlNodeVector results = daeParser::parse(toParse);
 
 	for (xmlNode &r : results) {
 		printf("%d |%s \t|\t%d\t-> %d\t", r.children.size(),r.tagName.c_str(), r.startIndex, r.endIndex);

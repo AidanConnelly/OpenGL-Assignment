@@ -9,8 +9,8 @@ set(HEADER_FILES
         shaderProgram.h
         experiments/preliminary/fileThroughput/fileThroughput.cpp
         experiments/preliminary/fileThroughput/fileThroughput.h
-        experiments/preliminary/prototypeParsers/prototypeDaeParser.cpp
-        experiments/preliminary/prototypeParsers/prototypeDaeParser.h
+        experiments/preliminary/prototypeParsers/daeParser.cpp
+        experiments/preliminary/prototypeParsers/daeParser.h
         experiments/preliminary/prototypeParsers/prototypeObjParser.cpp
         experiments/preliminary/prototypeParsers/prototypeObjParser.h
         experiments/preliminary/prototypeParsers/stringToFloatFast.cpp

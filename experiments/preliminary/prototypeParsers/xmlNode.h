@@ -30,8 +30,25 @@ struct xmlNode {
     }
 
     std::string getAttribute(std::string attributeName, std::vector<char> buffer) {
-        //todo
-        return attributeName;
+        std::string toLookFor = attributeName+"=\"";
+        for(int idx = startIndex;idx<(endIndex-toLookFor.size());idx++){
+            bool fail = false;
+            for(int subStrIdx = 0;subStrIdx<toLookFor.size();subStrIdx ++){
+                if(buffer[idx+subStrIdx] != toLookFor[subStrIdx]){
+                    fail = true;
+                    break;
+                }
+            }
+            if(!fail){
+                std::string toReturn;
+                int subStrIdx = idx+toLookFor.size();
+                while(buffer[subStrIdx]!='\"'){
+                    toReturn += buffer[subStrIdx];
+                    subStrIdx++;
+                }
+                return toReturn;
+            }
+        }
     };
 };
 

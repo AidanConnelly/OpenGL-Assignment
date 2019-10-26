@@ -12,7 +12,7 @@
 #include <chrono>
 #include <functional>
 #include <vector>
-#include "../prototypeParsers/prototypeDaeParser.h"
+#include "../prototypeParsers/daeParser.h"
 #include "../prototypeParsers/typedefs.h"
 
 class fileThroughput {
@@ -56,7 +56,7 @@ public:
 
     static void read4objs(){
         std::vector<char> toParse = fileThroughput::getBytes();
-        xmlNodeVector results = prototypeDaeParser::parse(toParse);
+        xmlNodeVector results = daeParser::parse(toParse);
     }
 
     static void runExperiment() {
