@@ -8,6 +8,7 @@
 #include "bufferParseResult.h"
 #include "typedefs.h"
 #include "XMLParseState.h"
+#include <glm/gtc/type_ptr.hpp>
 
 void prototypeDaeParser::parseNodeTagNames(std::vector<char> &buffer, xmlNodeStore &nodes) {
     alterXmlNodes(nodes, [&](xmlNode *node) -> xmlNode {
@@ -37,6 +38,9 @@ xmlNodeVector prototypeDaeParser::parse(std::vector<char> buffer) {
     return asVec;
 }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "hicpp-use-emplace"
+
 std::vector<parseNodeTagsResult> prototypeDaeParser::parseNodeTags(std::vector<char> buffer, xmlNodeVector nodes) {
     std::vector<parseNodeTagsResult> toReturn;
     //todo find all node tags, inside: parse matrix tag, parse instance_geometry child tags
@@ -45,19 +49,34 @@ std::vector<parseNodeTagsResult> prototypeDaeParser::parseNodeTags(std::vector<c
         std::vector<xmlNode *> children = node.children;
         auto matrix = getSoleByTag(children, "matrix");
         auto i_g = filterByTagName(children, "instance_geometry");
-        toReturn.push_back(parseNodeTagsResult(matrix,i_g));
+        toReturn.push_back(parseNodeTagsResult(matrix, i_g, buffer));
         return node;
     });
 }
 
-xmlNodeVector prototypeDaeParser::parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes) {
+#pragma clang diagnostic pop
+
+std::vector<meshParseResult> prototypeDaeParser::parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes) {
     //todo all mesh tags, process those
-    filterByTagName(nodes, "mesh");
+    std::vector <xmlNode> tags = filterByTagName(nodes, "mesh");
+    for (auto &tag : tags) {
+        //Find triangles
+        //Find <p>,
+        //Find semantic = VERTEX <vertices> ~> <input> child ~> <source>
+        //Find semantic = NORMAL <source>
+        //Find semantic = TEXCOORD <source>
+
+        //<source>
+        //<float_array>
+        //<technique_common>
+        //From = Index of <param NUM>
+        //To = NUM
+    }
 }
 
-xmlNode prototypeDaeParser::getSoleByTag(const xmlNodeStore& toSearchIn, std::string toSearchFor){
+xmlNode prototypeDaeParser::getSoleByTag(const xmlNodeStore &toSearchIn, std::string toSearchFor) {
     auto x = filterByTagName(toSearchIn, toSearchFor);
-    if(x.size()!=1){
+    if (x.size() != 1) {
         throw std::invalid_argument("not single");
     }
     return x[0];
@@ -255,6 +274,22 @@ xmlNodeVector prototypeDaeParser::parseIndexBuffer(const std::vector<char> buffe
     });
 }
 
-parseNodeTagsResult::parseNodeTagsResult(xmlNode node, std::vector<xmlNode> vector) {
-    //todo - fill me in!
+parseNodeTagsResult::parseNodeTagsResult(xmlNode matrix, xmlNodeVector instance_geometryTags, std::vector<char> buffer) {
+    int index = matrix.startIndex;
+    do {
+        index++;
+    } while ('>' != buffer[index]);
+    index++;
+    int floatIndex = 0;
+    float floatArray[16];
+    while (buffer[index] >= '0' && buffer[index] <= '9') {
+        floatArray[floatIndex] = parseAFloat(&index, buffer);
+        index++;
+        floatIndex++;
+    }
+    this->transform = glm::make_mat4(floatArray);
+
+    std::for_each(instance_geometryTags.begin(), instance_geometryTags.end(), [&](xmlNode node) -> void {
+        this->IDs.insert(node.getAttribute("ID"));
+    });
 }

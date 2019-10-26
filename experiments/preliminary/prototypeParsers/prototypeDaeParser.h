@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <functional>
 #include <iterator>
+#include <set>
 #include "xmlNode.h"
 #include "xmlParsingStackMember.h"
 #include "bufferParseResult.h"
@@ -24,10 +25,35 @@
 #include "glm/glm.hpp"
 
 struct parseNodeTagsResult {
-    parseNodeTagsResult(xmlNode node, std::vector<xmlNode> vector);
+    parseNodeTagsResult(xmlNode matrix, std::vector<xmlNode> instance_geometryTags, std::vector<char> buffer);
 
     glm::mat4 transform;
-    std::vector<std::string> IDs;
+    std::set<std::string> IDs;
+};
+
+struct vertexDef{
+    float x;
+    float y;
+    float z;
+
+    float nX;
+    float nY;
+    float nZ;
+
+    float u;
+    float v;
+};
+
+struct triangle{
+    unsigned v1i;
+    unsigned v2i;
+    unsigned v3i;
+};
+
+struct meshParseResult{
+    std::vector<vertexDef> vertexes;
+    std::vector<triangle> triangles;
+    std::string meshID;
 };
 
 class prototypeDaeParser {
@@ -55,7 +81,7 @@ private:
 
     static bufferParseResult parseLargeBuffers(const std::vector<char> &buffer, const xmlNodeVector &nodesWithTagName);
 
-    static xmlNodeVector parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes);
+    static std::vector<meshParseResult> parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes);
 
     static std::vector<parseNodeTagsResult> parseNodeTags(std::vector<char> buffer, xmlNodeVector nodes);
 

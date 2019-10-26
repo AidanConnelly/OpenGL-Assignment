@@ -20,6 +20,11 @@ struct xmlNode {
     ~xmlNode() {
         printf("+");
     }
+
+    std::string getAttribute(std::string attributeName) {
+        //todo
+        return attributeName;
+    };
 };
 
 #endif //OPENGLSETUP_XMLNODE_H
