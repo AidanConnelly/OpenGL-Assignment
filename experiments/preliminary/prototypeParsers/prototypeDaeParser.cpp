@@ -56,11 +56,108 @@ std::vector<parseNodeTagsResult> prototypeDaeParser::parseNodeTags(std::vector<c
 
 #pragma clang diagnostic pop
 
-std::vector<meshParseResult> prototypeDaeParser::parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes) {
+std::vector<meshParseResult> prototypeDaeParser::parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes, bufferParseResult largeBuffers) {
     //todo all mesh tags, process those
-    std::vector <xmlNode> tags = filterByTagName(nodes, "mesh");
+    std::vector<xmlNode> tags = filterByTagName(nodes, "mesh");
     for (auto &tag : tags) {
-        //Find triangles
+        meshParseResult thisResult = meshParseResult();
+        std::string id = tag.getAttribute("id", buffer);
+        thisResult.meshID = id;
+        auto triangles = filterByTagName(tag.children, "triangles");
+        for (auto &triangleTag : triangles) {
+            xmlNode pTag = getSoleByTag(triangleTag.children, "p");
+            auto vertexInputTag = getSoleByAttrib(triangleTag.children, "semantic", "VERTEX", buffer);
+            auto normalInputTag = getSoleByAttrib(triangleTag.children, "semantic", "NORMAL", buffer);
+            auto tCoordInputTag = getSoleByAttrib(triangleTag.children, "semantic", "TEXCOORD", buffer);
+            int vertexOffset = stoi(vertexInputTag.getAttribute("offset", buffer));
+            int normalOffset = stoi(normalInputTag.getAttribute("offset", buffer));
+            int tCoordOffset = stoi(tCoordInputTag.getAttribute("offset", buffer));
+            int maxOffset = 0;
+            auto inputTags = filterByTagName(triangleTag.children, "input");
+            for (auto &node: inputTags) {
+                int offset = stoi(node.getAttribute("offset", buffer));
+                if (offset > maxOffset) {
+                    maxOffset = offset;
+                }
+            }
+
+            xmlNode thisTriangleIndexArray;
+            for (auto &indexArray: largeBuffers.indexArrays) {
+                if (indexArray.id == pTag.id) {
+                    thisTriangleIndexArray = indexArray;
+                }
+            }
+
+            int vertexCount = pTag.indexesIfApplicable.size() / maxOffset;
+            int triangleCount = vertexCount / 3;
+            if (triangleCount * maxOffset * 3 != pTag.indexesIfApplicable.size()) {
+                throw std::invalid_argument("wrong number of indexes");
+            }
+
+            const std::string &verticesID = vertexInputTag.getAttribute("source", buffer);
+            auto vertexTag = getSoleByAttrib(tag.children, "id", verticesID, buffer);
+            const std::string &inputID = vertexTag.children[0]->getAttribute("source", buffer);
+            auto positionSourceTag = getSoleByAttrib(tag.children, "id", inputID, buffer);
+
+            const std::string &normalSourceId = normalInputTag.getAttribute("source", buffer);
+            auto normalSourceTag = getSoleByAttrib(tag.children, "id", normalSourceId, buffer);
+
+            const std::string &tCoordSourceId = tCoordInputTag.getAttribute("source", buffer);
+            auto tCoordSourceTag = getSoleByAttrib(tag.children, "id", tCoordSourceId, buffer);
+
+            for(int triangleIndex = 0;triangleIndex<triangleCount;triangleIndex++) {
+//region Region_1
+                for (int i = 0; i < 3; i++) {
+                    vertexDef building{};
+
+                    unsigned vertexIndex = 3* triangleIndex+i;
+                    unsigned positnIndex = pTag.indexesIfApplicable[vertexIndex + vertexOffset];
+                    unsigned normalIndex = pTag.indexesIfApplicable[vertexIndex + normalOffset];
+                    unsigned tCoordIndex = pTag.indexesIfApplicable[vertexIndex + tCoordOffset];
+
+                    //vertex X
+                    building.x = getViaParam("X", positionSourceTag, soleLargeFloatChild(positionSourceTag, largeBuffers), positnIndex);
+
+                    //vertex Y
+                    building.y = getViaParam("Y", positionSourceTag, soleLargeFloatChild(positionSourceTag, largeBuffers), positnIndex);
+
+                    //vertex Z
+                    building.z = getViaParam("Z", positionSourceTag, soleLargeFloatChild(positionSourceTag, largeBuffers), positnIndex);
+
+
+
+                    //vertexNormal X
+                    building.nX = getViaParam("X", normalSourceTag, soleLargeFloatChild(normalSourceTag, largeBuffers), normalIndex);
+
+                    //vertexNormal Y
+                    building.nY = getViaParam("Y", normalSourceTag, soleLargeFloatChild(normalSourceTag, largeBuffers), normalIndex);
+
+                    //vertexNormal Z
+                    building.nZ = getViaParam("Z", normalSourceTag, soleLargeFloatChild(normalSourceTag, largeBuffers), normalIndex);
+
+
+
+                    //texCoord U
+                    building.u = getViaParam("S", tCoordSourceTag, soleLargeFloatChild(tCoordSourceTag, largeBuffers), tCoordIndex);
+
+                    //texCoord V
+                    building.v = getViaParam("T", tCoordSourceTag, soleLargeFloatChild(tCoordSourceTag, largeBuffers), tCoordIndex);
+
+                    thisResult.vertexes.push_back(building);
+                }
+                triangle constructed{};
+                constructed.v1i = thisResult.vertexes.size()-3;
+                constructed.v2i = thisResult.vertexes.size()-2;
+                constructed.v3i = thisResult.vertexes.size()-1;
+                thisResult.triangles.push_back(constructed);
+            }
+//endregion Region_1
+
+
+            //Can now construct vertex buffer and vertex index buffer from p tag data
+        }
+//region Region_2
+
         //Find <p>,
         //Find semantic = VERTEX <vertices> ~> <input> child ~> <source>
         //Find semantic = NORMAL <source>
@@ -71,7 +168,34 @@ std::vector<meshParseResult> prototypeDaeParser::parseMeshTags(std::vector<char>
         //<technique_common>
         //From = Index of <param NUM>
         //To = NUM
+        //endregion Region_2
+
+
     }
+}
+
+xmlNode prototypeDaeParser::soleLargeFloatChild(xmlNode parent, bufferParseResult bpr) {
+    for (auto &b: parent.children) {
+        for (auto &a: bpr.floatArrays) {
+            if (&a.id == &b->id) {
+                return a;
+            }
+        }
+    }
+}
+
+float prototypeDaeParser::getViaParam(std::string toGet, xmlNode source, xmlNode parsedFloatArray, unsigned index) {
+    //todo
+}
+
+xmlNode prototypeDaeParser::getSoleByAttrib(const xmlNodeStore &lookIn, std::string attrib, std::string value,
+                                            std::vector<char> buffer) {
+    for (auto &node:lookIn) {
+        if (node->getAttribute(attrib, buffer) == value) {
+            return *node;
+        }
+    }
+    throw std::invalid_argument("no match");
 }
 
 xmlNode prototypeDaeParser::getSoleByTag(const xmlNodeStore &toSearchIn, std::string toSearchFor) {
@@ -290,6 +414,6 @@ parseNodeTagsResult::parseNodeTagsResult(xmlNode matrix, xmlNodeVector instance_
     this->transform = glm::make_mat4(floatArray);
 
     std::for_each(instance_geometryTags.begin(), instance_geometryTags.end(), [&](xmlNode node) -> void {
-        this->IDs.insert(node.getAttribute("ID"));
+        this->IDs.insert(node.getAttribute("ID", buffer));
     });
 }

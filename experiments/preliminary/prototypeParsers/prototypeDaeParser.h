@@ -31,7 +31,7 @@ struct parseNodeTagsResult {
     std::set<std::string> IDs;
 };
 
-struct vertexDef{
+struct vertexDef {
     float x;
     float y;
     float z;
@@ -44,13 +44,13 @@ struct vertexDef{
     float v;
 };
 
-struct triangle{
+struct triangle {
     unsigned v1i;
     unsigned v2i;
     unsigned v3i;
 };
 
-struct meshParseResult{
+struct meshParseResult {
     std::vector<vertexDef> vertexes;
     std::vector<triangle> triangles;
     std::string meshID;
@@ -81,11 +81,18 @@ private:
 
     static bufferParseResult parseLargeBuffers(const std::vector<char> &buffer, const xmlNodeVector &nodesWithTagName);
 
-    static std::vector<meshParseResult> parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes);
+    static std::vector<meshParseResult> parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes, bufferParseResult largeBuffers);
 
     static std::vector<parseNodeTagsResult> parseNodeTags(std::vector<char> buffer, xmlNodeVector nodes);
 
-    static xmlNode getSoleByTag(const xmlNodeStore& toSearchIn, std::string toSearchFor);
+    static xmlNode getSoleByTag(const xmlNodeStore &toSearchIn, std::string toSearchFor);
+
+    static xmlNode getSoleByAttrib(const xmlNodeStore &lookIn, std::string attrib, std::string value, std::vector<char> buffer);
+
+    static xmlNode soleLargeFloatChild(xmlNode parent, bufferParseResult bpr);
+
+    static float getViaParam(std::string toGet, xmlNode source, xmlNode parsedFloatArray, unsigned index);
+
 
 };
 
