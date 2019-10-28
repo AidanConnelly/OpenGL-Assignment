@@ -15,6 +15,15 @@
 #include "../prototypeParsers/daeParser.h"
 #include "../prototypeParsers/typedefs.h"
 
+inline std::string separator()
+{
+#ifdef _WIN32
+    return "\\";
+#else
+    return "/";
+#endif
+}
+
 class fileThroughput {
 public:
     static void getLineByLine() {
@@ -35,7 +44,8 @@ public:
         std::cout << readed.size() << std::endl;
         for (int i = 0; i < 1; i++) {
 
-            std::ifstream myfile("C:\\Users\\aidan\\Documents\\soft356a3\\resources\\singleTriangle.dae");
+            // std::ifstream myfile("resources"+separator()+"singleTriangle.dae");
+			std::ifstream myfile("C:\\Users\\aidan\\Documents\\soft356a3\\vsSolution\\x64\\Release\\resources\\singleTriangle.dae");
 
             int timesRead = 0;
 
@@ -61,18 +71,7 @@ public:
 
     static void runExperiment() {
         for (int i = 0; i < 9; i++) {
-            int *largeArs[(1024 + 512 + 128)* 4];
-            for (auto &j : largeArs) {
-                int *largeAr = (int *) malloc(64 * 1024 * sizeof(int));
-                for (int k=  0;k<64*1024;k++) {
-                    largeAr[k] = k;
-                }
-                j = static_cast<int *>(largeAr);
-            }
-            for(auto &j: largeArs){
-                free(j);
-            }
-//            printFunctionExecutionTime(read4objs);
+            printFunctionExecutionTime(read4objs);
 //            printFunctionExecutionTime(getBytes);
 //            printFunctionExecutionTime(getLineByLine);
         }

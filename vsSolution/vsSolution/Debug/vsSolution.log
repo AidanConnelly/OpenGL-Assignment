@@ -1,13 +1,34 @@
-﻿  fileThroughput.cpp
-c:\users\aidan\documents\soft356a3\experiments\preliminary\filethroughput\filethroughput.h(47): warning C4244: 'initializing': conversion from 'std::streamsize' to 'int', possible loss of data
+﻿  daeParser.cpp
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(45): warning C4018: '<': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(47): warning C4018: '<': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(48): warning C4018: '>=': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\daeparser.cpp(42): warning C4068: unknown pragma
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\daeparser.cpp(43): warning C4068: unknown pragma
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\daeparser.cpp(59): warning C4068: unknown pragma
   Generating Code...
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\daeparser.cpp(194): warning C4715: 'daeParser::soleLargeFloatChild': not all control paths return a value
   Compiling...
   main.cpp
-c:\users\aidan\documents\soft356a3\shader.h(43): warning C4101: 'infoLog': unreferenced local variable
-c:\users\aidan\documents\soft356a3\shader.h(42): warning C4101: 'success': unreferenced local variable
-c:\users\aidan\documents\soft356a3\experiments\preliminary\filethroughput\filethroughput.h(47): warning C4244: 'initializing': conversion from 'std::streamsize' to 'int', possible loss of data
-c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\stringtofloatfast.h(53): warning C4244: '*=': conversion from 'double' to 'float', possible loss of data
-c:\users\aidan\documents\soft356a3\main.cpp(65): warning C4018: '<=': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\shader.h(44): warning C4101: 'infoLog': unreferenced local variable
+c:\users\aidan\documents\soft356a3\shader.h(43): warning C4101: 'success': unreferenced local variable
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(45): warning C4018: '<': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(47): warning C4018: '<': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(48): warning C4018: '>=': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\filethroughput\filethroughput.h(48): warning C4244: 'initializing': conversion from 'std::streamsize' to 'int', possible loss of data
+c:\users\aidan\documents\soft356a3\main.cpp(88): warning C4018: '<=': signed/unsigned mismatch
+  xmlParsingStackMember.cpp
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(45): warning C4018: '<': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(47): warning C4018: '<': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(48): warning C4018: '>=': signed/unsigned mismatch
+  xmlNode.cpp
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(45): warning C4018: '<': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(47): warning C4018: '<': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(48): warning C4018: '>=': signed/unsigned mismatch
+  fileThroughput.cpp
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(45): warning C4018: '<': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(47): warning C4018: '<': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\prototypeparsers\xmlnode.h(48): warning C4018: '>=': signed/unsigned mismatch
+c:\users\aidan\documents\soft356a3\experiments\preliminary\filethroughput\filethroughput.h(48): warning C4244: 'initializing': conversion from 'std::streamsize' to 'int', possible loss of data
   Generating Code...
   vsSolution.vcxproj -> C:\Users\aidan\Documents\soft356a3\vsSolution\Debug\vsSolution.exe
   vsSolution.vcxproj -> C:\Users\aidan\Documents\soft356a3\vsSolution\Debug\vsSolution.pdb (Partial PDB)

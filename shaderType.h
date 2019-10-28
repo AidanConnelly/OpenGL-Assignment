@@ -10,9 +10,15 @@
 #include <GLFW/glfw3.h>
 #endif
 
-#ifndef __MINGW32__
+#ifdef __GNUC__
+#include "glad/glad.h"
+#include <GLFW/glfw3.h>
+#endif
+
+#ifdef _MSC_VER
 #include "GL/glew.h"
 #include "GL/freeglut.h"
+#include "GLFW/glfw3.h"
 #endif
 
 

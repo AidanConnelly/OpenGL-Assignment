@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.7)
 project(OpenGLSetup)
 
 set(CMAKE_CXX_STANDARD 11)
-
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g -O3")
 set(SOURCE_FILES main.cpp GLAD/src/glad.c)
 set(HEADER_FILES
         shader.h

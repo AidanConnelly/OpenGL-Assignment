@@ -8,6 +8,8 @@
 #include<stdio.h>
 #include<vector>
 #include<string>
+#include <exception>
+#include <stdexcept>
 
 static unsigned nextID = 0;
 
@@ -26,14 +28,27 @@ struct xmlNode {
     }
 
     ~xmlNode() {
-        printf("+");
+        // printf("+");
+    }
+
+    void getValue(std::vector<char> buffer, int subStrIdx, std::string& toReturn)
+    {
+	    while(buffer[subStrIdx]!='\"'){
+		    toReturn += buffer[subStrIdx];
+		    subStrIdx++;
+	    }
     }
 
     std::string getAttribute(std::string attributeName, std::vector<char> buffer) {
         std::string toLookFor = attributeName+"=\"";
-        for(int idx = startIndex;idx<(endIndex-toLookFor.size());idx++){
+        auto attrNameLength = toLookFor.size();
+        for(int idx = startIndex;idx<(endIndex- attrNameLength);idx++){
             bool fail = false;
-            for(int subStrIdx = 0;subStrIdx<toLookFor.size();subStrIdx ++){
+            for(int subStrIdx = 0;subStrIdx<attrNameLength;subStrIdx ++){
+            	if(idx+subStrIdx>=buffer.size())
+            	{
+					throw std::invalid_argument("invalid state");
+            	}
                 if(buffer[idx+subStrIdx] != toLookFor[subStrIdx]){
                     fail = true;
                     break;
@@ -41,15 +56,34 @@ struct xmlNode {
             }
             if(!fail){
                 std::string toReturn;
-                int subStrIdx = idx+toLookFor.size();
-                while(buffer[subStrIdx]!='\"'){
-                    toReturn += buffer[subStrIdx];
-                    subStrIdx++;
-                }
+                getValue(buffer, idx+attrNameLength, toReturn);
                 return toReturn;
             }
         }
+		throw std::invalid_argument("not found");
     };
+
+    bool hasAttribute(std::string attributeName, std::vector<char> buffer){
+        std::string toLookFor = attributeName+"=\"";
+        auto attrNameLength = toLookFor.size();
+        for(int idx = startIndex;idx<(endIndex- attrNameLength);idx++){
+            bool fail = false;
+            for(int subStrIdx = 0;subStrIdx<attrNameLength;subStrIdx ++){
+                if(idx+subStrIdx>=buffer.size())
+                {
+                    throw std::invalid_argument("invalid state");
+                }
+                if(buffer[idx+subStrIdx] != toLookFor[subStrIdx]){
+                    fail = true;
+                    break;
+                }
+            }
+            if(!fail){
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 #endif //OPENGLSETUP_XMLNODE_H

@@ -22,12 +22,11 @@
 #include "xmlParsingStackMember.h"
 #include "bufferParseResult.h"
 #include "typedefs.h"
-#include "glm/glm.hpp"
 
 struct parseNodeTagsResult {
     parseNodeTagsResult(xmlNode matrix, std::vector<xmlNode> instance_geometryTags, std::vector<char> buffer);
 
-    glm::mat4 transform;
+//    glm::mat4 transform;
     std::set<std::string> IDs;
 };
 
@@ -54,10 +53,6 @@ struct meshParseResult {
     std::vector<vertexDef> vertexes;
     std::vector<triangle> triangles;
     std::string meshID;
-
-    ~meshParseResult(){
-        //todo
-    }
 };
 
 class daeParser {
@@ -93,9 +88,9 @@ private:
 
     static xmlNode getSoleByAttrib(const xmlNodeStore &lookIn, std::string attrib, std::string value, std::vector<char> buffer);
 
-    static xmlNode soleLargeFloatChild(xmlNode parent, bufferParseResult bpr);
+    static xmlNode soleLargeFloatChild(const xmlNode& parent, bufferParseResult bpr);
 
-    static float getViaParam(std::string toGet, xmlNode source, xmlNode parsedFloatArray, unsigned index);
+    static float getViaParam(std::string toGet, xmlNode sourceTag, xmlNode parsedFloatArray, unsigned index, std::vector<char> buffer);
 
 
     static std::string removeLeadingHash(const std::string &toRemove);

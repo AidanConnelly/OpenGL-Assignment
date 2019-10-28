@@ -30,6 +30,18 @@
     <ClCompile Include="..\..\experiments\preliminary\fileThroughput\fileThroughput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\xmlNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\XMLParseState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\xmlParsingStackMember.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\stringToFloatFast.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shader.h">
