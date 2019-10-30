@@ -22,7 +22,7 @@ set(HEADER_FILES
         experiments/preliminary/prototypeParsers/xmlParsingStackMember.h
         experiments/preliminary/prototypeParsers/typedefs.cpp
         experiments/preliminary/prototypeParsers/typedefs.h
-        experiments/filesystem.h)
+        experiments/filesystem.h src/Mesh.cpp src/Mesh.h src/Texture.cpp src/Texture.h)
 
 set(dir ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${dir}/build)

@@ -42,7 +42,8 @@ public:
         const char *shaderCode = fromFile.c_str();
         int success;
         char infoLog[512];
-        shader = glCreateShader(shaderType->GetAsInt());
+        int asInt = shaderType->GetAsInt();
+        shader = glCreateShader(asInt);
         glShaderSource(shader, 1, &shaderCode, NULL);
         glCompileShader(shader);
     }

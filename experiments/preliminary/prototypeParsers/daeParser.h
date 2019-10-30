@@ -23,6 +23,8 @@
 #include "bufferParseResult.h"
 #include "typedefs.h"
 #include "stringToFloatFast.h"
+#include "../../../src/Vertex.h"
+#include "Vertex.h"
 
 struct paramInfo{
     paramInfo(int stride, int idx);
@@ -69,31 +71,10 @@ public:
 	std::set<std::string> IDs;
 };
 
-struct vertexDef
-{
-	float x;
-	float y;
-	float z;
-
-	float nX;
-	float nY;
-	float nZ;
-
-	float u;
-	float v;
-};
-
-struct triangle
-{
-	unsigned v1i;
-	unsigned v2i;
-	unsigned v3i;
-};
-
 struct meshParseResult
 {
-	std::vector<vertexDef> vertexes;
-	std::vector<triangle> triangles;
+	std::vector<Vertex> vertexes;
+	std::vector<Triangle> triangles;
 	std::string meshID;
 };
 

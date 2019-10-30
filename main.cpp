@@ -114,6 +114,12 @@ int main() {
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
     const ShaderType &vertexShaderType = VertexShaderType();
     Shader vShader = Shader("shaders\\vertex.glsl", &vertexShaderType);
 

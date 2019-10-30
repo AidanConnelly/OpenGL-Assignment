@@ -8,6 +8,8 @@
 #include "bufferParseResult.h"
 #include "typedefs.h"
 #include "XMLParseState.h"
+#include "../../../src/Vertex.h"
+#include "Vertex.h"
 
 //#include <glm/gtc/type_ptr.hpp>
 
@@ -137,7 +139,7 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
             for (int triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++) {
                 //region Region_1
                 for (int i = 0; i < 3; i++) {
-                    vertexDef building{};
+                    Vertex building{};
 
                     unsigned vertexIndex = 3 * triangleIndex + i;
                     unsigned positnIndex = thisTriangleIndexArray->indexesIfApplicable[(maxOffset + 1) * vertexIndex +
@@ -168,7 +170,7 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 
                     thisResult.vertexes.push_back(building);
                 }
-                triangle constructed{};
+                Triangle constructed{};
                 constructed.v1i = thisResult.vertexes.size() - 3;
                 constructed.v2i = thisResult.vertexes.size() - 2;
                 constructed.v3i = thisResult.vertexes.size() - 1;
