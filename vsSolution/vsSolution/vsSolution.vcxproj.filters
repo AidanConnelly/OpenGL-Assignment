@@ -65,6 +65,21 @@
     <ClInclude Include="..\..\experiments\preliminary\fileThroughput\fileThroughput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\xmlNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\bufferParseResult.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\typedefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\XMLParseState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\xmlParsingStackMember.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\experiments\preliminary\fileThroughput\results.md" />

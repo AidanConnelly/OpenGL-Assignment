@@ -8,13 +8,13 @@
 #include "typedefs.h"
 
 struct bufferParseResult {
-    bufferParseResult(xmlNodeVector floatArrays, xmlNodeVector indexArrays) {
+    bufferParseResult(xmlNodeStore floatArrays, xmlNodeStore indexArrays) {
         this->floatArrays = std::move(floatArrays);
         this->indexArrays = std::move(indexArrays);
     }
 
-    xmlNodeVector floatArrays;
-    xmlNodeVector indexArrays;
+	xmlNodeStore floatArrays;
+	xmlNodeStore indexArrays;
 };
 
 #include <algorithm>

@@ -17,6 +17,7 @@
 #include "shader.h"
 #include "shaderProgram.h"
 #include "experiments/preliminary/fileThroughput/fileThroughput.h"
+#include "experiments/filesystem.h"
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -37,124 +38,125 @@ unsigned int VAO_Handle;
 unsigned int VBO_Handle;
 
 int main() {
-    const char * flt = "-9900.001e-11 ";
-    int index = 0;
-    std::cout << std::endl;
-    std::cout << std::endl;
-	std::cout << "Max texture units: " << GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS << std::endl;
+//    navigate();
+//    const char * flt = "-9900.001e-11 ";
+//    int index = 0;
+//    std::cout << std::endl;
+//    std::cout << std::endl;
+//	std::cout << "Max texture units: " << GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS << std::endl;
+//
+//	int s0 = 0;
+//	unsigned us0 = 0;
+//	int seven = 7;
+//
+//	std::cout << (int)(s0 | seven);
+//	std::cout << "\n";
+//	std::cout << (int)(us0 | seven);
+//	std::cout << "\n";
+//
+//	std::string stringToP = R"(
+//
+//<a>
+//    <b>
+//        <c/>
+//        <c/>
+//        <c/>
+//    </b>
+//    <d>
+//        <f>
+//            <i/>
+//        </f>
+//	    <f>
+//        </f>
+//    </d>
+//    <b>
+//        <c/>
+//    </b>
+//</a>
+//
+//<?x x="x" x="x"?>
+//<x x="x" x="x" x="x">
+//  <x>
+//    <x>
+//      <x>Blender User</x>
+//    </x>
+//  </x>
+//</x>
+//
+//)";
+//	std::vector<char> data(stringToP.begin(), stringToP.end());
+//
+//	fileThroughput::runExperiment();
+//	std::vector<char> toParse = fileThroughput::getBytes();
+//	xmlNodeVector results = daeParser::parse(toParse);
+//
+////	for (xmlNode &r : results) {
+////		printf("%d |%s \t|\t%d\t-> %d\t", r.children.size(),r.tagName.c_str(), r.startIndex, r.endIndex);
+////		std::cout<< r.children.size()<<" |"<<r.tagName<<" \t|"<<r.startIndex<<"\t->\t"<<r.endIndex<<"\t ";
+////		for (int i = r.startIndex; i <= r.endIndex; i++) {
+////			std::cout << toParse[i];
+////		}
+////		std::cout << std::endl;
+////	}
+//
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	int s0 = 0;
-	unsigned us0 = 0;
-	int seven = 7;
+    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "soft356 part one", NULL, NULL);
+    if (window == NULL) {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
 
-	std::cout << (int)(s0 | seven);
-	std::cout << "\n";
-	std::cout << (int)(us0 | seven);
-	std::cout << "\n";
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	std::string stringToP = R"(
+    const ShaderType &vertexShaderType = VertexShaderType();
+    Shader vShader = Shader("shaders\\vertex.glsl", &vertexShaderType);
 
-<a>
-    <b>
-        <c/>
-        <c/>
-        <c/>
-    </b>
-    <d>
-        <f>
-            <i/>
-        </f>
-	    <f>
-        </f>
-    </d>
-    <b>
-        <c/>
-    </b>
-</a>
+    const ShaderType &fragmentShaderType = FragmentShaderType();
+    Shader fShader = Shader("shaders\\fragment.glsl", &fragmentShaderType);
 
-<?x x="x" x="x"?>
-<x x="x" x="x" x="x">
-  <x>
-    <x>
-      <x>Blender User</x>
-    </x>
-  </x>
-</x>
+    ShaderProgram program = ShaderProgram();
+    program.AttachShader(vShader);
+    program.AttachShader(fShader);
+    program.Link();
 
-)";
-	std::vector<char> data(stringToP.begin(), stringToP.end());
+    glGenVertexArrays(1, &VAO_Handle);
+    glGenBuffers(1, &VBO_Handle);
 
-	fileThroughput::runExperiment();
-	std::vector<char> toParse = fileThroughput::getBytes();
-	xmlNodeVector results = daeParser::parse(toParse);
+    glBindVertexArray(VAO_Handle);
 
-//	for (xmlNode &r : results) {
-//		printf("%d |%s \t|\t%d\t-> %d\t", r.children.size(),r.tagName.c_str(), r.startIndex, r.endIndex);
-//		std::cout<< r.children.size()<<" |"<<r.tagName<<" \t|"<<r.startIndex<<"\t->\t"<<r.endIndex<<"\t ";
-//		for (int i = r.startIndex; i <= r.endIndex; i++) {
-//			std::cout << toParse[i];
-//		}
-//		std::cout << std::endl;
-//	}
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_Handle);
 
-    //glfwInit();
-    //glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) 0);
+    glEnableVertexAttribArray(0);
 
-    //GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "soft356 part one", NULL, NULL);
-    //if (window == NULL) {
-    //    std::cout << "Failed to create GLFW window" << std::endl;
-    //    glfwTerminate();
-    //    return -1;
-    //}
-
-    //glfwMakeContextCurrent(window);
-    //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	
-    //const ShaderType &vertexShaderType = VertexShaderType();
-    //Shader vShader = Shader("shaders\\vertex.glsl", &vertexShaderType);
-
-    //const ShaderType &fragmentShaderType = FragmentShaderType();
-    //Shader fShader = Shader("shaders\\fragment.glsl", &fragmentShaderType);
-
-    //ShaderProgram program = ShaderProgram();
-    //program.AttachShader(vShader);
-    //program.AttachShader(fShader);
-    //program.Link();
-
-    //glGenVertexArrays(1, &VAO_Handle);
-    //glGenBuffers(1, &VBO_Handle);
-
-    //glBindVertexArray(VAO_Handle);
-
-    //glBindBuffer(GL_ARRAY_BUFFER, VBO_Handle);
-
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    //glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) 0);
-    //glEnableVertexAttribArray(0);
-
-    //glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
 
-    ////while (!glfwWindowShouldClose(window)) {
-    ////    processInput(window);
+    while (!glfwWindowShouldClose(window)) {
+        processInput(window);
 
-    ////    glClearColor(0.09f, 0.12f, 0.14f, 1.0f);
-    ////    glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0.09f, 0.12f, 0.14f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-    ////    program.use();
-    ////    glBindVertexArray(VAO_Handle);
-    ////    glDrawArrays(GL_TRIANGLES, 0, 4);
+        program.use();
+        glBindVertexArray(VAO_Handle);
+        glDrawArrays(GL_TRIANGLES, 0, 4);
 
-    ////    glfwSwapBuffers(window);
-    //    glfwPollEvents();
-    //}
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
 
-    //glfwTerminate();
-	//std::string lmao;
-	//std::cin >> lmao;
+    glfwTerminate();
+//	std::string lmao;
+//	std::cin >> lmao;
 	return 0;
 }
 

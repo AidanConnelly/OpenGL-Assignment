@@ -44,8 +44,8 @@ public:
         std::cout << readed.size() << std::endl;
         for (int i = 0; i < 1; i++) {
 
-            // std::ifstream myfile("resources"+separator()+"singleTriangle.dae");
-			std::ifstream myfile("C:\\Users\\aidan\\Documents\\soft356a3\\vsSolution\\x64\\Release\\resources\\singleTriangle.dae");
+               //std::ifstream myfile("resources"+separator()+"largish.dae");
+			std::ifstream myfile("C:\\Users\\aidan\\Documents\\soft356a3\\vsSolution\\x64\\Release\\4096cubes.dae");
 
             int timesRead = 0;
 
@@ -70,7 +70,7 @@ public:
     }
 
     static void runExperiment() {
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < 1; i++) {
             printFunctionExecutionTime(read4objs);
 //            printFunctionExecutionTime(getBytes);
 //            printFunctionExecutionTime(getLineByLine);
@@ -78,13 +78,17 @@ public:
     }
 
     static void printFunctionExecutionTime(const std::function<void(void)> &functionPointer) {
-        auto start = std::chrono::high_resolution_clock::now();
+		auto start = std::chrono::high_resolution_clock::now();
         functionPointer();
-        auto finish = std::chrono::high_resolution_clock::now();
-        auto duration = finish - start;
-        long long int nanoSeconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
-        auto miliSeconds = nanoSeconds / 1000 / 1000;
-        std::cout << miliSeconds << "ms\n";
+		auto end = std::chrono::high_resolution_clock::now();
+//        auto diff = end - start;
+        auto diff = end - start;
+		std::cout << diff.count() << std::endl;
+		std::cout << std::chrono::duration <double, std::nano>(diff).count() << " ns" << std::endl;
+		std::cout << std::chrono::duration <double, std::micro>(diff).count() << " us" << std::endl;
+		std::cout << std::chrono::duration <double, std::milli>(diff).count() << " ms" << std::endl;
+//        auto miliSeconds = duration * 1000;
+//        std::cout << miliSeconds << "ms\n";
     }
 };
 

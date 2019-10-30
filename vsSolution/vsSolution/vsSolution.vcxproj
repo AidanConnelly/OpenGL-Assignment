@@ -124,9 +124,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\experiments\preliminary\fileThroughput\fileThroughput.h" />
+    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\bufferParseResult.h" />
     <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\daeParser.h" />
     <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\prototypeObjParser.h" />
     <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\stringToFloatFast.h" />
+    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\typedefs.h" />
+    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\xmlNode.h" />
+    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\XMLParseState.h" />
+    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\xmlParsingStackMember.h" />
     <ClInclude Include="..\..\shader.h" />
     <ClInclude Include="..\..\shaderProgram.h" />
     <ClInclude Include="..\..\shaderType.h" />

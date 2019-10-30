@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.7)
 project(OpenGLSetup)
 
 set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g -O3")
 set(SOURCE_FILES main.cpp GLAD/src/glad.c)
 set(HEADER_FILES
@@ -21,7 +22,7 @@ set(HEADER_FILES
         experiments/preliminary/prototypeParsers/xmlParsingStackMember.h
         experiments/preliminary/prototypeParsers/typedefs.cpp
         experiments/preliminary/prototypeParsers/typedefs.h
-        )
+        experiments/filesystem.h)
 
 set(dir ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${dir}/build)
