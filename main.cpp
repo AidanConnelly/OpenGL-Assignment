@@ -182,7 +182,7 @@ int main() {
 
 
     Mesh m = (Mesh(vertexes, triangles, textures));
-    MeshInstance mI = MeshInstance(m);
+    MeshInstance mI = MeshInstance(&m);
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);

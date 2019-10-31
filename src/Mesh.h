@@ -36,9 +36,9 @@ public:
                 +0.61f, +0.61f, -1.00f,
                 +0.61f, -0.61f, -1.00f,
                 -0.61f, +0.61f, -1.00f};
-        glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float)*9, v, GL_STATIC_DRAW);
         ErrorCheckValue = glGetError();
-        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,3*sizeof(float), (void*)0);
+        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,3, (void*)0);
         ErrorCheckValue = glGetError();
         glEnableVertexAttribArray(0);
         ErrorCheckValue = glGetError();
@@ -79,11 +79,11 @@ private:
 
 class MeshInstance {
 public:
-    explicit MeshInstance(Mesh instanceOf) : instanceOf(std::move(instanceOf)) {}
+    explicit MeshInstance(Mesh* instanceOf) : instanceOf(std::move(instanceOf)) {}
 
     void Draw() {
-        glBindVertexArray(instanceOf.VAO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instanceOf.EBO);
+        glBindVertexArray(instanceOf->VAO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instanceOf->EBO);
 //        unsigned int a[3] = {0, 1, 2};
         auto ErrorCheckValue = glGetError();
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
@@ -93,7 +93,7 @@ public:
     }
 
 private:
-    Mesh instanceOf;
+    Mesh* instanceOf;
 };
 
 #endif //OPENGLSETUP_MESH_H
