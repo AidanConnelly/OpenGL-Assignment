@@ -12,8 +12,6 @@
 #endif
 
 #ifdef _MSC_VER
-#include "GL/glew.h"
-#include "GL/freeglut.h"
 #include "GLFW/glfw3.h"
 #endif
 

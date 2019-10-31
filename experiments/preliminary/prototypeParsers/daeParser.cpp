@@ -9,7 +9,6 @@
 #include "typedefs.h"
 #include "XMLParseState.h"
 #include "../../../src/Vertex.h"
-#include "Vertex.h"
 
 //#include <glm/gtc/type_ptr.hpp>
 

@@ -16,11 +16,11 @@
 #include <functional>
 #include <iterator>
 #include <set>
-#include "xmlNode.h"
-#include "xmlParsingStackMember.h"
-#include "bufferParseResult.h"
-#include "typedefs.h"
-#include "stringToFloatFast.h"
+#include "../experiments/preliminary/prototypeParsers/xmlNode.h"
+#include "../experiments/preliminary/prototypeParsers/xmlParsingStackMember.h"
+#include "../experiments/preliminary/prototypeParsers/bufferParseResult.h"
+#include "../experiments/preliminary/prototypeParsers/typedefs.h"
+#include "../experiments/preliminary/prototypeParsers/stringToFloatFast.h"
 #include "../../../src/Vertex.h"
 
 struct Vertex

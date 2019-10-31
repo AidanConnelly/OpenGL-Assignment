@@ -24,7 +24,6 @@
 #include "typedefs.h"
 #include "stringToFloatFast.h"
 #include "../../../src/Vertex.h"
-#include "Vertex.h"
 
 struct paramInfo{
     paramInfo(int stride, int idx);

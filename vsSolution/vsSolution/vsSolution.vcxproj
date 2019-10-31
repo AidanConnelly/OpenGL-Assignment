@@ -68,7 +68,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Users\aidan\Documents\soft356a3\GLAD\src;C:\Users\aidan\Documents\soft356a3\GLAD\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -119,6 +121,7 @@
     <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\xmlNode.cpp" />
     <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\XMLParseState.cpp" />
     <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\xmlParsingStackMember.cpp" />
+    <ClCompile Include="..\..\GLAD\src\glad.c" />
     <ClCompile Include="..\..\main.cpp" />
     <ClCompile Include="..\..\shaderType.cpp" />
   </ItemGroup>

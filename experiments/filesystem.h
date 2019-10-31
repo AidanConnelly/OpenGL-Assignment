@@ -5,7 +5,11 @@
 #define OPENGLSETUP_FILESYSTEM_H
 
 #include <string>
-#include "../../crefile.hpp"
+
+ #include "../../crefile.hpp"
+#ifdef _MSC_VER
+#include "../dependencies/crefile.hpp"
+#endif
 
 void navigate(){
     auto current = crefile::Path{"/mnt/c/Users/aidan/Documents"};

@@ -9,8 +9,8 @@
 #endif
 
 #ifdef _MSC_VER
-#include "GL/glew.h"
-#include "GL/freeglut.h"
+#include <GLAD/glad.h>
+//#include <glad.c>
 #include "GLFW/glfw3.h"
 #endif
 
@@ -18,14 +18,16 @@
 #include "shaderProgram.h"
 #include "experiments/preliminary/fileThroughput/fileThroughput.h"
 #include "experiments/filesystem.h"
+#include "src/Texture.h"
+#include "src/Mesh.h"
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 void processInput(GLFWwindow *window);
 
-const unsigned int SCR_WIDTH = 32;
-const unsigned int SCR_HEIGHT = 32;
+const unsigned int SCR_WIDTH = 320;
+const unsigned int SCR_HEIGHT = 320;
 
 float vertices[] = {
         -0.61f, +0.61f, -1.00f,
@@ -119,32 +121,68 @@ int main() {
         glfwTerminate();
         return -1;
     }
-
+	
     const ShaderType &vertexShaderType = VertexShaderType();
-    Shader vShader = Shader("shaders\\vertex.glsl", &vertexShaderType);
+    Shader vShader = Shader("C:\\Users\\aidan\\Documents\\soft356a3\\shaders\\vertex.glsl", &vertexShaderType);
 
     const ShaderType &fragmentShaderType = FragmentShaderType();
-    Shader fShader = Shader("shaders\\fragment.glsl", &fragmentShaderType);
+    Shader fShader = Shader("C:\\Users\\aidan\\Documents\\soft356a3\\shaders\\fragment.glsl", &fragmentShaderType);
 
     ShaderProgram program = ShaderProgram();
     program.AttachShader(vShader);
     program.AttachShader(fShader);
     program.Link();
+//
+//    glGenVertexArrays(1, &VAO_Handle);
+//    glGenBuffers(1, &VBO_Handle);
+//
+//    glBindVertexArray(VAO_Handle);
+//
+//    glBindBuffer(GL_ARRAY_BUFFER, VBO_Handle);
+//
+//    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+//    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) 0);
+//    glEnableVertexAttribArray(0);
+//
+//    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glGenVertexArrays(1, &VAO_Handle);
-    glGenBuffers(1, &VBO_Handle);
 
-    glBindVertexArray(VAO_Handle);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO_Handle);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) 0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    std::vector<Vertex> vertexes;
+    std::vector<Triangle> triangles;
+    std::vector<Texture> textures;
 
 
+//  -0.61f, +0.61f, -1.00f,
+//  +0.61f, -0.61f, -1.00f,
+//  +0.00f, +0.61f, -2.00f,
+
+    Vertex v1{};
+    v1.x = -0.61;
+    v1.y = +0.61;
+    v1.z = -1.00;
+    Vertex v2{};
+    v2.x = +0.61;
+    v2.y = -0.61;
+    v2.z = -1.00;
+    Vertex v3{};
+    v3.x = +0.0;
+    v3.y = +0.61;
+    v3.z = -2.00;
+
+    vertexes.push_back(v1);
+    vertexes.push_back(v2);
+    vertexes.push_back(v3);
+
+    Triangle t{};
+    t.v1i = 0;
+    t.v2i = 1;
+    t.v3i = 2;
+
+    triangles.push_back(t);
+
+
+    Mesh m = (Mesh(vertexes, triangles, textures));
+    MeshInstance mI = MeshInstance(m);
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
@@ -152,9 +190,12 @@ int main() {
         glClearColor(0.09f, 0.12f, 0.14f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        program.use();
-        glBindVertexArray(VAO_Handle);
-        glDrawArrays(GL_TRIANGLES, 0, 4);
+//        program.use();
+//        glBindVertexArray(VAO_Handle);
+//        glDrawArrays(GL_TRIANGLES, 0, 4);
+		program.use();
+
+        mI.Draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
