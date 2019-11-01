@@ -192,7 +192,6 @@ int main() {
 
 //        program.use();
 //        glBindVertexArray(VAO_Handle);
-//        glDrawArrays(GL_TRIANGLES, 0, 4);
 		program.use();
 
         mI.Draw();

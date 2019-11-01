@@ -48,7 +48,7 @@ public:
         unsigned int a[3] = {0, 1, 2};
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         ErrorCheckValue = glGetError();
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3, a, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3*sizeof(float), a, GL_STATIC_DRAW);
         ErrorCheckValue = glGetError();
         ErrorCheckValue = glGetError();
         if (ErrorCheckValue != GL_NO_ERROR)
@@ -79,13 +79,17 @@ private:
 
 class MeshInstance {
 public:
-    explicit MeshInstance(Mesh* instanceOf) : instanceOf(std::move(instanceOf)) {}
+    explicit MeshInstance(Mesh* instanceOf) : instanceOf(instanceOf) {}
 
     void Draw() {
+        auto ErrorCheckValue = glGetError();
         glBindVertexArray(instanceOf->VAO);
+        ErrorCheckValue = glGetError();
+        glDrawArrays(GL_TRIANGLES, instanceOf->VAO, 1);
+        ErrorCheckValue = glGetError();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instanceOf->EBO);
 //        unsigned int a[3] = {0, 1, 2};
-        auto ErrorCheckValue = glGetError();
+        ErrorCheckValue = glGetError();
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
         ErrorCheckValue = glGetError();
         std::cout<<"";
