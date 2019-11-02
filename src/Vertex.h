@@ -43,8 +43,8 @@ struct Vertex
 
 struct Triangle
 {
-	unsigned v1i;
-	unsigned v2i;
-	unsigned v3i;
+	unsigned int v1i;
+	unsigned int v2i;
+	unsigned int v3i;
 };
 #endif //OPENGLSETUP_VERTEX_H

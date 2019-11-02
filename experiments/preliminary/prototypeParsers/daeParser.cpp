@@ -25,7 +25,7 @@ void daeParser::parseNodeTagNames(std::vector<char> &buffer, xmlNodeStore &nodes
     });
 }
 
-xmlNodeVector daeParser::parse(std::vector<char> buffer) {
+std::vector<MeshData> daeParser::parse(std::vector<char> buffer) {
     xmlNodeStore nodes = parseNodes(&buffer);
     parseNodeTagNames(buffer, nodes);
     xmlNodeVector asVec;
@@ -39,7 +39,11 @@ xmlNodeVector daeParser::parse(std::vector<char> buffer) {
     auto meshParseResults = parseMeshTags(buffer, asVec, &result);
     //todo apply transforms to instance_gemetries???
     std::cout << result.floatArrays.size();
-    return asVec;
+    std::vector<MeshData> toReturn;
+    for(auto &a : meshParseResults){
+        toReturn.emplace_back(a.vertexes,a.triangles);
+    }
+    return toReturn;
 }
 
 #pragma clang diagnostic push

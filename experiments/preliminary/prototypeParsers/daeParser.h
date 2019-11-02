@@ -24,6 +24,7 @@
 #include "typedefs.h"
 #include "stringToFloatFast.h"
 #include "../../../src/Vertex.h"
+#include "../../../src/Mesh.h"
 
 struct paramInfo{
     paramInfo(int stride, int idx);
@@ -80,7 +81,7 @@ struct meshParseResult
 class daeParser
 {
 public:
-	static xmlNodeVector parse(std::vector<char> buffer);
+	static std::vector<MeshData> parse(std::vector<char> buffer);
 
 private:
 	static void parseNodeTagNames(std::vector<char>& buffer, xmlNodeStore& nodes);

@@ -12,45 +12,49 @@
 #include "Texture.h"
 #include "Vertex.h"
 
+class MeshData{
+    std::vector<Texture> textures;
+public:
+    MeshData(std::vector<Vertex> vertexes, std::vector<Triangle> triangles){
+        this->vertexes = std::move(vertexes);
+        this->triangles = std::move(triangles);
+    }
+
+    std::vector<Triangle> triangles;
+    std::vector<Vertex> vertexes;
+};
+
 class Mesh {
 public:
     Mesh(
-            std::vector<Vertex> vrtxes,
-            std::vector<Triangle> triags,
-            std::vector<Texture> textures
+            std::vector<Vertex>* vrtxes,
+            std::vector<Triangle>* triags,
+            std::vector<Texture>* textures
     ) {
-        this->vertexes = vrtxes;
-        this->triangles = triags;
-        this->textures = textures;
+        this->vertexes = *vrtxes;
+        this->triangles = *triags;
+        this->textures = *textures;
 
         glGenVertexArrays(1, &VAO);
-        auto ErrorCheckValue = glGetError();
         glBindVertexArray(VAO);
-        ErrorCheckValue = glGetError();
         glGenBuffers(1, &VBO);
-        ErrorCheckValue = glGetError();
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        ErrorCheckValue = glGetError();
 
-        float v[9] = {
-                +0.61f, +0.61f, -1.00f,
-                +0.61f, -0.61f, -1.00f,
-                -0.61f, +0.61f, -1.00f};
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float)*9, v, GL_STATIC_DRAW);
-        ErrorCheckValue = glGetError();
-        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,3, (void*)0);
-        ErrorCheckValue = glGetError();
+        unsigned int cnt = vertexes.size();
+        auto *pos = (float*) &vertexes[0];
+        float x0 = pos[0];
+        float x1 = pos[1];
+        size_t sizeOfVertex = sizeof(Vertex);
+        glBufferData(GL_ARRAY_BUFFER, sizeOfVertex * cnt, pos, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeOfVertex, (void*)0);
         glEnableVertexAttribArray(0);
-        ErrorCheckValue = glGetError();
 
         glGenBuffers(1, &EBO);
-        ErrorCheckValue = glGetError();
-        unsigned int a[3] = {0, 1, 2};
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        ErrorCheckValue = glGetError();
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3*sizeof(float), a, GL_STATIC_DRAW);
-        ErrorCheckValue = glGetError();
-        ErrorCheckValue = glGetError();
+        unsigned int trigCount = triangles.size();
+        size_t shouldb12Bytes = sizeof(Triangle);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, shouldb12Bytes * trigCount, &triangles[0], GL_STATIC_DRAW);
+        auto ErrorCheckValue = glGetError();
         if (ErrorCheckValue != GL_NO_ERROR)
         {
             fprintf(
@@ -82,18 +86,15 @@ public:
     explicit MeshInstance(Mesh* instanceOf) : instanceOf(instanceOf) {}
 
     void Draw() {
-        auto ErrorCheckValue = glGetError();
         glBindVertexArray(instanceOf->VAO);
-        ErrorCheckValue = glGetError();
         glDrawArrays(GL_TRIANGLES, instanceOf->VAO, 1);
-        ErrorCheckValue = glGetError();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instanceOf->EBO);
-//        unsigned int a[3] = {0, 1, 2};
-        ErrorCheckValue = glGetError();
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
-        ErrorCheckValue = glGetError();
+
+
+
+        auto ErrorCheckValue = glGetError();
         std::cout<<"";
-//        glBindVertexArray(0);
     }
 
 private:

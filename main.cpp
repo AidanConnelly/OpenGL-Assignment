@@ -89,9 +89,9 @@ int main() {
 //	std::vector<char> data(stringToP.begin(), stringToP.end());
 //
 //	fileThroughput::runExperiment();
-//	std::vector<char> toParse = fileThroughput::getBytes();
-//	xmlNodeVector results = daeParser::parse(toParse);
-//
+	std::vector<char> toParse = fileThroughput::getBytes();
+	std::vector<MeshData> results = daeParser::parse(toParse);
+
 ////	for (xmlNode &r : results) {
 ////		printf("%d |%s \t|\t%d\t-> %d\t", r.children.size(),r.tagName.c_str(), r.startIndex, r.endIndex);
 ////		std::cout<< r.children.size()<<" |"<<r.tagName<<" \t|"<<r.startIndex<<"\t->\t"<<r.endIndex<<"\t ";
@@ -147,8 +147,6 @@ int main() {
 //    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
-    std::vector<Vertex> vertexes;
-    std::vector<Triangle> triangles;
     std::vector<Texture> textures;
 
 
@@ -156,32 +154,8 @@ int main() {
 //  +0.61f, -0.61f, -1.00f,
 //  +0.00f, +0.61f, -2.00f,
 
-    Vertex v1{};
-    v1.x = -0.61;
-    v1.y = +0.61;
-    v1.z = -1.00;
-    Vertex v2{};
-    v2.x = +0.61;
-    v2.y = -0.61;
-    v2.z = -1.00;
-    Vertex v3{};
-    v3.x = +0.0;
-    v3.y = +0.61;
-    v3.z = -2.00;
 
-    vertexes.push_back(v1);
-    vertexes.push_back(v2);
-    vertexes.push_back(v3);
-
-    Triangle t{};
-    t.v1i = 0;
-    t.v2i = 1;
-    t.v3i = 2;
-
-    triangles.push_back(t);
-
-
-    Mesh m = (Mesh(vertexes, triangles, textures));
+    Mesh m = Mesh(&results[0].vertexes, &results[0].triangles, &textures);
     MeshInstance mI = MeshInstance(&m);
 
     while (!glfwWindowShouldClose(window)) {
