@@ -21,7 +21,6 @@
 #include "../experiments/preliminary/prototypeParsers/bufferParseResult.h"
 #include "../experiments/preliminary/prototypeParsers/typedefs.h"
 #include "../experiments/preliminary/prototypeParsers/stringToFloatFast.h"
-#include "../../../src/Vertex.h"
 
 struct Vertex
 {

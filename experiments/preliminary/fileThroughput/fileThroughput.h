@@ -39,13 +39,13 @@ public:
         }
     }
 
-    static std::vector<char> getBytes() {
+    static std::vector<char> getBytes(std::string file) {
         std::vector<char> readed;
         std::cout << readed.size() << std::endl;
         for (int i = 0; i < 1; i++) {
 
                //std::ifstream myfile("resources"+separator()+"largish.dae");
-			std::ifstream myfile("C:\\Users\\aidan\\Documents\\soft356a3\\vsSolution\\x64\\Release\\4096cubes.dae");
+			std::ifstream myfile(file);
 
             int timesRead = 0;
 
@@ -65,7 +65,7 @@ public:
     }
 
     static void read4objs(){
-        std::vector<char> toParse = fileThroughput::getBytes();
+        // std::vector<char> toParse = fileThroughput::getBytes();
 //        xmlNodeVector results = daeParser::parse(toParse);
     }
 

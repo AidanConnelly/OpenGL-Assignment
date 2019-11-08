@@ -1,20 +1,6 @@
 //
 // Created by m on 02/10/2019.
 //
-#ifdef __MINGW32__
-#include "glad/glad.h"
-#include <GLFW/glfw3.h>
-#endif
-
-#ifdef __GNUC__
-#include "glad/glad.h"
-#include <GLFW/glfw3.h>
-#endif
-
-#ifdef _MSC_VER
-#include "GLFW/glfw3.h"
-#endif
-
 
 #include "shader.h"
 #ifndef OPENGLSETUP_SHADERPROGRAM_H
@@ -39,9 +25,9 @@ public:
     void use() {
         glUseProgram(ID);
     }
+	unsigned ID;
 
 private:
-    unsigned ID;
 
     static void checkCompileErrors(unsigned int shader, std::string type) {
         int success;

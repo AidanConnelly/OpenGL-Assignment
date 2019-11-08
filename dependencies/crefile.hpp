@@ -533,30 +533,30 @@ public:
         return PathImplWin32::mkdir_parents(*this);
     }
 
-//    static const PathImplWin32& rmrf_if_exists(const PathImplWin32& path) {
-//        if (path.exists()) {
-//            return path.rmrf();
-//        }
-//        return path;
-//    }
+    static const PathImplWin32& rmrf_if_exists(const PathImplWin32& path) {
+        if (path.exists()) {
+            return path.rmrf();
+        }
+        return path;
+    }
 
-//    const PathImplWin32& rmrf_if_exists() const {
-//        return Self::rmrf_if_exists(*this);
-//    }
+    const PathImplWin32& rmrf_if_exists() const {
+        return Self::rmrf_if_exists(*this);
+    }
 
-//    static const PathImplWin32& rm(const PathImplWin32& path) {
-//       if (path.is_directory()) {
-//           path.rm_directory();
-//       } else {
-//           path.rm_file();
-//       }
-//
-//       return path;
-//    }
+    static const PathImplWin32& rm(const PathImplWin32& path) {
+       if (true) {
+           path.rm_directory();
+       } else {
+           path.rm_file();
+       }
+ 
+       return path;
+    }
 
-//    const PathImplWin32& rm() const {
-//        return Self::rm(*this);
-//    }
+    const PathImplWin32& rm() const {
+        return Self::rm(*this);
+    }
 
     static const PathImplWin32& rm_directory(const PathImplWin32& path) {
         RemoveDirectory(path.c_str()); // FIXME
@@ -576,24 +576,24 @@ public:
         return Self::rm_file(*this);
     }
 
-//    static const PathImplWin32& rmrf(const PathImplWin32& path) {
-//        FileIterImplWin32 iter{path.str()};
-//        while (!iter.is_end()) {
-//            if (iter.is_directory()) {
-//                Self{iter.path()}.rmrf();
-//            }
-//            else {
-//                Self{iter.path()}.rm();
-//            }
-//            ++iter;
-//        }
-//        path.rm();
-//        return path;
-//    }
+    static const PathImplWin32& rmrf(const PathImplWin32& path) {
+        FileIterImplWin32 iter{path.str()};
+        while (!iter.is_end()) {
+            if (iter.is_directory()) {
+                Self{iter.path()}.rmrf();
+            }
+            else {
+                Self{iter.path()}.rm();
+            }
+            ++iter;
+        }
+        path.rm();
+        return path;
+    }
 
-//    const PathImplWin32& rmrf() const {
-//        return Self::rmrf(*this);
-//    }
+    const PathImplWin32& rmrf() const {
+        return Self::rmrf(*this);
+    }
 
     static PathImplWin32 tmp_dir() {
         static Self tmp = tmp_dir_impl();

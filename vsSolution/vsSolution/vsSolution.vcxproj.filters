@@ -42,7 +42,16 @@
     <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\stringToFloatFast.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\GLAD\src\glad.c">
+    <ClCompile Include="..\..\src\Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Vertex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="objParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -83,9 +92,30 @@
     <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\xmlParsingStackMember.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Vertex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="objParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\experiments\preliminary\fileThroughput\results.md" />
     <None Include="packages.config" />
+    <None Include="..\..\shaders\fragment.glsl" />
+    <None Include="..\..\shaders\vertex.glsl" />
+    <None Include="..\..\remember.md" />
+    <None Include="..\..\Requirements.md" />
+    <None Include="..\..\todo.md" />
+    <None Include="..\..\uncategorized.md" />
   </ItemGroup>
 </Project>

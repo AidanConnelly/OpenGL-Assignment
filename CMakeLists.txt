@@ -4,7 +4,7 @@ project(OpenGLSetup)
 set(CMAKE_CXX_STANDARD 11)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g -O3")
-set(SOURCE_FILES main.cpp GLAD/src/glad.c)
+set(SOURCE_FILES main.cpp)
 set(HEADER_FILES
         shader.h
         shaderProgram.h
@@ -27,18 +27,15 @@ set(HEADER_FILES
 set(dir ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${dir}/build)
 
-include_directories(include)
-
+link_directories(vsSolution/packages/nupengl.core.0.1.0.1/build/native/lib/Win32)
+include_directories(vsSolution/packages/nupengl.core.0.1.0.1/build/native/include)
 #Include library files
-include_directories(GLAD/include)
-include_directories(glm/include)
+include_directories(vsSolution/packages/glm.0.9.9.600/build/native/include)
 
 file(COPY resources DESTINATION ${dir}/build)
 file(COPY shaders DESTINATION ${dir}/build)
 
-
-#Add deps
-add_subdirectory(dependencies)
-
 add_executable(OpenGLSetup ${SOURCE_FILES} ${HEADER_FILES})
-target_link_libraries(OpenGLSetup glfw)
+target_link_libraries(OpenGLSetup freeglut.lib)
+target_link_libraries(OpenGLSetup glew32.lib)
+target_link_libraries(OpenGLSetup glfw3dll.lib)

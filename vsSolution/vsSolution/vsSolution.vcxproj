@@ -69,7 +69,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\aidan\Documents\soft356a3\GLAD\src;C:\Users\aidan\Documents\soft356a3\GLAD\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -121,9 +121,12 @@
     <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\xmlNode.cpp" />
     <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\XMLParseState.cpp" />
     <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\xmlParsingStackMember.cpp" />
-    <ClCompile Include="..\..\GLAD\src\glad.c" />
     <ClCompile Include="..\..\main.cpp" />
     <ClCompile Include="..\..\shaderType.cpp" />
+    <ClCompile Include="..\..\src\Mesh.cpp" />
+    <ClCompile Include="..\..\src\Texture.cpp" />
+    <ClCompile Include="..\..\src\Vertex.cpp" />
+    <ClCompile Include="objParser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\experiments\preliminary\fileThroughput\fileThroughput.h" />
@@ -138,9 +141,20 @@
     <ClInclude Include="..\..\shader.h" />
     <ClInclude Include="..\..\shaderProgram.h" />
     <ClInclude Include="..\..\shaderType.h" />
+    <ClInclude Include="..\..\src\Mesh.h" />
+    <ClInclude Include="..\..\src\Texture.h" />
+    <ClInclude Include="..\..\src\Vertex.h" />
+    <ClInclude Include="..\..\stb_image.h" />
+    <ClInclude Include="objParser.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\experiments\preliminary\fileThroughput\results.md" />
+    <None Include="..\..\remember.md" />
+    <None Include="..\..\Requirements.md" />
+    <None Include="..\..\shaders\fragment.glsl" />
+    <None Include="..\..\shaders\vertex.glsl" />
+    <None Include="..\..\todo.md" />
+    <None Include="..\..\uncategorized.md" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

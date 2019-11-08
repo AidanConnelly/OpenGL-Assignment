@@ -5,18 +5,9 @@
 #ifndef OPENGLSETUP_SHADERTYPE_H
 #define OPENGLSETUP_SHADERTYPE_H
 
-#ifdef __MINGW32__
-#include "glad/glad.h"
-#include <GLFW/glfw3.h>
-#endif
-
-#ifdef __GNUC__
-#include "glad/glad.h"
-#include <GLFW/glfw3.h>
-#endif
-
 #ifdef _MSC_VER
-#include "GLAD/include/glad/glad.h"
+#include "GL/glew.h"
+#include "GL/freeglut.h"
 #include "GLFW/glfw3.h"
 #endif
 

@@ -1,18 +1,6 @@
-#ifdef __MINGW32__
-#include "glad/glad.h"
-#include <GLFW/glfw3.h>
-#endif
-
-#ifdef __GNUC__
-#include "glad/glad.h"
-#include <GLFW/glfw3.h>
-#endif
-
-#ifdef _MSC_VER
-#include <GLAD/glad.h>
-//#include <glad.c>
+#include "GL/glew.h"
+#include "GL/freeglut.h"
 #include "GLFW/glfw3.h"
-#endif
 
 #include "shader.h"
 #include "shaderProgram.h"
@@ -39,58 +27,9 @@ float vertices[] = {
 unsigned int VAO_Handle;
 unsigned int VBO_Handle;
 
-int main() {
-//    navigate();
-//    const char * flt = "-9900.001e-11 ";
-//    int index = 0;
-//    std::cout << std::endl;
-//    std::cout << std::endl;
-//	std::cout << "Max texture units: " << GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS << std::endl;
-//
-//	int s0 = 0;
-//	unsigned us0 = 0;
-//	int seven = 7;
-//
-//	std::cout << (int)(s0 | seven);
-//	std::cout << "\n";
-//	std::cout << (int)(us0 | seven);
-//	std::cout << "\n";
-//
-//	std::string stringToP = R"(
-//
-//<a>
-//    <b>
-//        <c/>
-//        <c/>
-//        <c/>
-//    </b>
-//    <d>
-//        <f>
-//            <i/>
-//        </f>
-//	    <f>
-//        </f>
-//    </d>
-//    <b>
-//        <c/>
-//    </b>
-//</a>
-//
-//<?x x="x" x="x"?>
-//<x x="x" x="x" x="x">
-//  <x>
-//    <x>
-//      <x>Blender User</x>
-//    </x>
-//  </x>
-//</x>
-//
-//)";
-//	std::vector<char> data(stringToP.begin(), stringToP.end());
-//
-//	fileThroughput::runExperiment();
-	std::vector<char> toParse = fileThroughput::getBytes();
-	std::vector<MeshData> results = daeParser::parse(toParse);
+glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, -2.0f);
+glm::mat4 cameraRotation = glm::mat4(1.0f);
+int main(int argcp, char **argv) {
 
 ////	for (xmlNode &r : results) {
 ////		printf("%d |%s \t|\t%d\t-> %d\t", r.children.size(),r.tagName.c_str(), r.startIndex, r.endIndex);
@@ -101,28 +40,49 @@ int main() {
 ////		std::cout << std::endl;
 ////	}
 //
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // glfwInit();
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    
+    // GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "soft356 part one", NULL, NULL);
+    // if (window == NULL) {
+    //     std::cout << "Failed to create GLFW window" << std::endl;
+    //     glfwTerminate();
+    //     return -1;
+    // }
+    //
+    // glfwMakeContextCurrent(window);
+    // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "soft356 part one", NULL, NULL);
-    if (window == NULL) {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
+ //    glutInit(&argcp,argv);
+ //
+ //    glutCreateWindow("GLEW Test");
+	// GLenum err = glewInit();
+	// if (GLEW_OK != err)
+	// {
+	// 	/* Problem: glewInit failed, something is seriously wrong. */
+	// 	fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+	// }
+	// fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
+	glfwInit();
 
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	GLFWwindow* window = glfwCreateWindow(800, 600, "Textured Cube", NULL, NULL);
 
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
+	glfwMakeContextCurrent(window);
+	glewInit();
 	
-    const ShaderType &vertexShaderType = VertexShaderType();
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS);
+
+	std::string directory = R"(C:\Users\aidan\Downloads\Creeper-dae(1)\)";
+	std::vector<char> toParse = fileThroughput::getBytes(directory + "Creeper.dae");
+	std::vector<MeshData> results = daeParser::parse(toParse, directory);
+	
+	const ShaderType &vertexShaderType = VertexShaderType();
+	
     Shader vShader = Shader("C:\\Users\\aidan\\Documents\\soft356a3\\shaders\\vertex.glsl", &vertexShaderType);
 
     const ShaderType &fragmentShaderType = FragmentShaderType();
@@ -132,6 +92,7 @@ int main() {
     program.AttachShader(vShader);
     program.AttachShader(fShader);
     program.Link();
+
 //
 //    glGenVertexArrays(1, &VAO_Handle);
 //    glGenBuffers(1, &VBO_Handle);
@@ -155,20 +116,30 @@ int main() {
 //  +0.00f, +0.61f, -2.00f,
 
 
-    Mesh m = Mesh(&results[0].vertexes, &results[0].triangles, &textures);
+    Mesh m = Mesh(&results[0].vertexes, &results[0].triangles, &results[0].textures);
     MeshInstance mI = MeshInstance(&m);
 
+	// creating the view matrix
+	
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
         glClearColor(0.09f, 0.12f, 0.14f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 //        program.use();
 //        glBindVertexArray(VAO_Handle);
 		program.use();
 
-        mI.Draw();
+
+		glm::mat4 view = glm::mat4(1.0f);
+		view = glm::translate(view, cameraPosition);
+		view = cameraRotation*view  ;
+
+		// creating the projection matrix
+		glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3, 0.1f, 20.0f);
+		m.BindTextures(program);
+        mI.Draw(program, projection * view);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -180,11 +151,41 @@ int main() {
 	return 0;
 }
 
+void ifKeyMoveCamera(GLFWwindow *window, glm::vec3 &camera, glm::vec3 toMove, int key)
+{
+	if (glfwGetKey(window, key) == GLFW_PRESS) {
+		glm::vec3 newVal = camera + glm::inverse(glm::mat3(cameraRotation))*toMove;
+		camera = newVal;
+	}
+}
+
+void ifKeyRotateCamera(GLFWwindow *window, glm::mat4 &camera, glm::vec3 rotateAround, float rotate, int key)
+{
+	if (glfwGetKey(window, key) == GLFW_PRESS) {
+		camera = glm::rotate(camera, rotate, glm::inverse(glm::mat3(cameraRotation))*rotateAround);
+	}
+}
+
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
+
+	ifKeyRotateCamera(window, cameraRotation, glm::vec3(1.0, 0.0, 0.0), -0.01, GLFW_KEY_I);
+	ifKeyRotateCamera(window, cameraRotation, glm::vec3(1.0, 0.0, 0.0), +0.01, GLFW_KEY_K);
+	ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 1.0, 0.0), -0.01, GLFW_KEY_J);
+	ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 1.0, 0.0), +0.01, GLFW_KEY_L);
+	ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 0.0, 1.0), -0.01, GLFW_KEY_Q);
+	ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 0.0, 1.0), +0.01, GLFW_KEY_E);
+
+	ifKeyMoveCamera(window, cameraPosition, glm::vec3(0.0, 0.0, -0.01), GLFW_KEY_LEFT_CONTROL);
+	ifKeyMoveCamera(window, cameraPosition, glm::vec3(0.0, 0.0, +0.01), GLFW_KEY_LEFT_SHIFT);
+	ifKeyMoveCamera(window, cameraPosition, glm::vec3(0.0, -0.01, 0.0), GLFW_KEY_S);
+	ifKeyMoveCamera(window, cameraPosition, glm::vec3(0.0, +0.01, 0.0), GLFW_KEY_W);
+	ifKeyMoveCamera(window, cameraPosition, glm::vec3(-0.01, 0.0, 0.0), GLFW_KEY_A);
+	ifKeyMoveCamera(window, cameraPosition, glm::vec3(+0.01, 0.0, 0.0), GLFW_KEY_D);
 }
+
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);

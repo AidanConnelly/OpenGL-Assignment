@@ -75,13 +75,14 @@ struct meshParseResult
 {
 	std::vector<Vertex> vertexes;
 	std::vector<Triangle> triangles;
+	std::vector<std::string> textureIds;
 	std::string meshID;
 };
 
 class daeParser
 {
 public:
-	static std::vector<MeshData> parse(std::vector<char> buffer);
+	static std::vector<MeshData> parse(std::vector<char> buffer, std::string directory);
 
 private:
 	static void parseNodeTagNames(std::vector<char>& buffer, xmlNodeStore& nodes);
@@ -121,6 +122,8 @@ private:
 	static std::string removeLeadingHash(const std::string& toRemove);
 
     static paramInfo prepareParam(std::string toGet, xmlNode *sourceTag, xmlNode *parsedFloatArray);
+
+	static std::string getFileNameFromMaterialID(xmlNodeStore nodes, std::string materialId);
 };
 
 #endif //OPENGLSETUP_DAEPARSER_H

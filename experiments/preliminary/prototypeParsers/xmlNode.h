@@ -31,6 +31,7 @@ struct xmlNode {
     }
 
     ~xmlNode() {
+    	//todo
         // printf("+");
     }
 
@@ -86,6 +87,20 @@ struct xmlNode {
 			return false;
 		}
 		return true;
+    }
+
+	std::string getContents()
+    {
+		std::string toReturn;
+		int idx = startIndex;
+    	while ((*buffer)[idx++] != '>')
+		{
+		}
+		while ((*buffer)[idx++] != '<')
+		{
+			toReturn += (*buffer)[idx-1];
+		}
+		return toReturn;
     }
 };
 
