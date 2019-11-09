@@ -55,7 +55,7 @@ std::vector<MeshData> daeParser::parse(std::vector<char> buffer, std::string dir
 			std::string fullFileName = directory + fileName;
 			textures.push_back(Texture(fullFileName));;
 		}
-		toReturn.emplace_back(a.vertexes, a.triangles, textures);
+		toReturn.push_back(MeshData(a.vertexes, a.triangles, textures));
 	}
 	return toReturn;
 }

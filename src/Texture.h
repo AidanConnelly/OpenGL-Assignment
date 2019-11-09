@@ -14,15 +14,17 @@ class Texture {
 public:
 	Texture(std::string fromFile);
 
-	void bind(ShaderProgram program)
+	void bind(ShaderProgram program, int slot)
 	{
 		//todo
-		glUniform1i(glGetUniformLocation(program.ID, "texture1"), 0);
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		GLint uniformLocation = glGetUniformLocation(program.ID, "ourTexture");
+		glUniform1i(uniformLocation, slot);
 	}
 private:
 	GLuint textureId;
 	GLint width, height, nrChannels;
-};
+	};
 
 
 #endif //OPENGLSETUP_TEXTURE_H

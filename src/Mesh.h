@@ -23,14 +23,14 @@ class MeshData
 	public:
 	MeshData()
 	{
-		
+		std::cout << "calling empty constructor";
 	}
 	
 	MeshData(std::vector<Vertex> vertexes, std::vector<Triangle> triangles, std::vector<Texture> textures)
 	{
 		this->vertexes = std::move(vertexes);
 		this->triangles = std::move(triangles);
-		this->textures = std::move(textures);
+		this->textures = textures;
 	}
 
 	std::vector<Triangle> triangles;
@@ -93,7 +93,8 @@ public:
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, GL_TEXTURE0 + i);
-			textures[i].bind(program);
+			textures[i].bind(program, i);
+			CheckForOpenGLErrors();
 		}
 	}
 
