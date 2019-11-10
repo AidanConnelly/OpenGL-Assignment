@@ -5,22 +5,7 @@
 #ifndef OPENGLSETUP_VERTEX_H
 #define OPENGLSETUP_VERTEX_H
 
-#include <algorithm>
-#include <cctype>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <utility>
-#include <exception>
-#include <stdexcept>
-#include <functional>
-#include <iterator>
-#include <set>
-#include "../experiments/preliminary/prototypeParsers/xmlNode.h"
-#include "../experiments/preliminary/prototypeParsers/xmlParsingStackMember.h"
-#include "../experiments/preliminary/prototypeParsers/bufferParseResult.h"
-#include "../experiments/preliminary/prototypeParsers/typedefs.h"
-#include "../experiments/preliminary/prototypeParsers/stringToFloatFast.h"
+#include <glm/vec3.hpp>
 
 struct Vertex
 {
@@ -39,6 +24,8 @@ struct Vertex
 	float u;
 	float v;
 };
+
+glm::vec3 vec3FromVertex(Vertex toVec);
 
 struct Triangle
 {

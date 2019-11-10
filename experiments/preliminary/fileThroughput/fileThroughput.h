@@ -8,12 +8,10 @@
 
 #include <iostream>
 #include <fstream>
-#include <time.h>
 #include <chrono>
 #include <functional>
 #include <vector>
 #include "../prototypeParsers/daeParser.h"
-#include "../prototypeParsers/typedefs.h"
 
 inline std::string separator()
 {

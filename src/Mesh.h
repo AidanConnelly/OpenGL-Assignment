@@ -139,7 +139,9 @@ public:
 		//adding the Uniform to the shader
 		//todo move into shader program class
 		int mvpLoc = glGetUniformLocation(program.ID, "mvp");
+		int selectedLoc = glGetUniformLocation(program.ID, "selected");
 		glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+		glUniform1f(selectedLoc, selected?0.2:0.0);
 		glDrawElements(GL_TRIANGLES, 3*instanceOf->triangles.size(), GL_UNSIGNED_INT, 0);
 
 
@@ -147,6 +149,7 @@ public:
 		std::cout << "";
 	}
 
+	bool selected;
 private:
 	glm::mat4 model;
 	Mesh* instanceOf;

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="OpenGLSetup"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="msvc8"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="C:/Users/aidan/Documents/soft356a3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 all"/>
+					<CompileFile command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="OpenGLSetup">
+				<Option output="C:/Users/aidan/Documents/soft356a3/build/OpenGLSetup.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="C:/Users/aidan/Documents/soft356a3/build"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="msvc8"/>
+				<Compiler>
+					<Add directory="C:/Users/aidan/Documents/soft356a3/vsSolution/packages/nupengl.core.0.1.0.1/build/native/include"/>
+					<Add directory="C:/Users/aidan/Documents/soft356a3/vsSolution/packages/glm.0.9.9.600/build/native/include"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\INCLUDE"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\INCLUDE"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\8.1\include\\shared"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\8.1\include\\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\8.1\include\\winrt"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 OpenGLSetup"/>
+					<CompileFile command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="OpenGLSetup/fast">
+				<Option output="C:/Users/aidan/Documents/soft356a3/build/OpenGLSetup.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="C:/Users/aidan/Documents/soft356a3/build"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="msvc8"/>
+				<Compiler>
+					<Add directory="C:/Users/aidan/Documents/soft356a3/vsSolution/packages/nupengl.core.0.1.0.1/build/native/include"/>
+					<Add directory="C:/Users/aidan/Documents/soft356a3/vsSolution/packages/glm.0.9.9.600/build/native/include"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\INCLUDE"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\INCLUDE"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\8.1\include\\shared"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\8.1\include\\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\8.1\include\\winrt"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 OpenGLSetup/fast"/>
+					<CompileFile command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="C:/Users/aidan/Documents/soft356a3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 edit_cache"/>
+					<CompileFile command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="C:/Users/aidan/Documents/soft356a3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f C:\Users\aidan\Documents\soft356a3\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/filesystem.h">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/fileThroughput/fileThroughput.cpp">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/fileThroughput/fileThroughput.h">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/prototypeParsers/XMLParseState.cpp">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/prototypeParsers/XMLParseState.h">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/prototypeParsers/daeParser.cpp">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/prototypeParsers/daeParser.h">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/prototypeParsers/prototypeObjParser.cpp">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/prototypeParsers/prototypeObjParser.h">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/prototypeParsers/stringToFloatFast.cpp">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/prototypeParsers/stringToFloatFast.h">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/prototypeParsers/typedefs.cpp">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/prototypeParsers/typedefs.h">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/prototypeParsers/xmlParsingStackMember.cpp">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/experiments/preliminary/prototypeParsers/xmlParsingStackMember.h">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/main.cpp">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/shader.h">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/shaderProgram.h">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/src/Mesh.cpp">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/src/Mesh.h">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/src/Texture.cpp">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/src/Texture.h">
+			<Option target="OpenGLSetup"/>
+		</Unit>
+		<Unit filename="C:/Users/aidan/Documents/soft356a3/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

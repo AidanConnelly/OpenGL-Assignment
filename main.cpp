@@ -9,7 +9,7 @@
 #include "src/Texture.h"
 #include "src/Mesh.h"
 #include <iostream>
-//#include "vsSolution/vsSolution/objParser.h"
+#include "vsSolution/vsSolution/objParser.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -33,10 +33,18 @@ glm::mat4 cameraRotation = glm::mat4(1.0f);
 
 int main(int argcp, char** argv)
 {
-	//std::string directory1 = "C:\\Users\\aidan\\Downloads\\Creeper\\";
-	//std::string file = "creeper.obj";
-	//std::vector<char> objContents = fileThroughput::getBytes(directory1 + file);
-	//objParser::parse(&objContents, directory1);
+	try
+	{
+		std::vector<Vertex> testNonConvex;
+		testNonConvex.push_back(Vertex{0, 0, 0});
+		testNonConvex.push_back(Vertex{1, 2, 0});
+		testNonConvex.push_back(Vertex{1, 1, 0});
+		testNonConvex.push_back(Vertex{2, 1, 0});
+		objParser::assertVertexesArePlanarAndConvex(testNonConvex);
+	}
+	catch (std::invalid_argument e)
+	{
+	}
 
 	////	for (xmlNode &r : results) {
 	////		printf("%d |%s \t|\t%d\t-> %d\t", r.children.size(),r.tagName.c_str(), r.startIndex, r.endIndex);
@@ -84,9 +92,14 @@ int main(int argcp, char** argv)
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 
-	std::string directory = R"(C:\Users\aidan\Downloads\Creeper-dae(1)\)";
-	std::vector<char> toParse = fileThroughput::getBytes(directory + "Creeper.dae");
-	std::vector<MeshData> results = daeParser::parse(toParse, directory);
+	std::string directory1 = "C:\\Users\\aidan\\..\\aidan\\Downloads\\Creeper\\";
+	std::string file = "relative.obj";
+	std::vector<char> objContents = fileThroughput::getBytes(directory1 + file);
+	std::vector<MeshData> results = objParser::parse(&objContents, directory1);
+
+	// std::string directory = R"(C:\Users\aidan\Downloads\Creeper-dae(1)\)";
+	// std::vector<char> toParse = fileThroughput::getBytes(directory + "Creeper.dae");
+	// std::vector<MeshData> results = daeParser::parse(toParse, directory);
 
 	const ShaderType& vertexShaderType = VertexShaderType();
 
@@ -127,7 +140,7 @@ int main(int argcp, char** argv)
 	MeshInstance mI = MeshInstance(&m);
 
 	// creating the view matrix
-
+	auto start = std::chrono::system_clock::now();
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
@@ -139,6 +152,9 @@ int main(int argcp, char** argv)
 		//        glBindVertexArray(VAO_Handle);
 		program.use();
 
+		int timeLoc = glGetUniformLocation(program.ID, "time");
+		double time = (std::chrono::system_clock::now() - start).count()/10000000.0;
+		glUniform1f(timeLoc, time);
 
 		glm::mat4 view = glm::mat4(1.0f);
 		view = glm::translate(view, cameraPosition);
@@ -148,6 +164,7 @@ int main(int argcp, char** argv)
 		glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3, 0.1f, 20.0f);
 		m.BindTextures(program);
 		mI.Draw(program, projection * view);
+		mI.selected = true;
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

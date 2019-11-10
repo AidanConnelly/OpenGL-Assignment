@@ -1,0 +1,7 @@
+*.html
+*.tlog
+vsSolution/vsSolution/x64/*
+*.vspx
+*.opendb
+vsSolution/packages/*
+vsSolution/.vs

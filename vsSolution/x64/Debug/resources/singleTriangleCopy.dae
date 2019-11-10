@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<COLLADA>
+    <asset>
+        <contributor>
+            <author>
+
+            </author>
+        </contributor>
+    </asset>
+    <library_images/>
+    <library_geometries>
+        <geometry id="Plane-mesh" name="Plane">
+            <mesh>
+                <source id="Plane-mesh-positions">
+                    <float_array id="Plane-mesh-positions-array" count="9">                    </float_array>
+                    <technique_common>
+                        <accessor>
+                            <param name="X" type="float"/>
+                            <param name="Y" type="float"/>
+                            <param name="Z" type="float"/>
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="Plane-mesh-normals">
+                    <float_array id="Plane-mesh-normals-array" count="3"> </float_array>
+                    <technique_common>
+                        <accessor source="#Plane-mesh-normals-array" count="1" stride="3">
+                            <param name="X" type="float"/>
+                            <param name="Y" type="float"/>
+                            <param name="Z" type="float"/>
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="Plane-mesh-map-0">
+                    <float_array id="Plane-mesh-map-0-array" count="6"> </float_array>
+                    <technique_common>
+                        <accessor source="#Plane-mesh-map-0-array" count="3" stride="2">
+                            <param name="S" type="float"/>
+                            <param name="T" type="float"/>
+                        </accessor>
+                    </technique_common>
+                </source>
+                <vertices id="Plane-mesh-vertices">
+                    <input semantic="POSITION" source="#Plane-mesh-positions"/>
+                </vertices>
+                <triangles count="1">
+                    <input semantic="VERTEX" source="#Plane-mesh-vertices" offset="0"/>
+                    <input semantic="NORMAL" source="#Plane-mesh-normals" offset="1"/>
+                    <input semantic="TEXCOORD" source="#Plane-mesh-map-0" offset="2"/>
+                    <p>0 0 0 1 0 1 2 0 2</p>
+                </triangles>
+            </mesh>
+        </geometry>
+    </library_geometries>
+    <library_visual_scenes>
+        <visual_scenes id="Scene" name="Scene">
+            <node id="Plane" name="Plane" type="NODE">
+                <matrix sid="transform"> </matrix>
+                <instance_geometry url="#Plane-mesh" name="Plane"/>
+            </node>
+        </visual_scenes>
+    </library_visual_scenes>
+    <scene>
+        <instance_visual_scene url="#Scene"/>
+    </scene>
+</COLLADA>
