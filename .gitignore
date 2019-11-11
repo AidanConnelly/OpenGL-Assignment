@@ -4,4 +4,7 @@ vsSolution/vsSolution/x64/*
 *.vspx
 *.opendb
 vsSolution/packages/*
-vsSolution/.vs
+*.exe
+*.ilk
+*.pdb
+*.VC.db

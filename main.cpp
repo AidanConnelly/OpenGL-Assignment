@@ -10,6 +10,7 @@
 #include "src/Mesh.h"
 #include <iostream>
 #include "vsSolution/vsSolution/objParser.h"
+#include "experimental/filesystem"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -31,7 +32,7 @@ unsigned int VBO_Handle;
 glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, -2.0f);
 glm::mat4 cameraRotation = glm::mat4(1.0f);
 
-int main(int argcp, char** argv)
+int openGLloop()
 {
 	try
 	{
@@ -174,6 +175,54 @@ int main(int argcp, char** argv)
 	//	std::string lmao;
 	//	std::cin >> lmao;
 	return 0;
+}
+
+void loopNavigation(){
+	auto current = std::experimental::filesystem::path("C://");
+    while(true) {
+        if(exists(current)) {
+            if(current.extension().empty()) {
+                try {
+					auto currentDirContents = std::experimental::filesystem::directory_iterator(current);
+                    for (const auto &file : currentDirContents) {
+						// std::string folderChar = "📁";
+						std::string folderChar = "o";
+						// std::string fileChar = "🗎";
+						std::string fileChar = "i";
+                        std::cout << (is_directory(file) ? " "+folderChar+"\t" : " "+fileChar+"\t");
+						std::cout << file.path().filename();
+                    	std::cout << file.path().extension() << std::endl;
+                    }
+                }
+                catch (const std::exception e) {
+                    std::cout << "error reading extensionless file system item as folder";
+                }
+            }
+            else{
+                std::cout << current.extension();
+            }
+        }
+
+        std::string str;
+        std::getline(std::cin, str);
+        if(str=="exit"){
+            return;
+        }
+
+        if(exists(current/str)) {
+            current = current / str;
+        }
+    }
+}
+
+void beginNavigationLoop(){
+	loopNavigation();
+}
+
+int main(int argcp, char** argv)
+{
+	beginNavigationLoop();
+	return openGLloop();
 }
 
 void ifKeyMoveCamera(GLFWwindow* window, glm::vec3& camera, glm::vec3 toMove, int key)
