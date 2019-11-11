@@ -48,12 +48,12 @@ std::vector<MeshData> daeParser::parse(std::vector<char> buffer, std::string dir
 	std::vector<MeshData> toReturn;
 	for (auto& a : meshParseResults)
 	{
-		std::vector<Texture> textures;
+		std::vector<std::string> textures;
 		for (auto& b : a.textureIds)
 		{
 			std::string fileName = getFileNameFromMaterialID(nodes, b);
 			std::string fullFileName = directory + fileName;
-			textures.push_back(Texture(fullFileName));;
+			textures.push_back(fullFileName);
 		}
 		toReturn.push_back(MeshData(a.vertexes, a.triangles, textures));
 	}

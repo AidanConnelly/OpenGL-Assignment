@@ -10,7 +10,8 @@
 #include "src/Mesh.h"
 #include <iostream>
 #include "vsSolution/vsSolution/objParser.h"
-#include "experimental/filesystem"
+#include <experimental/filesystem>	
+#include <thread>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -34,19 +35,6 @@ glm::mat4 cameraRotation = glm::mat4(1.0f);
 
 int openGLloop()
 {
-	try
-	{
-		std::vector<Vertex> testNonConvex;
-		testNonConvex.push_back(Vertex{0, 0, 0});
-		testNonConvex.push_back(Vertex{1, 2, 0});
-		testNonConvex.push_back(Vertex{1, 1, 0});
-		testNonConvex.push_back(Vertex{2, 1, 0});
-		objParser::assertVertexesArePlanarAndConvex(testNonConvex);
-	}
-	catch (std::invalid_argument e)
-	{
-	}
-
 	////	for (xmlNode &r : results) {
 	////		printf("%d |%s \t|\t%d\t-> %d\t", r.children.size(),r.tagName.c_str(), r.startIndex, r.endIndex);
 	////		std::cout<< r.children.size()<<" |"<<r.tagName<<" \t|"<<r.startIndex<<"\t->\t"<<r.endIndex<<"\t ";
@@ -135,8 +123,8 @@ int openGLloop()
 	//  -0.61f, +0.61f, -1.00f,
 	//  +0.61f, -0.61f, -1.00f,
 	//  +0.00f, +0.61f, -2.00f,
-
-
+	
+	results[0].BindTextures();
 	Mesh m = Mesh(&results[0].vertexes, &results[0].triangles, &results[0].textures);
 	MeshInstance mI = MeshInstance(&m);
 
@@ -189,9 +177,8 @@ void loopNavigation(){
 						std::string folderChar = "o";
 						// std::string fileChar = "🗎";
 						std::string fileChar = "i";
-                        std::cout << (is_directory(file) ? " "+folderChar+"\t" : " "+fileChar+"\t");
-						std::cout << file.path().filename();
-                    	std::cout << file.path().extension() << std::endl;
+                        std::cout << (std::experimental::filesystem::is_directory(file) ? " "+folderChar+"\t" : " "+fileChar+"\t");
+						std::cout << file.path().filename() << std::endl;
                     }
                 }
                 catch (const std::exception e) {
@@ -208,20 +195,20 @@ void loopNavigation(){
         if(str=="exit"){
             return;
         }
-
-        if(exists(current/str)) {
+		if(str.rfind("load ", 0) == 0)
+		{
+			std::string toLoad = str.substr(5, str.size() - 5);
+			std::cout << toLoad << std::endl;
+		}
+        if(exists(current/str)&&is_directory(current/str)) {
             current = current / str;
         }
     }
 }
 
-void beginNavigationLoop(){
-	loopNavigation();
-}
-
 int main(int argcp, char** argv)
 {
-	beginNavigationLoop();
+	std::thread navigation(loopNavigation);
 	return openGLloop();
 }
 

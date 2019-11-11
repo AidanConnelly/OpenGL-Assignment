@@ -26,13 +26,22 @@ class MeshData
 		std::cout << "calling empty constructor";
 	}
 	
-	MeshData(std::vector<Vertex> vertexes, std::vector<Triangle> triangles, std::vector<Texture> textures)
+	MeshData(std::vector<Vertex> vertexes, std::vector<Triangle> triangles, std::vector<std::string> texturePaths)
 	{
 		this->vertexes = std::move(vertexes);
 		this->triangles = std::move(triangles);
-		this->textures = textures;
+		this->texturePaths = texturePaths;
 	}
 
+	void BindTextures()
+	{
+		for(auto &x : texturePaths)
+		{
+			textures.push_back(Texture(x));
+		}
+	}
+
+	std::vector<std::string> texturePaths;
 	std::vector<Triangle> triangles;
 	std::vector<Vertex> vertexes;
 	std::vector<Texture> textures;

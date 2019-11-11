@@ -69,8 +69,7 @@ MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::strin
 						}
 						std::cout << filePath << std::endl;
 						std::string from_file = directory+filePath;
-						Texture *texture = new Texture(from_file);
-						toReturn->diffuseMap.insert_or_assign(thisMtlName, texture);
+						toReturn->diffuseMap.insert_or_assign(thisMtlName, from_file);
 					}
 				}
 			}
@@ -194,7 +193,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>* buffer, std::string di
 			{
 				if (mtlLibParseResult->diffuseMap.count(materialName) == 1)
 				{
-					constructing.textures.push_back(*(mtlLibParseResult->diffuseMap[materialName]));
+					constructing.textures.push_back(mtlLibParseResult->diffuseMap[materialName]);
 				}
 			}
 			nextLine(i, buffer);

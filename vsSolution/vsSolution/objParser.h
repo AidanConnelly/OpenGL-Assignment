@@ -8,7 +8,7 @@
 struct MaterialLibParseResults
 {
 	std::map<std::string, glm::vec3> diffuse;
-	std::map<std::string, Texture*> diffuseMap;
+	std::map<std::string, std::string> diffuseMap;
 };
 
 enum MTLParseState
