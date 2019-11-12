@@ -1,4 +1,7 @@
-﻿#pragma once
+﻿#ifndef OBJ_PARSER_H
+#define OBJ_PARSER_H
+
+
 #include <string>
 #include <vector>
 #include "../../src/Mesh.h"
@@ -28,12 +31,14 @@ class objParser
 public:
 	static MaterialLibParseResults* parseMtlLib(std::string fullPath, std::string directory);
 
-	static void nextLine(int& index, std::vector<char>* buffer);
-	static glm::vec3 parse3SpaceSeperatedFloats(std::vector<char>* buffer, int* index);
-	static glm::vec2 parse2SpaceSeperatedFloats(std::vector<char>* buffer, int* index);
+	static void nextLine(int& index, std::vector<char>& buffer);
+	static glm::vec3 parse3SpaceSeperatedFloats(std::vector<char>& buffer, int* index);
+	static glm::vec2 parse2SpaceSeperatedFloats(std::vector<char>& buffer, int* index);
 	static void assertVertexesArePlanarAndConvex(std::vector<Vertex> vertexes);
 
-	static std::vector<MeshData> parse(std::vector<char>* buffer, std::string directory);
+	static std::vector<MeshData> parse(std::vector<char>& buffer, std::string directory);
 
 private:
 };
+
+#endif // !OBJ_PARSER_H

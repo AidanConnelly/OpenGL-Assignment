@@ -5,12 +5,12 @@
 #ifndef OPENGLSETUP_XMLNODE_H
 #define OPENGLSETUP_XMLNODE_H
 
-#include<stdio.h>
 #include<vector>
 #include<string>
-#include <exception>
 #include <stdexcept>
+#include <mutex>
 
+static std::mutex mtx;           
 static unsigned nextID = 0;
 
 struct xmlNode {
@@ -22,12 +22,15 @@ struct xmlNode {
     std::vector<int> indexesIfApplicable;
     unsigned id;
 
-	const std::vector<char> *buffer;
+	const std::vector<char> & buffer;
 
-    xmlNode(const std::vector<char>*buffer){
-		this->buffer = buffer;
-        this->id = nextID;
-        nextID++;
+    explicit xmlNode(const std::vector<char>& buffer)
+	    : buffer(buffer)
+    {
+		this->id = nextID;
+		mtx.lock();
+		nextID++;
+		mtx.unlock();
     }
 
     ~xmlNode() {
@@ -37,18 +40,14 @@ struct xmlNode {
 
     void getValue(int subStrIdx, std::string& toReturn)
     {
-	    while((*buffer)[subStrIdx]!='\"'){
-		    toReturn += (*buffer)[subStrIdx];
+	    while(buffer[subStrIdx]!='\"'){
+		    toReturn += buffer[subStrIdx];
 		    subStrIdx++;
 	    }
     }
 
 	std::string getAttribute(std::string attributeName) {
-		std::string toReturn = getIfHasAttribute(attributeName, "string not found");
-    	if(toReturn=="string not found")
-    	{
-			throw std::invalid_argument("todo");
-    	}
+		std::string toReturn = getIfHasAttribute(attributeName, "");
 		return toReturn;
 	};
 	
@@ -56,17 +55,17 @@ struct xmlNode {
 		std::string toLookFor = attributeName + "=\"";
 		auto attrNameLength = toLookFor.size();
 		for (int idx = startIndex; idx<(endIndex - attrNameLength); idx++) {
-			if((*buffer)[idx+attrNameLength-1]=='>')
+			if(buffer[idx+attrNameLength-1]=='>')
 			{
 				break;
 			}
 			bool fail = false;
 			for (int subStrIdx = 0; subStrIdx<attrNameLength; subStrIdx++) {
-				if (idx + subStrIdx >= buffer->size())
+				if (idx + subStrIdx >= buffer.size())
 				{
 					throw std::invalid_argument("invalid state");
 				}
-				if ((*buffer)[idx + subStrIdx] != toLookFor[subStrIdx]) {
+				if (buffer[idx + subStrIdx] != toLookFor[subStrIdx]) {
 					fail = true;
 					break;
 				}
@@ -93,12 +92,12 @@ struct xmlNode {
     {
 		std::string toReturn;
 		int idx = startIndex;
-    	while ((*buffer)[idx++] != '>')
+    	while (buffer[idx++] != '>')
 		{
 		}
-		while ((*buffer)[idx++] != '<')
+		while (buffer[idx++] != '<')
 		{
-			toReturn += (*buffer)[idx-1];
+			toReturn += buffer[idx-1];
 		}
 		return toReturn;
     }

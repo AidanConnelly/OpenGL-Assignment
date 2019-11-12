@@ -28,9 +28,9 @@ void daeParser::parseNodeTagNames(std::vector<char>& buffer, xmlNodeStore& nodes
 	});
 }
 
-std::vector<MeshData> daeParser::parse(std::vector<char> buffer, std::string directory)
+std::vector<MeshData> daeParser::parse(std::vector<char>& buffer, std::string directory)
 {
-	xmlNodeStore nodes = parseNodes(&buffer);
+	xmlNodeStore nodes = parseNodes(buffer);
 	parseNodeTagNames(buffer, nodes);
 	xmlNodeVector asVec;
 	std::for_each(nodes.begin(), nodes.end(), [&](xmlNode* node) -> void
@@ -52,8 +52,11 @@ std::vector<MeshData> daeParser::parse(std::vector<char> buffer, std::string dir
 		for (auto& b : a.textureIds)
 		{
 			std::string fileName = getFileNameFromMaterialID(nodes, b);
-			std::string fullFileName = directory + fileName;
-			textures.push_back(fullFileName);
+			if (fileName != "")
+			{
+				std::string fullFileName = directory + fileName;
+				textures.push_back(fullFileName);
+			}
 		}
 		toReturn.push_back(MeshData(a.vertexes, a.triangles, textures));
 	}
@@ -73,23 +76,27 @@ std::string daeParser::getFileNameFromMaterialID(xmlNodeStore nodes, std::string
 	xmlNode* technique = getSoleByTag(profile_common->children, "technique");
 	xmlNode* lambert = getSoleByTag(technique->children, "lambert");
 	xmlNode* diffuse = getSoleByTag(lambert->children, "diffuse");
-	xmlNode* texture = getSoleByTag(diffuse->children, "texture");
-	std::string sampler2DSid = texture->getAttribute("texture");
+	if (filterByTagName(diffuse->children, "texture").size() == 1)
+	{
+		xmlNode* texture = getSoleByTag(diffuse->children, "texture");
+		std::string sampler2DSid = texture->getAttribute("texture");
 
-	xmlNode newParamSampler = getSoleByAttrib(profile_common->children, "sid", sampler2DSid);
-	xmlNode* sampler2d = getSoleByTag(newParamSampler.children, "sampler2D");
-	xmlNode* source = getSoleByTag(sampler2d->children, "source");
-	std::string surfaceSid = source->getContents();
+		xmlNode newParamSampler = getSoleByAttrib(profile_common->children, "sid", sampler2DSid);
+		xmlNode* sampler2d = getSoleByTag(newParamSampler.children, "sampler2D");
+		xmlNode* source = getSoleByTag(sampler2d->children, "source");
+		std::string surfaceSid = source->getContents();
 
-	xmlNode newParamSurface = getSoleByAttrib(profile_common->children, "sid", surfaceSid);
-	xmlNode* surface = getSoleByTag(newParamSurface.children, "surface");
-	xmlNode* surface_init_from = getSoleByTag(surface->children, "init_from");
-	std::string imageId = surface_init_from->getContents();
+		xmlNode newParamSurface = getSoleByAttrib(profile_common->children, "sid", surfaceSid);
+		xmlNode* surface = getSoleByTag(newParamSurface.children, "surface");
+		xmlNode* surface_init_from = getSoleByTag(surface->children, "init_from");
+		std::string imageId = surface_init_from->getContents();
 
-	xmlNode* library_images = getSoleByTag(nodes, "library_images");
-	xmlNode image = getSoleByAttrib(library_images->children, "id", imageId);
-	xmlNode* init_from = getSoleByTag(image.children, "init_from");
-	return init_from->getContents();
+		xmlNode* library_images = getSoleByTag(nodes, "library_images");
+		xmlNode image = getSoleByAttrib(library_images->children, "id", imageId);
+		xmlNode* init_from = getSoleByTag(image.children, "init_from");
+		return init_from->getContents();
+	}
+	return "";
 }
 
 #pragma clang diagnostic push
@@ -102,9 +109,16 @@ std::vector<parseNodeTagsResult> daeParser::parseNodeTags(std::vector<char> buff
 	mapXmlNodes(nodeTags, [&](xmlNode node) -> xmlNode
 	{
 		std::vector<xmlNode *> children = node.children;
-		auto matrix = getSoleByTag(children, "matrix");
 		auto i_g = filterByTagName(children, "instance_geometry");
-		toReturn.push_back(parseNodeTagsResult(*matrix, i_g));
+		if (filterByTagName(children, "matrix").size() == 1)
+		{
+			auto matrix = getSoleByTag(children, "matrix");
+			toReturn.push_back(parseNodeTagsResult(*matrix, i_g));
+		}
+		else
+		{
+			toReturn.push_back(parseNodeTagsResult(i_g));
+		}
 		return node;
 	});
 	return toReturn;
@@ -138,10 +152,8 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 			xmlNode pTag = *getSoleByTag(triangleTag.children, "p");
 			auto vertexInputTag = getSoleByAttrib(triangleTag.children, "semantic", "VERTEX");
 			auto normalInputTag = getSoleByAttrib(triangleTag.children, "semantic", "NORMAL");
-			auto tCoordInputTag = getSoleByAttrib(triangleTag.children, "semantic", "TEXCOORD");
 			int vertexOffset = stoi(vertexInputTag.getAttribute("offset"));
 			int normalOffset = stoi(normalInputTag.getAttribute("offset"));
-			int tCoordOffset = stoi(tCoordInputTag.getAttribute("offset"));
 			int maxOffset = 0;
 			auto inputTags = filterByTagName(triangleTag.children, "input");
 			for (auto& nodePtr : inputTags)
@@ -186,20 +198,58 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 			const std::string& normalSourceId = normalInputTag.getAttribute("source");
 			auto normalSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(normalSourceId));
 
-			const std::string& tCoordSourceId = tCoordInputTag.getAttribute("source");
-			auto tCoordSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(tCoordSourceId));
+			struct textureCoordinateData
+			{
+				xmlNode* ar;
+				paramInfo s;
+				paramInfo t;
+			};
+
+			textureCoordinateData* tData = NULL;
+			int tCoordOffset = 0;
+			if (anyByAttrib(triangleTag.children, "semantic", "TEXCOORD")) {
+				auto tCoordInputTag = getSoleByAttrib(triangleTag.children, "semantic", "TEXCOORD");
+				tCoordOffset = stoi(tCoordInputTag.getAttribute("offset"));
+				const std::string& tCoordSourceId = tCoordInputTag.getAttribute("source");
+				auto tCoordSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(tCoordSourceId));
+
+				xmlNode* tCoordArray = soleLargeFloatChild(tCoordSourceTag, largeBuffers);
+				paramInfo sParam = prepareParam("S", &tCoordSourceTag, tCoordArray);
+				paramInfo tParam = prepareParam("T", &tCoordSourceTag, tCoordArray);
+				tData = new textureCoordinateData{ tCoordArray, sParam, tParam };
+			}
+			struct colourData
+			{
+				xmlNode* ar;
+				paramInfo re;
+				paramInfo gr;
+				paramInfo bl;
+			};
+
+			colourData* cData = NULL;
+			int colourOffset = 0;
+			if (anyByAttrib(triangleTag.children, "semantic", "COLOR")) {
+				auto colourInputTag = getSoleByAttrib(triangleTag.children, "semantic", "COLOR");
+				colourOffset = stoi(colourInputTag.getAttribute("offset"));
+				const std::string& colourSourceId = colourInputTag.getAttribute("source");
+				auto colourSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(colourSourceId));
+
+				xmlNode* colourArray = soleLargeFloatChild(colourSourceTag, largeBuffers);
+				paramInfo rParam = prepareParam("R", &colourSourceTag, colourArray);
+				paramInfo gParam = prepareParam("G", &colourSourceTag, colourArray);
+				paramInfo bParam = prepareParam("B", &colourSourceTag, colourArray);
+				colourData* made = new colourData{ colourArray, rParam, gParam, bParam };
+				cData = made;
+			}
 
 			auto positnFloat = soleLargeFloatChild(positionSourceTag, largeBuffers);
-			auto xParam = prepareParam("X", &positionSourceTag, positnFloat);
-			auto yParam = prepareParam("Y", &positionSourceTag, positnFloat);
-			auto zParam = prepareParam("Z", &positionSourceTag, positnFloat);
+			paramInfo xParam = prepareParam("X", &positionSourceTag, positnFloat);
+			paramInfo yParam = prepareParam("Y", &positionSourceTag, positnFloat);
+			paramInfo zParam = prepareParam("Z", &positionSourceTag, positnFloat);
 			auto nrmlFloat = soleLargeFloatChild(normalSourceTag, largeBuffers);
-			auto nXParam = prepareParam("X", &normalSourceTag, nrmlFloat);
-			auto nYParam = prepareParam("Y", &normalSourceTag, nrmlFloat);
-			auto nZParam = prepareParam("Z", &normalSourceTag, nrmlFloat);
-			auto tCoordArray = soleLargeFloatChild(tCoordSourceTag, largeBuffers);
-			auto sParam = prepareParam("S", &tCoordSourceTag, tCoordArray);
-			auto tParam = prepareParam("T", &tCoordSourceTag, tCoordArray);
+			paramInfo nXParam = prepareParam("X", &normalSourceTag, nrmlFloat);
+			paramInfo nYParam = prepareParam("Y", &normalSourceTag, nrmlFloat);
+			paramInfo nZParam = prepareParam("Z", &normalSourceTag, nrmlFloat);
 
 			for (int triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++)
 			{
@@ -215,6 +265,8 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 						normalOffset];
 					unsigned tCoordIndex = thisTriangleIndexArray->indexesIfApplicable[(maxOffset + 1) * vertexIndex +
 						tCoordOffset];
+					unsigned colourIndex = thisTriangleIndexArray->indexesIfApplicable[(maxOffset + 1) * vertexIndex +
+						colourOffset];
 
 					//vertex X
 					building.x = positnFloat->floatsIfApplicable[xParam.stride * positnIndex + xParam.idx];
@@ -230,11 +282,20 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 					//vertexNormal Z
 					building.nZ = nrmlFloat->floatsIfApplicable[nZParam.stride * normalIndex + nZParam.idx];
 
-					//texCoord U
-					building.u = tCoordArray->floatsIfApplicable[sParam.stride * tCoordIndex + sParam.idx];
-					//texCoord V
-					building.v = tCoordArray->floatsIfApplicable[tParam.stride * tCoordIndex + tParam.idx];
+					if (tData) {
+						//texCoord U
+						building.u = tData->ar->floatsIfApplicable[tData->s.stride * tCoordIndex + tData->s.idx];
+						//texCoord V
+						building.v = tData->ar->floatsIfApplicable[tData->t.stride * tCoordIndex + tData->t.idx];
+					}
 
+					if(cData)
+					{
+						building.r = cData->ar->floatsIfApplicable[cData->re.stride * colourIndex + cData->re.idx];
+						building.g = cData->ar->floatsIfApplicable[cData->gr.stride * colourIndex + cData->gr.idx];
+						building.b = cData->ar->floatsIfApplicable[cData->bl.stride * colourIndex + cData->bl.idx];
+					}
+					
 					thisResult.vertexes.push_back(building);
 				}
 				Triangle constructed{};
@@ -354,6 +415,18 @@ xmlNode daeParser::getSoleByAttrib(const xmlNodeStore& lookIn, std::string attri
 	throw std::invalid_argument("no match");
 }
 
+bool daeParser::anyByAttrib(const xmlNodeStore& lookIn, std::string attrib, std::string value)
+{
+	for (auto& node : lookIn)
+	{
+		if (node->getAttribute(attrib) == value)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 xmlNode* daeParser::getSoleByTag(const xmlNodeStore& toSearchIn, std::string toSearchFor)
 {
 	auto x = filterByTagName(toSearchIn, toSearchFor);
@@ -367,10 +440,10 @@ xmlNode* daeParser::getSoleByTag(const xmlNodeStore& toSearchIn, std::string toS
 bufferParseResult daeParser::parseLargeBuffers(xmlNodeStore nodes)
 {
 	xmlNodeStore floatArrays = filterByTagName(nodes, "float_array");
-	floatArrays = parseFloatArrays(*nodes[0]->buffer, floatArrays);
+	floatArrays = parseFloatArrays(nodes[0]->buffer, floatArrays);
 
 	xmlNodeStore indexArrays = filterByTagName(nodes, "p");
-	indexArrays = parseIndexBuffer(*nodes[0]->buffer, indexArrays);
+	indexArrays = parseIndexBuffer(nodes[0]->buffer, indexArrays);
 
 	bufferParseResult result(floatArrays, indexArrays);
 	return result;
@@ -402,25 +475,48 @@ xmlNodeStore daeParser::filterByTagName(xmlNodeStore nodes, const std::string& t
 	return toReturn;
 }
 
+void parseFloatArray(xmlNode* node)
+{
+	int index = node->startIndex;
+	while ((node->buffer)[index] != '>')
+	{
+		index++;
+	}
+	std::vector<float> floats;
+	do
+	{
+		index++;
+		float f = parseAFloat(&index, node->buffer);
+		floats.push_back(f);
+	}
+	while (node->buffer[index] == ' ');
+	node->floatsIfApplicable = floats;
+}
+
 xmlNodeStore daeParser::parseFloatArrays(std::vector<char> buffer, xmlNodeStore floatArrays)
 {
-	alterXmlNodes(floatArrays, [&](xmlNode* node) -> void
+	int workers = 4;
+	std::vector<std::thread*> pool;
+	for (int i = 0; i < floatArrays.size(); i++)
 	{
-		int index = node->startIndex;
-		while ((*node->buffer)[index] != '>')
+		int workerNum = i % workers;
+		if (pool.size() >= (workerNum + 1))
 		{
-			index++;
+			pool[workerNum]->join();
+			delete pool[workerNum];
+			pool[workerNum] = new std::thread(parseFloatArray, floatArrays[i]);
 		}
-		std::vector<float> floats;
-		do
+		else
 		{
-			index++;
-			float f = parseAFloat(&index, node->buffer);
-			floats.push_back(f);
+			pool.push_back(new std::thread(parseFloatArray, floatArrays[i]));
 		}
-		while ((*node->buffer)[index] == ' ');
-		node->floatsIfApplicable = floats;
-	});
+	}
+	for (int i = 0; i < workers && i < floatArrays.size(); i++)
+	{
+		pool[i]->join();
+		delete pool[i];
+	}
+
 	return floatArrays;
 }
 
@@ -446,7 +542,7 @@ void daeParser::checkForQuotes(char thisChar, int* stackPos, parseStack* stack, 
 	}
 }
 
-xmlNodeStore daeParser::parseNodes(const std::vector<char>* buffer)
+xmlNodeStore daeParser::parseNodes(const std::vector<char>& buffer)
 {
 	xmlNodeStore nodes = {};
 	//Loop over buffer
@@ -454,9 +550,9 @@ xmlNodeStore daeParser::parseNodes(const std::vector<char>* buffer)
 	auto* node = new xmlNode(buffer);
 	xmlParsingStackMember state = xmlParsingStackMember(Start, node);
 	int stackPos = 0;
-	for (unsigned i = 0; i < buffer->size(); i++)
+	for (unsigned i = 0; i < buffer.size(); i++)
 	{
-		char thisChar = (*buffer)[i];
+		char thisChar = buffer[i];
 		switch (state.state)
 		{
 		case XMLParseState::Start:
@@ -573,13 +669,12 @@ void daeParser::alterXmlNodes(xmlNodeStore& input, std::function<void(xmlNode*)>
 	}
 }
 
-xmlNodeStore daeParser::parseIndexBuffer(const std::vector<char> buffer, xmlNodeStore indexBuffer)
+xmlNodeStore daeParser::parseIndexBuffer(const std::vector<char>& buffer, xmlNodeStore indexBuffer)
 {
-	const std::vector<char>* toBuf = &buffer;
 	alterXmlNodes(indexBuffer, [&](xmlNode* node) -> void
 	{
 		int index = node->startIndex;
-		while ((*toBuf)[index] != '>')
+		while (buffer[index] != '>')
 		{
 			index++;
 		}
@@ -587,10 +682,10 @@ xmlNodeStore daeParser::parseIndexBuffer(const std::vector<char> buffer, xmlNode
 		do
 		{
 			index++;
-			int ind = parseAnInt(&index, toBuf);
+			int ind = parseAnInt(&index, buffer);
 			indexes.push_back(ind);
 		}
-		while ((*toBuf)[index] == ' ');
+		while (buffer[index] == ' ');
 		node->indexesIfApplicable = indexes;
 	});
 	return indexBuffer;

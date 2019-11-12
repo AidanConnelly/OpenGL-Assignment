@@ -33,6 +33,24 @@ unsigned int VBO_Handle;
 glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, -2.0f);
 glm::mat4 cameraRotation = glm::mat4(1.0f);
 
+std::map<std::string, int> cache;
+std::vector<MeshData> loaded;
+int numMeshDataWrtn;
+int numMeshDataRead;
+
+struct makeInstanceJob
+{
+	int toMakeInstanceOf;
+};
+
+std::vector<makeInstanceJob> toMakeInstanceOf;
+std::vector<Mesh> meshes;
+std::vector<MeshInstance> meshInstances;
+int numMakeInstanceJobWrtn;
+int numMakeInstanceJobRead;
+
+int selected = 0;
+
 int openGLloop()
 {
 	////	for (xmlNode &r : results) {
@@ -81,10 +99,10 @@ int openGLloop()
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 
-	std::string directory1 = "C:\\Users\\aidan\\..\\aidan\\Downloads\\Creeper\\";
-	std::string file = "relative.obj";
-	std::vector<char> objContents = fileThroughput::getBytes(directory1 + file);
-	std::vector<MeshData> results = objParser::parse(&objContents, directory1);
+	// std::string directory1 = "C:\\Users\\aidan\\..\\aidan\\Downloads\\Creeper\\";
+	// std::string file = "relative.obj";
+	// std::vector<char> objContents = fileThroughput::getBytes(directory1 + file);
+	// std::vector<MeshData> results = objParser::parse(objContents, directory1);
 
 	// std::string directory = R"(C:\Users\aidan\Downloads\Creeper-dae(1)\)";
 	// std::vector<char> toParse = fileThroughput::getBytes(directory + "Creeper.dae");
@@ -123,15 +141,25 @@ int openGLloop()
 	//  -0.61f, +0.61f, -1.00f,
 	//  +0.61f, -0.61f, -1.00f,
 	//  +0.00f, +0.61f, -2.00f,
-	
-	results[0].BindTextures();
-	Mesh m = Mesh(&results[0].vertexes, &results[0].triangles, &results[0].textures);
-	MeshInstance mI = MeshInstance(&m);
 
 	// creating the view matrix
 	auto start = std::chrono::system_clock::now();
 	while (!glfwWindowShouldClose(window))
 	{
+			for(int i = numMeshDataRead;i<numMeshDataWrtn;i++)
+			{
+				loaded[i].BindTextures();
+				meshes.push_back(Mesh(loaded[i]));
+				numMeshDataRead = i + 1;
+			}
+
+		for(int i = numMakeInstanceJobRead;i<numMakeInstanceJobWrtn;i++)
+		{
+			int makeIndexOf = toMakeInstanceOf[i].toMakeInstanceOf;
+			meshInstances.push_back(MeshInstance(&meshes[makeIndexOf]));
+			numMakeInstanceJobRead = i + 1;
+		}
+		
 		processInput(window);
 
 		glClearColor(0.09f, 0.12f, 0.14f, 1.0f);
@@ -150,10 +178,13 @@ int openGLloop()
 		view = cameraRotation * view;
 
 		// creating the projection matrix
-		glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3, 0.1f, 20.0f);
-		m.BindTextures(program);
-		mI.Draw(program, projection * view);
-		mI.selected = true;
+		glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3, 0.1f, 50000.0f);
+		for (int i = 0; i < meshInstances.size();i++) {
+			auto mI = meshInstances[i];
+			mI.instanceOf->BindTextures(program);
+			mI.selected = i == selected;
+			mI.Draw(program, projection * view);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -198,7 +229,37 @@ void loopNavigation(){
 		if(str.rfind("load ", 0) == 0)
 		{
 			std::string toLoad = str.substr(5, str.size() - 5);
-			std::cout << toLoad << std::endl;
+			std::string fullFilePath = (current / toLoad).string();
+			if (exists(current / toLoad)) {
+				std::vector<char> contents = fileThroughput::getBytes(fullFilePath);
+
+				std::string extension = (current / toLoad).extension().string();
+
+				std::vector<MeshData> results;
+				if (!cache.count(fullFilePath)) {
+					//todo
+					if (extension == ".obj") {
+						results = objParser::parse(contents, current.string() + "\\");
+					}
+					else if (extension == ".dae")
+					{
+						results = daeParser::parse(contents, current.string() + "\\");
+					}
+				}
+
+				for (auto& j : results)
+				{
+					loaded.push_back(j);
+					cache[fullFilePath] = loaded.size() - 1;
+				}
+				int size = loaded.size();
+				numMeshDataWrtn = size;
+
+				//Add a mesh instance
+				toMakeInstanceOf.push_back(makeInstanceJob{ cache[fullFilePath] });
+				int jobSize = toMakeInstanceOf.size();
+				numMakeInstanceJobWrtn = jobSize;
+			}
 		}
         if(exists(current/str)&&is_directory(current/str)) {
             current = current / str;
@@ -229,12 +290,38 @@ void ifKeyRotateCamera(GLFWwindow* window, glm::mat4& camera, glm::vec3 rotateAr
 	}
 }
 
+void ifKeyMoveMesh(GLFWwindow* window, glm::vec3 direction, int key)
+{
+	if (glfwGetKey(window, key) == GLFW_PRESS)
+	{
+		glm::vec3 toMove = glm::normalize(direction);
+		toMove *= 0.01;
+		meshInstances[selected].move(toMove);
+	}
+}
+
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
+
+	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+	{
+		int n = meshInstances.size();
+		selected = (selected + n + 1) % n;
+	}
+	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+	{
+		int n = meshInstances.size();
+		selected = (selected + n - 1) % n;
+	}
+
+	ifKeyMoveMesh(window, glm::vec3(-1.0, 0.0, 0.0), GLFW_KEY_F);
+	ifKeyMoveMesh(window, glm::vec3(+1.0, 0.0, 0.0), GLFW_KEY_H);
+	ifKeyMoveMesh(window, glm::vec3(0.0, +1.0, 0.0), GLFW_KEY_G);
+	ifKeyMoveMesh(window, glm::vec3(0.0, -1.0, 0.0), GLFW_KEY_T);
 
 	ifKeyRotateCamera(window, cameraRotation, glm::vec3(1.0, 0.0, 0.0), -0.01, GLFW_KEY_I);
 	ifKeyRotateCamera(window, cameraRotation, glm::vec3(1.0, 0.0, 0.0), +0.01, GLFW_KEY_K);

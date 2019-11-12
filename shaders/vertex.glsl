@@ -9,7 +9,7 @@ out vec4 fragColour;
 out vec2 texCoord;
 void main()
 {
-	fragColour = vec4(1.0,1.0,1.0,1.0);
+	fragColour = vec4(vColour,1.0);
 	gl_Position = mvp * vec4 (vPosition,1.0);
 	texCoord = aTexCoord;
 } 

@@ -7,16 +7,9 @@
 #define OPENGLSETUP_DAEPARSER_H
 
 #include <algorithm>
-#include <cctype>
-#include <iostream>
 #include <string>
 #include <vector>
-
-#include <utility>
-#include <exception>
-#include <stdexcept>
 #include <functional>
-#include <iterator>
 #include <set>
 #include "xmlNode.h"
 #include "xmlParsingStackMember.h"
@@ -36,7 +29,7 @@ struct paramInfo{
 struct parseNodeTagsResult
 {
 public:
-	parseNodeTagsResult(xmlNode matrix, xmlNodeStore instance_geometryTags)
+	void setMatrixFromNode(xmlNode matrix)
 	{
 		auto buffer = matrix.buffer;
 		int index = matrix.startIndex;
@@ -44,18 +37,21 @@ public:
 		{
 			index++;
 		}
-		while ('>' != (*buffer)[index]);
+		while ('>' != buffer[index]);
 		index++;
 		int floatIndex = 0;
 		float floatArray[16];
-		while ((*buffer)[index] >= '0' && (*buffer)[index] <= '9')
+		while (buffer[index] >= '0' && buffer[index] <= '9')
 		{
 			floatArray[floatIndex] = parseAFloat(&index, buffer);
 			index++;
 			floatIndex++;
 		}
-		//    this->transform = glm::make_mat4(floatArray);
+		this->transform = glm::make_mat4(floatArray);
+	}
 
+	void processInstanceGeometryTags(xmlNodeStore instance_geometryTags)
+	{
 		auto beginning = instance_geometryTags.begin();
 		auto ending = instance_geometryTags.end();
 		auto forEach = [&](xmlNode* node) -> void
@@ -67,7 +63,17 @@ public:
 		std::for_each(beginning, ending, forEach);
 	}
 
-	//    glm::mat4 transform;
+	parseNodeTagsResult(xmlNode matrix, xmlNodeStore instance_geometryTags)
+	{
+		setMatrixFromNode(matrix);
+		processInstanceGeometryTags(instance_geometryTags);
+	}
+	parseNodeTagsResult(xmlNodeStore instance_geometryTags)
+	{
+		processInstanceGeometryTags(instance_geometryTags);
+	}
+
+	glm::mat4 transform;
 	std::set<std::string> IDs;
 };
 
@@ -82,7 +88,7 @@ struct meshParseResult
 class daeParser
 {
 public:
-	static std::vector<MeshData> parse(std::vector<char> buffer, std::string directory);
+	static std::vector<MeshData> parse(std::vector<char> &buffer, std::string directory);
 
 private:
 	static void parseNodeTagNames(std::vector<char>& buffer, xmlNodeStore& nodes);
@@ -93,7 +99,9 @@ private:
 
 	static void checkForQuotes(char thisChar, int* stackPos, parseStack* stack, xmlParsingStackMember* state);
 
-	static xmlNodeStore parseNodes(const std::vector<char>* buffer);
+	static bool anyByAttrib(const xmlNodeStore& lookIn, std::string attrib, std::string value);
+
+	static xmlNodeStore parseNodes(const std::vector<char>& buffer);
 
 	static xmlNodeVector mapXmlNodes(const xmlNodeVector& input, std::function<xmlNode(const xmlNode&)> toMap);
 
@@ -101,7 +109,7 @@ private:
 
 	static xmlNodeStore parseFloatArrays(std::vector<char> buffer, xmlNodeStore floatArrays);
 
-	static xmlNodeStore parseIndexBuffer(std::vector<char> buffer, xmlNodeStore indexBuffer);
+	static xmlNodeStore parseIndexBuffer(const std::vector<char>& buffer, xmlNodeStore indexBuffer);
 
 	static bufferParseResult parseLargeBuffers(xmlNodeStore nodesWithTagName);
 

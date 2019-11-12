@@ -50,16 +50,8 @@ class MeshData
 class Mesh
 {
 public:
-	Mesh(
-		std::vector<Vertex>* vrtxes,
-		std::vector<Triangle>* triags,
-		std::vector<Texture>* textures
-	)
+	void createThisMesh()
 	{
-		this->vertexes = *vrtxes;
-		this->triangles = *triags;
-		this->textures = *textures;
-
 		CheckForOpenGLErrors();
 		glGenVertexArrays(1, &VAO);
 		CheckForOpenGLErrors();
@@ -95,7 +87,29 @@ public:
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, shouldb12Bytes * trigCount, &triangles[0], GL_STATIC_DRAW);
 		CheckForOpenGLErrors();
 	}
-	
+
+	Mesh(
+		std::vector<Vertex>* vrtxes,
+		std::vector<Triangle>* triags,
+		std::vector<Texture>* textures
+	)
+	{
+		this->vertexes = *vrtxes;
+		this->triangles = *triags;
+		this->textures = *textures;
+
+		createThisMesh();
+	}
+
+	Mesh(MeshData mesh_data){
+
+		this->vertexes = mesh_data.vertexes;
+		this->triangles = mesh_data.triangles;
+		this->textures = mesh_data.textures;
+		
+		createThisMesh();
+	}
+
 	void BindTextures(ShaderProgram program)
 	{
 		for (int i = 0; i < textures.size(); i++)
@@ -157,11 +171,15 @@ public:
 		auto ErrorCheckValue = glGetError();
 		std::cout << "";
 	}
-
+	Mesh* instanceOf;
 	bool selected;
+
+	void move(glm::vec3 translateBy)
+	{
+		model = glm::translate(model, translateBy);
+	}
 private:
 	glm::mat4 model;
-	Mesh* instanceOf;
 };
 
 #endif //OPENGLSETUP_MESH_H

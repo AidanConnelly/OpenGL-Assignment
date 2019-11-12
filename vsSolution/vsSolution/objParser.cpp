@@ -4,7 +4,7 @@
 
 MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::string directory)
 {
-	MaterialLibParseResults* toReturn = new MaterialLibParseResults;
+	auto toReturn = new MaterialLibParseResults;
 	auto buffer = fileThroughput::getBytes(fullPath);
 
 	MTLParseState state = mtlNotBegun;
@@ -40,15 +40,15 @@ MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::strin
 						//"Kd"
 						i += 2;
 						float r, g, b;
-						r = parseAFloat(&i, &buffer);
+						r = parseAFloat(&i, buffer);
 						g = r;
 						b = r;
 						if (buffer[++i] != '\n')
 						{
-							g = parseAFloat(&i, &buffer);
+							g = parseAFloat(&i, buffer);
 							if (buffer[++i] != '\n')
 							{
-								b = parseAFloat(&i, &buffer);
+								b = parseAFloat(&i, buffer);
 							}
 						}
 						toReturn->diffuse.insert_or_assign(thisMtlName, glm::vec3(r, g, b));
@@ -86,15 +86,15 @@ MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::strin
 	return toReturn;
 }
 
-void objParser::nextLine(int& index, std::vector<char>* buffer)
+void objParser::nextLine(int& index, std::vector<char>& buffer)
 {
-	while ((*buffer)[index] != '\n')
+	while (buffer[index] != '\n')
 	{
 		index++;
 	};
 }
 
-glm::vec3 objParser::parse3SpaceSeperatedFloats(std::vector<char>* buffer, int* index)
+glm::vec3 objParser::parse3SpaceSeperatedFloats(std::vector<char>& buffer, int* index)
 {
 	float x, y, z;
 	(*index)++;
@@ -106,7 +106,7 @@ glm::vec3 objParser::parse3SpaceSeperatedFloats(std::vector<char>* buffer, int* 
 	return glm::vec3(x, y, z);
 }
 
-glm::vec2 objParser::parse2SpaceSeperatedFloats(std::vector<char>* buffer, int* index)
+glm::vec2 objParser::parse2SpaceSeperatedFloats(std::vector<char>& buffer, int* index)
 {
 	float x, y;
 	(*index)++;
@@ -137,32 +137,34 @@ void objParser::assertVertexesArePlanarAndConvex(std::vector<Vertex> vertexes)
 	}
 }
 
-std::vector<MeshData> objParser::parse(std::vector<char>* buffer, std::string directory)
+std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string directory)
 {
 	std::vector<MeshData> toReturn;
 	MeshData constructing;
 	std::vector<MaterialLibParseResults*> mtlLibParseResults;
+	// glm::vec3 currentColour;
 	std::vector<glm::vec3> vertexPositions;
 	std::vector<glm::vec3> vertexNormals;
 	std::vector<glm::vec2> vertexCoordinates;
-	for (int i = 0; i < buffer->size(); i++)
+	for (int i = 0; i < buffer.size(); i++)
 	{
-		switch ((*buffer)[i])
+		switch (buffer[i])
 		{
 		case 'm':
 			{
-				while ((*buffer)[i] != ' ')
+				while (buffer[i] != ' ')
 				{
 					i++;
 				}
 				i++;
 				std::string fileName;
-				while ((*buffer)[i] != '\n')
+				while (buffer[i] != '\n')
 				{
-					fileName += (*buffer)[i];
+					fileName += buffer[i];
 					i++;
 				}
 				mtlLibParseResults.push_back(parseMtlLib(directory + fileName,directory));
+				nextLine(i, buffer);
 				break;
 			}
 		case 'o':
@@ -178,23 +180,28 @@ std::vector<MeshData> objParser::parse(std::vector<char>* buffer, std::string di
 			//smooth shading
 			break;
 		case'u': {
-			while ((*buffer)[i] != ' ')
+			while (buffer[i] != ' ')
 			{
 				i++;
 			}
 			i++;
 			std::string materialName;
-			while ((*buffer)[i] != '\n')
+			while (buffer[i] != '\n')
 			{
-				materialName += (*buffer)[i];
+				materialName += buffer[i];
 				i++;
 			}
 			for (auto& mtlLibParseResult : mtlLibParseResults)
 			{
 				if (mtlLibParseResult->diffuseMap.count(materialName) == 1)
 				{
-					constructing.textures.push_back(mtlLibParseResult->diffuseMap[materialName]);
+					std::string toPush = mtlLibParseResult->diffuseMap[materialName];
+					constructing.texturePaths.push_back(toPush);
 				}
+			// 	// if (mtlLibParseResult->diffuse.count(materialName) == 1)
+			// 	// {
+			// 	// 	currentColour = mtlLibParseResult->diffuse[materialName];
+			// 	// }
 			}
 			nextLine(i, buffer);
 			//"usemtl"
@@ -204,7 +211,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>* buffer, std::string di
 			break;
 		case 'v':
 			i++;
-			switch ((*buffer)[i])
+			switch (buffer[i])
 			{
 			case ' ':
 				{
@@ -241,7 +248,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>* buffer, std::string di
 			{
 				i++;
 				std::vector<Vertex> vertexes;
-				while ((*buffer)[i] != '\n')
+				while (buffer[i] != '\n')
 				{
 					i++;
 					Vertex making;
@@ -250,10 +257,10 @@ std::vector<MeshData> objParser::parse(std::vector<char>* buffer, std::string di
 					glm::vec2 vertexCoordinate;
 					int vertexPositionIndex = parseAnInt(&i, buffer) - 1;
 					vertexPosition = vertexPositions[vertexPositionIndex];
-					if ((*buffer)[i] == '/')
+					if (buffer[i] == '/')
 					{
 						i++;
-						if ((*buffer)[i] != '/')
+						if (buffer[i] != '/')
 						{
 							//Was n/n/n or n/n
 							int vertexCoordinateIndex = parseAnInt(&i, buffer) - 1;
@@ -263,7 +270,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>* buffer, std::string di
 						{
 							//Was n//n or n/
 						}
-						if ((*buffer)[i] == '/')
+						if (buffer[i] == '/')
 						{
 							i++;
 							//Was n//n or n/n/n
@@ -271,6 +278,9 @@ std::vector<MeshData> objParser::parse(std::vector<char>* buffer, std::string di
 							vertexNormal = vertexNormals[vertexNormalIndex];
 						}
 					}
+					// making.r = currentColour.r;
+					// making.g = currentColour.g;
+					// making.b = currentColour.b;
 					making.x = vertexPosition.x;
 					making.y = vertexPosition.y;
 					making.z = vertexPosition.z;
@@ -282,7 +292,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>* buffer, std::string di
 					vertexes.push_back(making);
 				}
 				nextLine(i, buffer);
-				assertVertexesArePlanarAndConvex(vertexes);
+				// assertVertexesArePlanarAndConvex(vertexes);
 
 				unsigned offset = constructing.vertexes.size();
 				for(unsigned j = 0;j<vertexes.size();j++)
