@@ -34,17 +34,17 @@ glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, -2.0f);
 glm::mat4 cameraRotation = glm::mat4(1.0f);
 
 std::map<std::string, int> cache;
-std::vector<MeshData> loaded;
+std::vector<std::vector<MeshData>*> loaded;
 int numMeshDataWrtn;
 int numMeshDataRead;
 
-struct makeInstanceJob
+struct makeInstancesJob
 {
-	int toMakeInstanceOf;
+	int toMakeInstancesOf;
 };
 
-std::vector<makeInstanceJob> toMakeInstanceOf;
-std::vector<Mesh*> meshes;
+std::vector<makeInstancesJob> toMakeInstanceOf;
+std::vector<std::vector<Mesh*>> meshes;
 std::vector<MeshInstance> meshInstances;
 int numMakeInstanceJobWrtn;
 int numMakeInstanceJobRead;
@@ -148,19 +148,24 @@ int openGLloop()
 	{
 			for(int i = numMeshDataRead;i<numMeshDataWrtn;i++)
 			{
-				loaded[i].BindTextures();
-				Mesh* meshPtr = new Mesh(loaded[i]);
-				meshes.push_back(meshPtr);
-				numMeshDataRead = i + 1;
+				meshes.emplace_back();
+				for(auto &a :*loaded[i])
+				{
+					a.BindTextures();
+					Mesh* meshPtr = new Mesh(a);
+					meshes[meshes.size() - 1].push_back(meshPtr);
+					numMeshDataRead = i + 1;
+				}
 			}
 
 		for(int i = numMakeInstanceJobRead;i<numMakeInstanceJobWrtn;i++)
 		{
-			int makeIndexOf = toMakeInstanceOf[i].toMakeInstanceOf;
-			Mesh* mesh = meshes[makeIndexOf];
-			Mesh* toMakeInstanceOf = mesh;
-			MeshInstance instance = MeshInstance(toMakeInstanceOf);
-			meshInstances.push_back(instance);
+			int makeIndexOf = toMakeInstanceOf[i].toMakeInstancesOf;
+			std::vector<Mesh*> mesh = meshes[makeIndexOf];
+			for (auto &toMakeInstanceOf : mesh) {
+				MeshInstance instance = MeshInstance(toMakeInstanceOf);
+				meshInstances.push_back(instance);
+			}
 			numMakeInstanceJobRead = i + 1;
 		}
 		
@@ -239,28 +244,29 @@ void loopNavigation(){
 
 				std::string extension = (current / toLoad).extension().string();
 
-				std::vector<MeshData> results;
+				std::vector<MeshData>* results = NULL;
 				if (!cache.count(fullFilePath)) {
 					//todo
 					if (extension == ".obj") {
-						results = objParser::parse(contents, current.string() + "\\");
+						std::vector<MeshData> toResults = objParser::parse(contents, current.string() + "\\");
+						results = new std::vector<MeshData>(std::move(toResults));
 					}
 					else if (extension == ".dae")
 					{
-						results = daeParser::parse(contents, current.string() + "\\");
+						std::vector<MeshData> toResults = daeParser::parse(contents, current.string() + "\\");
+						results = new std::vector<MeshData>(std::move(toResults));
 					}
 				}
 
-				for (auto& j : results)
-				{
-					loaded.push_back(j);
+				if (results) {
+					loaded.push_back(results);
 					cache[fullFilePath] = loaded.size() - 1;
 				}
 				int size = loaded.size();
 				numMeshDataWrtn = size;
 
 				//Add a mesh instance
-				toMakeInstanceOf.push_back(makeInstanceJob{ cache[fullFilePath] });
+				toMakeInstanceOf.push_back(makeInstancesJob{ cache[fullFilePath] });
 				int jobSize = toMakeInstanceOf.size();
 				numMakeInstanceJobWrtn = jobSize;
 			}
