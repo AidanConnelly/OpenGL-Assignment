@@ -142,7 +142,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 	std::vector<MeshData> toReturn;
 	MeshData constructing;
 	std::vector<MaterialLibParseResults*> mtlLibParseResults;
-	// glm::vec3 currentColour;
+	glm::vec3 currentColour;
 	std::vector<glm::vec3> vertexPositions;
 	std::vector<glm::vec3> vertexNormals;
 	std::vector<glm::vec2> vertexCoordinates;
@@ -198,10 +198,10 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 					std::string toPush = mtlLibParseResult->diffuseMap[materialName];
 					constructing.texturePaths.push_back(toPush);
 				}
-			// 	// if (mtlLibParseResult->diffuse.count(materialName) == 1)
-			// 	// {
-			// 	// 	currentColour = mtlLibParseResult->diffuse[materialName];
-			// 	// }
+				if (mtlLibParseResult->diffuse.count(materialName) == 1)
+				{
+					currentColour = mtlLibParseResult->diffuse[materialName];
+				}
 			}
 			nextLine(i, buffer);
 			//"usemtl"
