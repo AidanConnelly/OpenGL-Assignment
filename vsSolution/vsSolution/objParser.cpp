@@ -129,10 +129,12 @@ void objParser::assertVertexesArePlanarAndConvex(std::vector<Vertex> vertexes)
 		glm::vec3 middleToPrev = vec3FromVertex(vertexes[(i + n - 1) % n]) - vec3FromVertex(vertexes[i % n]);
 		glm::vec3 middleToNext = vec3FromVertex(vertexes[(i + 0 + 1) % n]) - vec3FromVertex(vertexes[i % n]);
 		glm::vec3 thisNorm = glm::normalize(glm::cross(middleToPrev, middleToNext));
-		const double THRESHOLD = 0.0000001;
-		if(glm::length(normal-thisNorm)>THRESHOLD)
+		//0.0101 in pouf 
+		const double THRESHOLD = 1.4;
+		float diff = glm::length(normal-thisNorm);
+		if(diff>THRESHOLD)
 		{
-			throw std::invalid_argument("not planar");
+			//ignore
 		}
 	}
 }
@@ -278,9 +280,9 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 							vertexNormal = vertexNormals[vertexNormalIndex];
 						}
 					}
-					// making.r = currentColour.r;
-					// making.g = currentColour.g;
-					// making.b = currentColour.b;
+					making.r = currentColour.r;
+					making.g = currentColour.g;
+					making.b = currentColour.b;
 					making.x = vertexPosition.x;
 					making.y = vertexPosition.y;
 					making.z = vertexPosition.z;
@@ -292,7 +294,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 					vertexes.push_back(making);
 				}
 				nextLine(i, buffer);
-				// assertVertexesArePlanarAndConvex(vertexes);
+				assertVertexesArePlanarAndConvex(vertexes);
 
 				unsigned offset = constructing.vertexes.size();
 				for(unsigned j = 0;j<vertexes.size();j++)
