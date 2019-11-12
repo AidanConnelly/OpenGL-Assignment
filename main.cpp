@@ -44,7 +44,7 @@ struct makeInstanceJob
 };
 
 std::vector<makeInstanceJob> toMakeInstanceOf;
-std::vector<Mesh> meshes;
+std::vector<Mesh*> meshes;
 std::vector<MeshInstance> meshInstances;
 int numMakeInstanceJobWrtn;
 int numMakeInstanceJobRead;
@@ -149,14 +149,18 @@ int openGLloop()
 			for(int i = numMeshDataRead;i<numMeshDataWrtn;i++)
 			{
 				loaded[i].BindTextures();
-				meshes.push_back(Mesh(loaded[i]));
+				Mesh* meshPtr = new Mesh(loaded[i]);
+				meshes.push_back(meshPtr);
 				numMeshDataRead = i + 1;
 			}
 
 		for(int i = numMakeInstanceJobRead;i<numMakeInstanceJobWrtn;i++)
 		{
 			int makeIndexOf = toMakeInstanceOf[i].toMakeInstanceOf;
-			meshInstances.push_back(MeshInstance(&meshes[makeIndexOf]));
+			Mesh* mesh = meshes[makeIndexOf];
+			Mesh* toMakeInstanceOf = mesh;
+			MeshInstance instance = MeshInstance(toMakeInstanceOf);
+			meshInstances.push_back(instance);
 			numMakeInstanceJobRead = i + 1;
 		}
 		
@@ -316,6 +320,15 @@ void processInput(GLFWwindow* window)
 	{
 		int n = meshInstances.size();
 		selected = (selected + n - 1) % n;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+	{
+		meshInstances[selected].scale(-0.01);
+	}
+	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+	{
+		meshInstances[selected].scale(+0.01);
 	}
 
 	ifKeyMoveMesh(window, glm::vec3(-1.0, 0.0, 0.0), GLFW_KEY_F);

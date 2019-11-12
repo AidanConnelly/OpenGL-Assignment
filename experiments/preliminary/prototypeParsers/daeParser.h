@@ -26,6 +26,15 @@ struct paramInfo{
     unsigned idx;
 };
 
+struct diffuseTextureOrColour
+{
+	enum which { tex, col, none };
+
+	which which;
+	std::string texture;
+	glm::vec3 colour;
+};
+
 struct parseNodeTagsResult
 {
 public:
@@ -131,7 +140,7 @@ private:
 
     static paramInfo prepareParam(std::string toGet, xmlNode *sourceTag, xmlNode *parsedFloatArray);
 
-	static std::string getFileNameFromMaterialID(xmlNodeStore nodes, std::string materialId);
+	static diffuseTextureOrColour getFileNameFromMaterialID(xmlNodeStore nodes, std::string materialId);
 };
 
 #endif //OPENGLSETUP_DAEPARSER_H

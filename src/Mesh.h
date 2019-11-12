@@ -88,6 +88,13 @@ public:
 		CheckForOpenGLErrors();
 	}
 
+	void bind()
+	{
+		glBindVertexArray(VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	}
+
 	Mesh(
 		std::vector<Vertex>* vrtxes,
 		std::vector<Triangle>* triags,
@@ -112,8 +119,12 @@ public:
 
 	void BindTextures(ShaderProgram program)
 	{
+		int hasTextureLocation = glGetUniformLocation(program.ID, "hasTexture");
+		glUniform1f(hasTextureLocation, 0.0f);
 		for (int i = 0; i < textures.size(); i++)
 		{
+			int hasTextureLocation = glGetUniformLocation(program.ID, "hasTexture");
+			glUniform1f(hasTextureLocation, 1.0f);
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, GL_TEXTURE0 + i);
 			textures[i].bind(program, i);
@@ -146,8 +157,9 @@ private:
 class MeshInstance
 {
 public:
-	explicit MeshInstance(Mesh* instanceOf) : instanceOf(instanceOf)
+	explicit MeshInstance(Mesh* toMakeInstanceOf)
 	{
+		this->instanceOf = toMakeInstanceOf;
 		model = glm::mat4(1.0f);
 		model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
 		model = glm::rotate(model, glm::radians(-40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -165,18 +177,26 @@ public:
 		int selectedLoc = glGetUniformLocation(program.ID, "selected");
 		glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 		glUniform1f(selectedLoc, selected?0.2:0.0);
+
+		instanceOf->bind();
 		glDrawElements(GL_TRIANGLES, 3*instanceOf->triangles.size(), GL_UNSIGNED_INT, 0);
 
 
 		auto ErrorCheckValue = glGetError();
 		std::cout << "";
 	}
+
 	Mesh* instanceOf;
 	bool selected;
 
 	void move(glm::vec3 translateBy)
 	{
 		model = glm::translate(model, translateBy);
+	}
+
+	void scale(float toScaleBy)
+	{
+		model = glm::scale(model, glm::vec3(1 + toScaleBy));
 	}
 private:
 	glm::mat4 model;

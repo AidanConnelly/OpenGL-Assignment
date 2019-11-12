@@ -43,19 +43,30 @@ std::vector<MeshData> daeParser::parse(std::vector<char>& buffer, std::string di
 	int x = sizeof(result.floatArrays[0]);
 	auto nodeParseResults = parseNodeTags(buffer, asVec);
 	auto meshParseResults = parseMeshTags(buffer, asVec, &result);
-	//todo apply transforms to instance_gemetries???
+	//todo apply transforms to instance_geometries???
 	std::cout << result.floatArrays.size();
 	std::vector<MeshData> toReturn;
 	for (auto& a : meshParseResults)
 	{
+		diffuseTextureOrColour* diffuse = NULL; 
 		std::vector<std::string> textures;
 		for (auto& b : a.textureIds)
 		{
-			std::string fileName = getFileNameFromMaterialID(nodes, b);
-			if (fileName != "")
+			auto texture = getFileNameFromMaterialID(nodes, b);
+			diffuse = &texture;
+			if (diffuse->which == diffuseTextureOrColour::tex)
 			{
-				std::string fullFileName = directory + fileName;
+				std::string fullFileName = directory + diffuse->texture;
 				textures.push_back(fullFileName);
+			}
+		}
+		if(diffuse && diffuse->which == diffuseTextureOrColour::col)
+		{
+			for(int i =0;i<a.vertexes.size();i++)
+			{
+				a.vertexes[i].r = diffuse->colour.r;
+				a.vertexes[i].g = diffuse->colour.g;
+				a.vertexes[i].b = diffuse->colour.b;
 			}
 		}
 		toReturn.push_back(MeshData(a.vertexes, a.triangles, textures));
@@ -63,8 +74,10 @@ std::vector<MeshData> daeParser::parse(std::vector<char>& buffer, std::string di
 	return toReturn;
 }
 
-std::string daeParser::getFileNameFromMaterialID(xmlNodeStore nodes, std::string materialId)
+diffuseTextureOrColour daeParser::getFileNameFromMaterialID(xmlNodeStore nodes, std::string materialId)
 {
+	diffuseTextureOrColour toReturn;
+	toReturn.which = diffuseTextureOrColour::none;
 	xmlNode* library_materials = getSoleByTag(nodes, "library_materials");
 	xmlNode material = getSoleByAttrib(library_materials->children, "id", materialId);
 	xmlNode* instance_effect = getSoleByTag(material.children, "instance_effect");
@@ -94,9 +107,25 @@ std::string daeParser::getFileNameFromMaterialID(xmlNodeStore nodes, std::string
 		xmlNode* library_images = getSoleByTag(nodes, "library_images");
 		xmlNode image = getSoleByAttrib(library_images->children, "id", imageId);
 		xmlNode* init_from = getSoleByTag(image.children, "init_from");
-		return init_from->getContents();
+		std::string fileName = init_from->getContents();
+		toReturn.which = diffuseTextureOrColour::tex;
+		toReturn.texture = fileName;
 	}
-	return "";
+	else if (filterByTagName(diffuse->children, "color").size() == 1)
+	{
+		auto color = getSoleByTag(diffuse->children, "color");
+		auto contents = color->getContents();
+		int index = 0;
+		std::vector<char> buffer(contents.begin(), contents.end());
+		float r = parseAFloat(&index, buffer);
+		index++;
+		float g = parseAFloat(&index, buffer);
+		index++;
+		float b = parseAFloat(&index, buffer);
+		toReturn.which = diffuseTextureOrColour::col;
+		toReturn.colour = glm::vec3(r,g,b);
+	}
+	return toReturn;
 }
 
 #pragma clang diagnostic push
