@@ -9,6 +9,7 @@
 #include<string>
 #include <stdexcept>
 #include <mutex>
+#include <map>
 
 static std::mutex mtx;           
 static unsigned nextID = 0;
@@ -19,6 +20,8 @@ struct xmlNode {
     std::vector<xmlNode *> children;
     std::string tagName;
     std::vector<float> floatsIfApplicable;
+	std::map<std::string, std::string> parsedAttributes;
+	std::map<std::string, bool> foundAttributes;
     std::vector<int> indexesIfApplicable;
     unsigned id;
 
@@ -50,21 +53,28 @@ struct xmlNode {
 		std::string toReturn = getIfHasAttribute(attributeName, "");
 		return toReturn;
 	};
-	
+
 	std::string getIfHasAttribute(std::string attributeName, std::string ifDoesntHave) {
+		if (parsedAttributes.count(attributeName) == 1)
+		{
+			return parsedAttributes[attributeName];
+		}
+		if (foundAttributes.count(attributeName) == 1)
+		{
+			if (foundAttributes[attributeName] == false)
+			{
+				return ifDoesntHave;
+			}
+		}
 		std::string toLookFor = attributeName + "=\"";
 		auto attrNameLength = toLookFor.size();
-		for (int idx = startIndex; idx<(endIndex - attrNameLength); idx++) {
-			if(buffer[idx+attrNameLength-1]=='>')
+		for (int idx = startIndex; idx < (endIndex - attrNameLength); idx++) {
+			if (buffer[idx + attrNameLength - 1] == '>')
 			{
 				break;
 			}
 			bool fail = false;
-			for (int subStrIdx = 0; subStrIdx<attrNameLength; subStrIdx++) {
-				if (idx + subStrIdx >= buffer.size())
-				{
-					throw std::invalid_argument("invalid state");
-				}
+			for (int subStrIdx = 0; subStrIdx < attrNameLength; subStrIdx++) {
 				if (buffer[idx + subStrIdx] != toLookFor[subStrIdx]) {
 					fail = true;
 					break;
@@ -73,12 +83,15 @@ struct xmlNode {
 			if (!fail) {
 				std::string toReturn;
 				getValue(idx + attrNameLength, toReturn);
+				foundAttributes[attributeName] = true;
+				parsedAttributes[attributeName] = toReturn;
 				return toReturn;
 			}
 		}
+		foundAttributes[attributeName] = false;
 		return ifDoesntHave;
 	};
-
+	
     bool hasAttribute(std::string attributeName){
 		std::string val = getIfHasAttribute(attributeName, "string not found");
 		if (val == "string not found")

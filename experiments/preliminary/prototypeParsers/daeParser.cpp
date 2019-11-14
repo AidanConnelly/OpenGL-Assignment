@@ -216,6 +216,8 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 			int vertexCount = numberOfIndexes / (maxOffset + 1);
 			int triangleCount = vertexCount / 3;
 
+			thisResult2.vertexes.reserve(vertexCount);
+
 			int expectedNumberOfIndexes = triangleCount * (maxOffset + 1) * 3;
 			if (expectedNumberOfIndexes != numberOfIndexes)
 			{
@@ -239,7 +241,8 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 
 			textureCoordinateData* tData = NULL;
 			int tCoordOffset = 0;
-			if (anyByAttrib(triangleTag.children, "semantic", "TEXCOORD")) {
+			std::vector<xmlNode*> triangleTagInputChildren = filterByTagName(triangleTag.children,"input");
+			if (anyByAttrib(triangleTagInputChildren, "semantic", "TEXCOORD")) {
 				auto tCoordInputTag = getSoleByAttrib(triangleTag.children, "semantic", "TEXCOORD");
 				tCoordOffset = stoi(tCoordInputTag.getAttribute("offset"));
 				const std::string& tCoordSourceId = tCoordInputTag.getAttribute("source");
@@ -260,7 +263,7 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 
 			colourData* cData = NULL;
 			int colourOffset = 0;
-			bool hasColourFromVertex = anyByAttrib(triangleTag.children, "semantic", "COLOR");
+			bool hasColourFromVertex = anyByAttrib(triangleTagInputChildren, "semantic", "COLOR");
 			thisResult2.hasColourFromVertex = hasColourFromVertex;
 			if (hasColourFromVertex) {
 				auto colourInputTag = getSoleByAttrib(triangleTag.children, "semantic", "COLOR");
