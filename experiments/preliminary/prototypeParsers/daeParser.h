@@ -40,7 +40,7 @@ struct parseNodeTagsResult
 public:
 	void setMatrixFromNode(xmlNode matrix)
 	{
-		auto buffer = matrix.buffer;
+		const std::vector<char>& buffer = matrix.buffer;
 		int index = matrix.startIndex;
 		do
 		{
@@ -127,6 +127,7 @@ private:
 	                                                  bufferParseResult* largeBuffers);
 
 	static std::vector<parseNodeTagsResult> parseNodeTags(std::vector<char> buffer, xmlNodeVector nodes);
+	static meshParseResult parseTriangleTag(bufferParseResult* largeBuffers, std::string id, xmlNode tag, xmlNode* triangleTagPtr);
 
 	static xmlNode* getSoleByTag(const xmlNodeStore& toSearchIn, std::string toSearchFor);
 

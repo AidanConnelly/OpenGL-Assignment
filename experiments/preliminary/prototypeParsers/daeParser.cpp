@@ -48,7 +48,7 @@ std::vector<MeshData> daeParser::parse(std::vector<char>& buffer, std::string di
 	std::vector<MeshData> toReturn;
 	for (auto& a : meshParseResults)
 	{
-		diffuseTextureOrColour* diffuse = NULL; 
+		diffuseTextureOrColour* diffuse = NULL;
 		std::vector<std::string> textures;
 		for (auto& b : a.textureIds)
 		{
@@ -60,9 +60,9 @@ std::vector<MeshData> daeParser::parse(std::vector<char>& buffer, std::string di
 				textures.push_back(fullFileName);
 			}
 		}
-		if(diffuse && diffuse->which == diffuseTextureOrColour::col && (!a.hasColourFromVertex))
+		if (diffuse && diffuse->which == diffuseTextureOrColour::col && (!a.hasColourFromVertex))
 		{
-			for(int i =0;i<a.vertexes.size();i++)
+			for (int i = 0; i < a.vertexes.size(); i++)
 			{
 				a.vertexes[i].r = diffuse->colour.r;
 				a.vertexes[i].g = diffuse->colour.g;
@@ -123,7 +123,7 @@ diffuseTextureOrColour daeParser::getFileNameFromMaterialID(xmlNodeStore nodes, 
 		index++;
 		float b = parseAFloat(&index, buffer);
 		toReturn.which = diffuseTextureOrColour::col;
-		toReturn.colour = glm::vec3(r,g,b);
+		toReturn.colour = glm::vec3(r, g, b);
 	}
 	return toReturn;
 }
@@ -155,11 +155,193 @@ std::vector<parseNodeTagsResult> daeParser::parseNodeTags(std::vector<char> buff
 
 #pragma clang diagnostic pop
 
+meshParseResult daeParser::parseTriangleTag(bufferParseResult* largeBuffers,
+                                            std::string id,
+                                            xmlNode tag, xmlNode* triangleTagPtr)
+{
+	meshParseResult thisResult2 = meshParseResult();
+	thisResult2.meshID = id;
+
+	if (triangleTagPtr->hasAttribute("material"))
+	{
+		//todo change this
+		thisResult2.meshID += triangleTagPtr->getAttribute("material");
+		thisResult2.textureIds.push_back(triangleTagPtr->getAttribute("material"));
+	}
+	auto triangleTag = *triangleTagPtr;
+	xmlNode pTag = *getSoleByTag(triangleTag.children, "p");
+	auto vertexInputTag = getSoleByAttrib(triangleTag.children, "semantic", "VERTEX");
+	auto normalInputTag = getSoleByAttrib(triangleTag.children, "semantic", "NORMAL");
+	int vertexOffset = stoi(vertexInputTag.getAttribute("offset"));
+	int normalOffset = stoi(normalInputTag.getAttribute("offset"));
+	int maxOffset = 0;
+	auto inputTags = filterByTagName(triangleTag.children, "input");
+	for (auto& nodePtr : inputTags)
+	{
+		auto node = *nodePtr;
+		int offset = std::stoi(node.getAttribute("offset"));
+		if (offset > maxOffset)
+		{
+			maxOffset = offset;
+		}
+	}
+
+	xmlNode* thisTriangleIndexArray = nullptr;
+	for (auto& indexArray : largeBuffers->indexArrays)
+	{
+		if (indexArray->id == pTag.id)
+		{
+			thisTriangleIndexArray = indexArray;
+		}
+	}
+
+	if (thisTriangleIndexArray == nullptr)
+	{
+		throw std::invalid_argument("todo");
+	}
+
+	int numberOfIndexes = thisTriangleIndexArray->indexesIfApplicable.size();
+	int vertexCount = numberOfIndexes / (maxOffset + 1);
+	int triangleCount = vertexCount / 3;
+
+	thisResult2.vertexes.reserve(vertexCount);
+
+	int expectedNumberOfIndexes = triangleCount * (maxOffset + 1) * 3;
+	if (expectedNumberOfIndexes != numberOfIndexes)
+	{
+		throw std::invalid_argument("wrong number of indexes");
+	}
+
+	const std::string& verticesID = vertexInputTag.getAttribute("source");
+	auto vertexTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(verticesID));
+	const std::string& inputID = vertexTag.children[0]->getAttribute("source");
+	auto positionSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(inputID));
+
+	const std::string& normalSourceId = normalInputTag.getAttribute("source");
+	auto normalSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(normalSourceId));
+
+	struct textureCoordinateData
+	{
+		xmlNode* ar;
+		paramInfo s;
+		paramInfo t;
+	};
+
+	textureCoordinateData* tData = NULL;
+	int tCoordOffset = 0;
+	std::vector<xmlNode*> triangleTagInputChildren = filterByTagName(triangleTag.children, "input");
+	if (anyByAttrib(triangleTagInputChildren, "semantic", "TEXCOORD"))
+	{
+		auto tCoordInputTag = getSoleByAttrib(triangleTag.children, "semantic", "TEXCOORD");
+		tCoordOffset = stoi(tCoordInputTag.getAttribute("offset"));
+		const std::string& tCoordSourceId = tCoordInputTag.getAttribute("source");
+		auto tCoordSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(tCoordSourceId));
+
+		xmlNode* tCoordArray = soleLargeFloatChild(tCoordSourceTag, largeBuffers);
+		paramInfo sParam = prepareParam("S", &tCoordSourceTag, tCoordArray);
+		paramInfo tParam = prepareParam("T", &tCoordSourceTag, tCoordArray);
+		tData = new textureCoordinateData{tCoordArray, sParam, tParam};
+	}
+	struct colourData
+	{
+		xmlNode* ar;
+		paramInfo re;
+		paramInfo gr;
+		paramInfo bl;
+	};
+
+	colourData* cData = NULL;
+	int colourOffset = 0;
+	bool hasColourFromVertex = anyByAttrib(triangleTagInputChildren, "semantic", "COLOR");
+	thisResult2.hasColourFromVertex = hasColourFromVertex;
+	if (hasColourFromVertex)
+	{
+		auto colourInputTag = getSoleByAttrib(triangleTag.children, "semantic", "COLOR");
+		colourOffset = stoi(colourInputTag.getAttribute("offset"));
+		const std::string& colourSourceId = colourInputTag.getAttribute("source");
+		auto colourSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(colourSourceId));
+
+		xmlNode* colourArray = soleLargeFloatChild(colourSourceTag, largeBuffers);
+		paramInfo rParam = prepareParam("R", &colourSourceTag, colourArray);
+		paramInfo gParam = prepareParam("G", &colourSourceTag, colourArray);
+		paramInfo bParam = prepareParam("B", &colourSourceTag, colourArray);
+		colourData* made = new colourData{colourArray, rParam, gParam, bParam};
+		cData = made;
+	}
+
+	auto positnFloat = soleLargeFloatChild(positionSourceTag, largeBuffers);
+	paramInfo xParam = prepareParam("X", &positionSourceTag, positnFloat);
+	paramInfo yParam = prepareParam("Y", &positionSourceTag, positnFloat);
+	paramInfo zParam = prepareParam("Z", &positionSourceTag, positnFloat);
+	auto nrmlFloat = soleLargeFloatChild(normalSourceTag, largeBuffers);
+	paramInfo nXParam = prepareParam("X", &normalSourceTag, nrmlFloat);
+	paramInfo nYParam = prepareParam("Y", &normalSourceTag, nrmlFloat);
+	paramInfo nZParam = prepareParam("Z", &normalSourceTag, nrmlFloat);
+
+	for (int triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++)
+	{
+		//region Region_1
+		for (int i = 0; i < 3; i++)
+		{
+			Vertex building{};
+
+			unsigned vertexIndex = 3 * triangleIndex + i;
+			unsigned positnIndex = thisTriangleIndexArray->indexesIfApplicable[(maxOffset + 1) * vertexIndex +
+				vertexOffset];
+			unsigned normalIndex = thisTriangleIndexArray->indexesIfApplicable[(maxOffset + 1) * vertexIndex +
+				normalOffset];
+			unsigned tCoordIndex = thisTriangleIndexArray->indexesIfApplicable[(maxOffset + 1) * vertexIndex +
+				tCoordOffset];
+			unsigned colourIndex = thisTriangleIndexArray->indexesIfApplicable[(maxOffset + 1) * vertexIndex +
+				colourOffset];
+
+			//vertex X
+			building.x = positnFloat->floatsIfApplicable[xParam.stride * positnIndex + xParam.idx];
+			//vertex Y
+			building.y = positnFloat->floatsIfApplicable[yParam.stride * positnIndex + yParam.idx];
+			//vertex Z
+			building.z = positnFloat->floatsIfApplicable[zParam.stride * positnIndex + zParam.idx];
+
+			//vertexNormal X
+			building.nX = nrmlFloat->floatsIfApplicable[nXParam.stride * normalIndex + nXParam.idx];
+			//vertexNormal Y
+			building.nY = nrmlFloat->floatsIfApplicable[nYParam.stride * normalIndex + nYParam.idx];
+			//vertexNormal Z
+			building.nZ = nrmlFloat->floatsIfApplicable[nZParam.stride * normalIndex + nZParam.idx];
+
+			if (tData)
+			{
+				//texCoord U
+				building.u = tData->ar->floatsIfApplicable[tData->s.stride * tCoordIndex + tData->s.idx];
+				//texCoord V
+				building.v = tData->ar->floatsIfApplicable[tData->t.stride * tCoordIndex + tData->t.idx];
+			}
+
+			if (cData)
+			{
+				building.r = cData->ar->floatsIfApplicable[cData->re.stride * colourIndex + cData->re.idx];
+				building.g = cData->ar->floatsIfApplicable[cData->gr.stride * colourIndex + cData->gr.idx];
+				building.b = cData->ar->floatsIfApplicable[cData->bl.stride * colourIndex + cData->bl.idx];
+			}
+
+			thisResult2.vertexes.push_back(building);
+		}
+		Triangle constructed{};
+		constructed.v1i = thisResult2.vertexes.size() - 3;
+		constructed.v2i = thisResult2.vertexes.size() - 2;
+		constructed.v3i = thisResult2.vertexes.size() - 1;
+		thisResult2.triangles.push_back(constructed);
+	}
+	return thisResult2;
+}
+
 std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes,
                                                       bufferParseResult* largeBuffers)
 {
+	std::mutex mtx;
 	std::vector<meshParseResult> results;
 	std::vector<xmlNode> tags = filterByTagName(nodes, "geometry");
+	std::vector<std::thread> threads;
 	for (auto& geometryTag : tags)
 	{
 		std::string id = geometryTag.getAttribute("id");
@@ -169,199 +351,34 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 			throw std::invalid_argument("unexpected state");
 		}
 		xmlNodeStore triangles = filterByTagName(tag.children, "triangles");
-		for (auto& triangleTagPtr : triangles)
+		int numberOfThreads = 4;
+		for (int i = 0; i < triangles.size(); i++)
 		{
-			meshParseResult thisResult2 = meshParseResult();
-			thisResult2.meshID = id;
-
-			if (triangleTagPtr->hasAttribute("material"))
+			xmlNode* trglTagCpy = new xmlNode(*triangles[i]);
+			auto fx = [&largeBuffers, id, tag, trglTagCpy, &mtx, &results]
 			{
-				//todo change this
-				thisResult2.meshID += triangleTagPtr->getAttribute("material");
-				thisResult2.textureIds.push_back(triangleTagPtr->getAttribute("material"));
-			}
-			auto triangleTag = *triangleTagPtr;
-			xmlNode pTag = *getSoleByTag(triangleTag.children, "p");
-			auto vertexInputTag = getSoleByAttrib(triangleTag.children, "semantic", "VERTEX");
-			auto normalInputTag = getSoleByAttrib(triangleTag.children, "semantic", "NORMAL");
-			int vertexOffset = stoi(vertexInputTag.getAttribute("offset"));
-			int normalOffset = stoi(normalInputTag.getAttribute("offset"));
-			int maxOffset = 0;
-			auto inputTags = filterByTagName(triangleTag.children, "input");
-			for (auto& nodePtr : inputTags)
-			{
-				auto node = *nodePtr;
-				int offset = std::stoi(node.getAttribute("offset"));
-				if (offset > maxOffset)
-				{
-					maxOffset = offset;
-				}
-			}
-
-			xmlNode* thisTriangleIndexArray = nullptr;
-			for (auto& indexArray : largeBuffers->indexArrays)
-			{
-				if (indexArray->id == pTag.id)
-				{
-					thisTriangleIndexArray = indexArray;
-				}
-			}
-
-			if (thisTriangleIndexArray == nullptr)
-			{
-				throw std::invalid_argument("todo");
-			}
-
-			int numberOfIndexes = thisTriangleIndexArray->indexesIfApplicable.size();
-			int vertexCount = numberOfIndexes / (maxOffset + 1);
-			int triangleCount = vertexCount / 3;
-
-			thisResult2.vertexes.reserve(vertexCount);
-
-			int expectedNumberOfIndexes = triangleCount * (maxOffset + 1) * 3;
-			if (expectedNumberOfIndexes != numberOfIndexes)
-			{
-				throw std::invalid_argument("wrong number of indexes");
-			}
-
-			const std::string& verticesID = vertexInputTag.getAttribute("source");
-			auto vertexTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(verticesID));
-			const std::string& inputID = vertexTag.children[0]->getAttribute("source");
-			auto positionSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(inputID));
-
-			const std::string& normalSourceId = normalInputTag.getAttribute("source");
-			auto normalSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(normalSourceId));
-
-			struct textureCoordinateData
-			{
-				xmlNode* ar;
-				paramInfo s;
-				paramInfo t;
+				meshParseResult toPush = parseTriangleTag(largeBuffers, id, tag, trglTagCpy);
+				mtx.lock();
+				results.push_back(toPush);
+				mtx.unlock();
 			};
-
-			textureCoordinateData* tData = NULL;
-			int tCoordOffset = 0;
-			std::vector<xmlNode*> triangleTagInputChildren = filterByTagName(triangleTag.children,"input");
-			if (anyByAttrib(triangleTagInputChildren, "semantic", "TEXCOORD")) {
-				auto tCoordInputTag = getSoleByAttrib(triangleTag.children, "semantic", "TEXCOORD");
-				tCoordOffset = stoi(tCoordInputTag.getAttribute("offset"));
-				const std::string& tCoordSourceId = tCoordInputTag.getAttribute("source");
-				auto tCoordSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(tCoordSourceId));
-
-				xmlNode* tCoordArray = soleLargeFloatChild(tCoordSourceTag, largeBuffers);
-				paramInfo sParam = prepareParam("S", &tCoordSourceTag, tCoordArray);
-				paramInfo tParam = prepareParam("T", &tCoordSourceTag, tCoordArray);
-				tData = new textureCoordinateData{ tCoordArray, sParam, tParam };
-			}
-			struct colourData
+			int threadIndex = (i - numberOfThreads) % numberOfThreads;
+			if (threads.size() > threadIndex)
 			{
-				xmlNode* ar;
-				paramInfo re;
-				paramInfo gr;
-				paramInfo bl;
-			};
-
-			colourData* cData = NULL;
-			int colourOffset = 0;
-			bool hasColourFromVertex = anyByAttrib(triangleTagInputChildren, "semantic", "COLOR");
-			thisResult2.hasColourFromVertex = hasColourFromVertex;
-			if (hasColourFromVertex) {
-				auto colourInputTag = getSoleByAttrib(triangleTag.children, "semantic", "COLOR");
-				colourOffset = stoi(colourInputTag.getAttribute("offset"));
-				const std::string& colourSourceId = colourInputTag.getAttribute("source");
-				auto colourSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(colourSourceId));
-
-				xmlNode* colourArray = soleLargeFloatChild(colourSourceTag, largeBuffers);
-				paramInfo rParam = prepareParam("R", &colourSourceTag, colourArray);
-				paramInfo gParam = prepareParam("G", &colourSourceTag, colourArray);
-				paramInfo bParam = prepareParam("B", &colourSourceTag, colourArray);
-				colourData* made = new colourData{ colourArray, rParam, gParam, bParam };
-				cData = made;
+				threads[threadIndex].join();
+				threads[threadIndex] = std::thread(fx);
 			}
-
-			auto positnFloat = soleLargeFloatChild(positionSourceTag, largeBuffers);
-			paramInfo xParam = prepareParam("X", &positionSourceTag, positnFloat);
-			paramInfo yParam = prepareParam("Y", &positionSourceTag, positnFloat);
-			paramInfo zParam = prepareParam("Z", &positionSourceTag, positnFloat);
-			auto nrmlFloat = soleLargeFloatChild(normalSourceTag, largeBuffers);
-			paramInfo nXParam = prepareParam("X", &normalSourceTag, nrmlFloat);
-			paramInfo nYParam = prepareParam("Y", &normalSourceTag, nrmlFloat);
-			paramInfo nZParam = prepareParam("Z", &normalSourceTag, nrmlFloat);
-
-			for (int triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++)
+			else
 			{
-				//region Region_1
-				for (int i = 0; i < 3; i++)
-				{
-					Vertex building{};
-
-					unsigned vertexIndex = 3 * triangleIndex + i;
-					unsigned positnIndex = thisTriangleIndexArray->indexesIfApplicable[(maxOffset + 1) * vertexIndex +
-						vertexOffset];
-					unsigned normalIndex = thisTriangleIndexArray->indexesIfApplicable[(maxOffset + 1) * vertexIndex +
-						normalOffset];
-					unsigned tCoordIndex = thisTriangleIndexArray->indexesIfApplicable[(maxOffset + 1) * vertexIndex +
-						tCoordOffset];
-					unsigned colourIndex = thisTriangleIndexArray->indexesIfApplicable[(maxOffset + 1) * vertexIndex +
-						colourOffset];
-
-					//vertex X
-					building.x = positnFloat->floatsIfApplicable[xParam.stride * positnIndex + xParam.idx];
-					//vertex Y
-					building.y = positnFloat->floatsIfApplicable[yParam.stride * positnIndex + yParam.idx];
-					//vertex Z
-					building.z = positnFloat->floatsIfApplicable[zParam.stride * positnIndex + zParam.idx];
-
-					//vertexNormal X
-					building.nX = nrmlFloat->floatsIfApplicable[nXParam.stride * normalIndex + nXParam.idx];
-					//vertexNormal Y
-					building.nY = nrmlFloat->floatsIfApplicable[nYParam.stride * normalIndex + nYParam.idx];
-					//vertexNormal Z
-					building.nZ = nrmlFloat->floatsIfApplicable[nZParam.stride * normalIndex + nZParam.idx];
-
-					if (tData) {
-						//texCoord U
-						building.u = tData->ar->floatsIfApplicable[tData->s.stride * tCoordIndex + tData->s.idx];
-						//texCoord V
-						building.v = tData->ar->floatsIfApplicable[tData->t.stride * tCoordIndex + tData->t.idx];
-					}
-
-					if(cData)
-					{
-						building.r = cData->ar->floatsIfApplicable[cData->re.stride * colourIndex + cData->re.idx];
-						building.g = cData->ar->floatsIfApplicable[cData->gr.stride * colourIndex + cData->gr.idx];
-						building.b = cData->ar->floatsIfApplicable[cData->bl.stride * colourIndex + cData->bl.idx];
-					}
-					
-					thisResult2.vertexes.push_back(building);
-				}
-				Triangle constructed{};
-				constructed.v1i = thisResult2.vertexes.size() - 3;
-				constructed.v2i = thisResult2.vertexes.size() - 2;
-				constructed.v3i = thisResult2.vertexes.size() - 1;
-				thisResult2.triangles.push_back(constructed);
+				threads.push_back(std::thread(fx));
 			}
-			//endregion Region_1
-			results.push_back(thisResult2);
-
-
-			//Can now construct vertex buffer and vertex index buffer from p tag data
 		}
-		//region Region_2
-
-		//Find <p>,
-		//Find semantic = VERTEX <vertices> ~> <input> child ~> <source>
-		//Find semantic = NORMAL <source>
-		//Find semantic = TEXCOORD <source>
-
-		//<source>
-		//<float_array>
-		//<technique_common>
-		//From = Index of <param NUM>
-		//To = NUM
-		//endregion Region_2
-
+		for (int i = 0; i < threads.size(); i++)
+		{
+			threads[i].join();
+		}
 	}
+	std::cout << results.size() << std::endl;
 	return results;
 }
 
@@ -708,23 +725,43 @@ void daeParser::alterXmlNodes(xmlNodeStore& input, std::function<void(xmlNode*)>
 
 xmlNodeStore daeParser::parseIndexBuffer(const std::vector<char>& buffer, xmlNodeStore indexBuffer)
 {
-	alterXmlNodes(indexBuffer, [&](xmlNode* node) -> void
+	int threadNumber = 4;
+	std::vector<std::thread*> threads;
+	for (int i = 0; i < indexBuffer.size(); i++)
 	{
-		int index = node->startIndex;
-		while (buffer[index] != '>')
+		int threadIndex = i % threadNumber;
+		std::thread* ptr = new std::thread([&buffer, i,&indexBuffer]() -> void
 		{
-			index++;
-		}
-		std::vector<int> indexes;
-		do
+			xmlNode* node = indexBuffer[i];
+			int index = node->startIndex;
+			while (buffer[index] != '>')
+			{
+				index++;
+			}
+			std::vector<int> indexes;
+			do
+			{
+				index++;
+				int ind = parseAnInt(&index, buffer);
+				indexes.push_back(ind);
+			}
+			while (buffer[index] == ' ');
+			node->indexesIfApplicable = indexes;
+		});
+		if (threadIndex >= threads.size())
 		{
-			index++;
-			int ind = parseAnInt(&index, buffer);
-			indexes.push_back(ind);
+			threads.push_back(ptr);
 		}
-		while (buffer[index] == ' ');
-		node->indexesIfApplicable = indexes;
-	});
+		else
+		{
+			threads[i]->join();
+			threads[i] = ptr;
+		}
+	}
+	for (auto &t : threads)
+	{
+		t->join();
+	}
 	return indexBuffer;
 }
 
