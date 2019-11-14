@@ -88,6 +88,7 @@ public:
 
 struct meshParseResult
 {
+	bool hasColourFromVertex;
 	std::vector<Vertex> vertexes;
 	std::vector<Triangle> triangles;
 	std::vector<std::string> textureIds;

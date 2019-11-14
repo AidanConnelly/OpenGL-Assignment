@@ -42,7 +42,7 @@ std::vector<MeshData> daeParser::parse(std::vector<char>& buffer, std::string di
 	bufferParseResult result = parseLargeBuffers(nodes);
 	int x = sizeof(result.floatArrays[0]);
 	auto nodeParseResults = parseNodeTags(buffer, asVec);
-	auto meshParseResults = parseMeshTags(buffer, asVec, &result);
+	std::vector<meshParseResult> meshParseResults = parseMeshTags(buffer, asVec, &result);
 	//todo apply transforms to instance_geometries???
 	std::cout << result.floatArrays.size();
 	std::vector<MeshData> toReturn;
@@ -60,7 +60,7 @@ std::vector<MeshData> daeParser::parse(std::vector<char>& buffer, std::string di
 				textures.push_back(fullFileName);
 			}
 		}
-		if(diffuse && diffuse->which == diffuseTextureOrColour::col)
+		if(diffuse && diffuse->which == diffuseTextureOrColour::col && (!a.hasColourFromVertex))
 		{
 			for(int i =0;i<a.vertexes.size();i++)
 			{
@@ -162,20 +162,23 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 	std::vector<xmlNode> tags = filterByTagName(nodes, "geometry");
 	for (auto& geometryTag : tags)
 	{
-		meshParseResult thisResult = meshParseResult();
 		std::string id = geometryTag.getAttribute("id");
 		xmlNode tag = *geometryTag.children[0];
 		if (tag.tagName != "mesh")
 		{
 			throw std::invalid_argument("unexpected state");
 		}
-		thisResult.meshID = id;
 		xmlNodeStore triangles = filterByTagName(tag.children, "triangles");
 		for (auto& triangleTagPtr : triangles)
 		{
+			meshParseResult thisResult2 = meshParseResult();
+			thisResult2.meshID = id;
+
 			if (triangleTagPtr->hasAttribute("material"))
 			{
-				thisResult.textureIds.push_back(triangleTagPtr->getAttribute("material"));
+				//todo change this
+				thisResult2.meshID += triangleTagPtr->getAttribute("material");
+				thisResult2.textureIds.push_back(triangleTagPtr->getAttribute("material"));
 			}
 			auto triangleTag = *triangleTagPtr;
 			xmlNode pTag = *getSoleByTag(triangleTag.children, "p");
@@ -257,7 +260,9 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 
 			colourData* cData = NULL;
 			int colourOffset = 0;
-			if (anyByAttrib(triangleTag.children, "semantic", "COLOR")) {
+			bool hasColourFromVertex = anyByAttrib(triangleTag.children, "semantic", "COLOR");
+			thisResult2.hasColourFromVertex = hasColourFromVertex;
+			if (hasColourFromVertex) {
 				auto colourInputTag = getSoleByAttrib(triangleTag.children, "semantic", "COLOR");
 				colourOffset = stoi(colourInputTag.getAttribute("offset"));
 				const std::string& colourSourceId = colourInputTag.getAttribute("source");
@@ -325,15 +330,16 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 						building.b = cData->ar->floatsIfApplicable[cData->bl.stride * colourIndex + cData->bl.idx];
 					}
 					
-					thisResult.vertexes.push_back(building);
+					thisResult2.vertexes.push_back(building);
 				}
 				Triangle constructed{};
-				constructed.v1i = thisResult.vertexes.size() - 3;
-				constructed.v2i = thisResult.vertexes.size() - 2;
-				constructed.v3i = thisResult.vertexes.size() - 1;
-				thisResult.triangles.push_back(constructed);
+				constructed.v1i = thisResult2.vertexes.size() - 3;
+				constructed.v2i = thisResult2.vertexes.size() - 2;
+				constructed.v3i = thisResult2.vertexes.size() - 1;
+				thisResult2.triangles.push_back(constructed);
 			}
 			//endregion Region_1
+			results.push_back(thisResult2);
 
 
 			//Can now construct vertex buffer and vertex index buffer from p tag data
@@ -352,7 +358,6 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 		//To = NUM
 		//endregion Region_2
 
-		results.push_back(thisResult);
 	}
 	return results;
 }

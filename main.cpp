@@ -10,7 +10,7 @@
 #include "src/Mesh.h"
 #include <iostream>
 #include "vsSolution/vsSolution/objParser.h"
-#include <experimental/filesystem>	
+#include <experimental/filesystem>
 #include <thread>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -44,7 +44,7 @@ struct makeInstancesJob
 };
 
 std::vector<makeInstancesJob> toMakeInstanceOf;
-std::vector<std::vector<Mesh*>> meshes;
+std::vector<MultiMesh*> meshes;
 std::vector<MeshInstance> meshInstances;
 int numMakeInstanceJobWrtn;
 int numMakeInstanceJobRead;
@@ -146,29 +146,28 @@ int openGLloop()
 	auto start = std::chrono::system_clock::now();
 	while (!glfwWindowShouldClose(window))
 	{
-			for(int i = numMeshDataRead;i<numMeshDataWrtn;i++)
+		for (int i = numMeshDataRead; i < numMeshDataWrtn; i++)
+		{
+			std::vector<Mesh*> toMakeMultiMeshOf;
+			for (auto& a : *loaded[i])
 			{
-				meshes.emplace_back();
-				for(auto &a :*loaded[i])
-				{
-					a.BindTextures();
-					Mesh* meshPtr = new Mesh(a);
-					meshes[meshes.size() - 1].push_back(meshPtr);
-					numMeshDataRead = i + 1;
-				}
+				a.BindTextures();
+				Mesh* meshPtr = new Mesh(a);
+				toMakeMultiMeshOf.push_back(meshPtr);
+				numMeshDataRead = i + 1;
 			}
+			meshes.push_back(new MultiMesh(toMakeMultiMeshOf));
+		}
 
-		for(int i = numMakeInstanceJobRead;i<numMakeInstanceJobWrtn;i++)
+		for (int i = numMakeInstanceJobRead; i < numMakeInstanceJobWrtn; i++)
 		{
 			int makeIndexOf = toMakeInstanceOf[i].toMakeInstancesOf;
-			std::vector<Mesh*> mesh = meshes[makeIndexOf];
-			for (auto &toMakeInstanceOf : mesh) {
-				MeshInstance instance = MeshInstance(toMakeInstanceOf);
-				meshInstances.push_back(instance);
-			}
+			MultiMesh* mesh = meshes[makeIndexOf];
+			MeshInstance instance = MeshInstance(mesh);
+			meshInstances.push_back(instance);
 			numMakeInstanceJobRead = i + 1;
 		}
-		
+
 		processInput(window);
 
 		glClearColor(0.09f, 0.12f, 0.14f, 1.0f);
@@ -179,7 +178,7 @@ int openGLloop()
 		program.use();
 
 		int timeLoc = glGetUniformLocation(program.ID, "time");
-		double time = (std::chrono::system_clock::now() - start).count()/10000000.0;
+		double time = (std::chrono::system_clock::now() - start).count() / 10000000.0;
 		glUniform1f(timeLoc, time);
 
 		glm::mat4 view = glm::mat4(1.0f);
@@ -188,7 +187,8 @@ int openGLloop()
 
 		// creating the projection matrix
 		glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3, 0.1f, 50000.0f);
-		for (int i = 0; i < meshInstances.size();i++) {
+		for (int i = 0; i < meshInstances.size(); i++)
+		{
 			auto mI = meshInstances[i];
 			mI.instanceOf->BindTextures(program);
 			mI.selected = i == selected;
@@ -205,49 +205,63 @@ int openGLloop()
 	return 0;
 }
 
-void loopNavigation(){
+void loopNavigation()
+{
 	auto current = std::experimental::filesystem::path("C://");
-    while(true) {
-        if(exists(current)) {
-            if(current.extension().empty()) {
-                try {
+	while (true)
+	{
+		if (exists(current))
+		{
+			if (current.extension().empty())
+			{
+				try
+				{
 					auto currentDirContents = std::experimental::filesystem::directory_iterator(current);
-                    for (const auto &file : currentDirContents) {
+					for (const auto& file : currentDirContents)
+					{
 						// std::string folderChar = "📁";
 						std::string folderChar = "o";
 						// std::string fileChar = "🗎";
 						std::string fileChar = "i";
-                        std::cout << (std::experimental::filesystem::is_directory(file) ? " "+folderChar+"\t" : " "+fileChar+"\t");
+						std::cout << (std::experimental::filesystem::is_directory(file)
+							              ? " " + folderChar + "\t"
+							              : " " + fileChar + "\t");
 						std::cout << file.path().filename() << std::endl;
-                    }
-                }
-                catch (const std::exception e) {
-                    std::cout << "error reading extensionless file system item as folder";
-                }
-            }
-            else{
-                std::cout << current.extension();
-            }
-        }
+					}
+				}
+				catch (const std::exception e)
+				{
+					std::cout << "error reading extensionless file system item as folder";
+				}
+			}
+			else
+			{
+				std::cout << current.extension();
+			}
+		}
 
-        std::string str;
-        std::getline(std::cin, str);
-        if(str=="exit"){
-            return;
-        }
-		if(str.rfind("load ", 0) == 0)
+		std::string str;
+		std::getline(std::cin, str);
+		if (str == "exit")
+		{
+			return;
+		}
+		if (str.rfind("load ", 0) == 0)
 		{
 			std::string toLoad = str.substr(5, str.size() - 5);
 			std::string fullFilePath = (current / toLoad).string();
-			if (exists(current / toLoad)) {
+			if (exists(current / toLoad))
+			{
 				std::vector<char> contents = fileThroughput::getBytes(fullFilePath);
 
 				std::string extension = (current / toLoad).extension().string();
 
 				std::vector<MeshData>* results = NULL;
-				if (!cache.count(fullFilePath)) {
+				if (!cache.count(fullFilePath))
+				{
 					//todo
-					if (extension == ".obj") {
+					if (extension == ".obj")
+					{
 						std::vector<MeshData> toResults = objParser::parse(contents, current.string() + "\\");
 						results = new std::vector<MeshData>(std::move(toResults));
 					}
@@ -258,7 +272,8 @@ void loopNavigation(){
 					}
 				}
 
-				if (results) {
+				if (results)
+				{
 					loaded.push_back(results);
 					cache[fullFilePath] = loaded.size() - 1;
 				}
@@ -266,15 +281,16 @@ void loopNavigation(){
 				numMeshDataWrtn = size;
 
 				//Add a mesh instance
-				toMakeInstanceOf.push_back(makeInstancesJob{ cache[fullFilePath] });
+				toMakeInstanceOf.push_back(makeInstancesJob{cache[fullFilePath]});
 				int jobSize = toMakeInstanceOf.size();
 				numMakeInstanceJobWrtn = jobSize;
 			}
 		}
-        if(exists(current/str)&&is_directory(current/str)) {
-            current = current / str;
-        }
-    }
+		if (exists(current / str) && is_directory(current / str))
+		{
+			current = current / str;
+		}
+	}
 }
 
 int main(int argcp, char** argv)

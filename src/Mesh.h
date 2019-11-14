@@ -154,22 +154,38 @@ private:
 	}
 };
 
+class MultiMesh
+{
+public:
+	MultiMesh(std::vector<Mesh *> meshes)
+	{
+		this->meshes = meshes;
+	}
+	
+	std::vector<Mesh*> meshes;
+	
+	void BindTextures(const ShaderProgram& program){
+		for(auto &a: meshes)
+		{
+			a->BindTextures(program);
+		}
+	}
+};
+
 class MeshInstance
 {
 public:
-	explicit MeshInstance(Mesh* toMakeInstanceOf)
+	explicit MeshInstance(MultiMesh* toMakeInstanceOf)
 	{
 		this->instanceOf = toMakeInstanceOf;
-		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
-		model = glm::rotate(model, glm::radians(-40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -1.0f));
+		scaling = glm::mat4(1.0f);
+		translate = glm::mat4(1.0f);
 	}
 
 	void Draw(ShaderProgram program, glm::mat4 pv)
 	{
 		// Adding all matrices up to create combined matrix
-		glm::mat4 mvp = pv * model;
+		glm::mat4 mvp = pv * translate*scaling;
 
 		//adding the Uniform to the shader
 		//todo move into shader program class
@@ -178,28 +194,31 @@ public:
 		glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 		glUniform1f(selectedLoc, selected?0.2:0.0);
 
-		instanceOf->bind();
-		glDrawElements(GL_TRIANGLES, 3*instanceOf->triangles.size(), GL_UNSIGNED_INT, 0);
-
+		for (auto& singleMesh : instanceOf->meshes) {
+			singleMesh->bind();
+			glDrawElements(GL_TRIANGLES, 3 * singleMesh->triangles.size(), GL_UNSIGNED_INT, 0);
+		}
 
 		auto ErrorCheckValue = glGetError();
 		std::cout << "";
 	}
 
-	Mesh* instanceOf;
+	MultiMesh* instanceOf;
 	bool selected;
 
 	void move(glm::vec3 translateBy)
 	{
-		model = glm::translate(model, translateBy);
+		translate = glm::translate(translate, translateBy);
 	}
 
 	void scale(float toScaleBy)
 	{
-		model = glm::scale(model, glm::vec3(1 + toScaleBy));
+		scaling = glm::scale(scaling, glm::vec3(1 + toScaleBy));
 	}
 private:
-	glm::mat4 model;
+	glm::mat4 scaling;
+	glm::mat4 translate;
 };
+
 
 #endif //OPENGLSETUP_MESH_H
