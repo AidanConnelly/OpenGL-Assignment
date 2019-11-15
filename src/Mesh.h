@@ -123,10 +123,7 @@ public:
 		glUniform1f(hasTextureLocation, 0.0f);
 		for (int i = 0; i < textures.size(); i++)
 		{
-			int hasTextureLocation = glGetUniformLocation(program.ID, "hasTexture");
 			glUniform1f(hasTextureLocation, 1.0f);
-			glActiveTexture(GL_TEXTURE0 + i);
-			glBindTexture(GL_TEXTURE_2D, GL_TEXTURE0 + i);
 			textures[i].bind(program, i);
 			CheckForOpenGLErrors();
 		}
