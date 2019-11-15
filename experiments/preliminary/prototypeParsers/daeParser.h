@@ -119,7 +119,7 @@ private:
 
 	static xmlNodeStore parseFloatArrays(std::vector<char> buffer, xmlNodeStore floatArrays);
 
-	static xmlNodeStore parseIndexBuffer(const std::vector<char>& buffer, xmlNodeStore indexBuffer);
+	static xmlNodeStore parseIndexBuffer(const std::vector<char>& buffer, xmlNodeStore indexBuffers);
 
 	static bufferParseResult parseLargeBuffers(xmlNodeStore nodesWithTagName);
 

@@ -9,6 +9,7 @@
 #include "typedefs.h"
 #include "XMLParseState.h"
 #include "../../../src/Vertex.h"
+#include "../../../vsSolution/vsSolution/DoParallel.h"
 
 //#include <glm/gtc/type_ptr.hpp>
 
@@ -351,32 +352,15 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
 			throw std::invalid_argument("unexpected state");
 		}
 		xmlNodeStore triangles = filterByTagName(tag.children, "triangles");
-		int numberOfThreads = 4;
-		for (int i = 0; i < triangles.size(); i++)
+		//todo use doParallel
+		auto fx = [&largeBuffers, id, tag, triangles, &mtx, &results](int i)
 		{
-			xmlNode* trglTagCpy = new xmlNode(*triangles[i]);
-			auto fx = [&largeBuffers, id, tag, trglTagCpy, &mtx, &results]
-			{
-				meshParseResult toPush = parseTriangleTag(largeBuffers, id, tag, trglTagCpy);
-				mtx.lock();
-				results.push_back(toPush);
-				mtx.unlock();
-			};
-			int threadIndex = (i - numberOfThreads) % numberOfThreads;
-			if (threads.size() > threadIndex)
-			{
-				threads[threadIndex].join();
-				threads[threadIndex] = std::thread(fx);
-			}
-			else
-			{
-				threads.push_back(std::thread(fx));
-			}
-		}
-		for (int i = 0; i < threads.size(); i++)
-		{
-			threads[i].join();
-		}
+			const auto toPush = parseTriangleTag(largeBuffers, id, tag, triangles[i]);
+			mtx.lock();
+			results.push_back(toPush);
+			mtx.unlock();
+		};
+		doParallel(fx, triangles.size());
 	}
 	std::cout << results.size() << std::endl;
 	return results;
@@ -549,28 +533,7 @@ void parseFloatArray(xmlNode* node)
 
 xmlNodeStore daeParser::parseFloatArrays(std::vector<char> buffer, xmlNodeStore floatArrays)
 {
-	int workers = 4;
-	std::vector<std::thread*> pool;
-	for (int i = 0; i < floatArrays.size(); i++)
-	{
-		int workerNum = i % workers;
-		if (pool.size() >= (workerNum + 1))
-		{
-			pool[workerNum]->join();
-			delete pool[workerNum];
-			pool[workerNum] = new std::thread(parseFloatArray, floatArrays[i]);
-		}
-		else
-		{
-			pool.push_back(new std::thread(parseFloatArray, floatArrays[i]));
-		}
-	}
-	for (int i = 0; i < workers && i < floatArrays.size(); i++)
-	{
-		pool[i]->join();
-		delete pool[i];
-	}
-
+	doParallel([&floatArrays](int i) { parseFloatArray(floatArrays[i]); }, floatArrays.size());
 	return floatArrays;
 }
 
@@ -723,46 +686,28 @@ void daeParser::alterXmlNodes(xmlNodeStore& input, std::function<void(xmlNode*)>
 	}
 }
 
-xmlNodeStore daeParser::parseIndexBuffer(const std::vector<char>& buffer, xmlNodeStore indexBuffer)
+xmlNodeStore daeParser::parseIndexBuffer(const std::vector<char>& buffer, xmlNodeStore indexBuffers)
 {
-	int threadNumber = 4;
-	std::vector<std::thread*> threads;
-	for (int i = 0; i < indexBuffer.size(); i++)
+	//todo use doParallel
+	auto fx = [&buffer, &indexBuffers](int i) -> void
 	{
-		int threadIndex = i % threadNumber;
-		std::thread* ptr = new std::thread([&buffer, i,&indexBuffer]() -> void
+		xmlNode* node = indexBuffers[i];
+		int index = node->startIndex;
+		while (buffer[index] != '>')
 		{
-			xmlNode* node = indexBuffer[i];
-			int index = node->startIndex;
-			while (buffer[index] != '>')
-			{
-				index++;
-			}
-			std::vector<int> indexes;
-			do
-			{
-				index++;
-				int ind = parseAnInt(&index, buffer);
-				indexes.push_back(ind);
-			}
-			while (buffer[index] == ' ');
-			node->indexesIfApplicable = indexes;
-		});
-		if (threadIndex >= threads.size())
-		{
-			threads.push_back(ptr);
+			index++;
 		}
-		else
+		std::vector<int> indexes;
+		do
 		{
-			threads[i]->join();
-			threads[i] = ptr;
-		}
-	}
-	for (auto &t : threads)
-	{
-		t->join();
-	}
-	return indexBuffer;
+			index++;
+			int ind = parseAnInt(&index, buffer);
+			indexes.push_back(ind);
+		} while (buffer[index] == ' ');
+		node->indexesIfApplicable = indexes;
+	};
+	doParallel(fx, indexBuffers.size());
+	return indexBuffers;
 }
 
 std::string daeParser::removeLeadingHash(const std::string& toRemove)
