@@ -102,6 +102,9 @@ public:
 
 private:
 	static void parseNodeTagNames(std::vector<char>& buffer, xmlNodeStore& nodes);
+	static void populateMeshDataWithCorrectColourAndTextures(std::string directory, xmlNodeStore nodes,
+	                                                         std::vector<MeshData>& toReturn,
+	                                                         std::vector<meshParseResult>::value_type& a);
 
 	static xmlNodeVector filterByTagName(const xmlNodeVector& nodes, const std::string& tagName);
 
@@ -123,10 +126,10 @@ private:
 
 	static bufferParseResult parseLargeBuffers(xmlNodeStore nodesWithTagName);
 
-	static std::vector<meshParseResult> parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes,
+	static std::vector<meshParseResult> parseMeshTags(std::vector<char> buffer, xmlNodeStore nodes,
 	                                                  bufferParseResult* largeBuffers);
 
-	static std::vector<parseNodeTagsResult> parseNodeTags(std::vector<char> buffer, xmlNodeVector nodes);
+	static std::vector<parseNodeTagsResult> parseNodeTags(std::vector<char> buffer, xmlNodeStore nodes);
 	static meshParseResult parseTriangleTag(bufferParseResult* largeBuffers, std::string id, xmlNode tag, xmlNode* triangleTagPtr);
 
 	static xmlNode* getSoleByTag(const xmlNodeStore& toSearchIn, std::string toSearchFor);

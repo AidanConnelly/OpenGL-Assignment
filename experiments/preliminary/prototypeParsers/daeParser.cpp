@@ -29,48 +29,44 @@ void daeParser::parseNodeTagNames(std::vector<char>& buffer, xmlNodeStore& nodes
 	});
 }
 
+void daeParser::populateMeshDataWithCorrectColourAndTextures(std::string directory, xmlNodeStore nodes, std::vector<MeshData>& toReturn, std::vector<meshParseResult>::value_type& a)
+{
+	diffuseTextureOrColour* diffuse = NULL;
+	std::vector<std::string> textures;
+	for (auto& b : a.textureIds)
+	{
+		auto texture = getFileNameFromMaterialID(nodes, b);
+		diffuse = &texture;
+		if (diffuse->which == diffuseTextureOrColour::tex)
+		{
+			std::string fullFileName = directory + diffuse->texture;
+			textures.push_back(fullFileName);
+		}
+	}
+	if (diffuse && diffuse->which == diffuseTextureOrColour::col && (!a.hasColourFromVertex))
+	{
+		for (int i = 0; i < a.vertexes.size(); i++)
+		{
+			a.vertexes[i].r = diffuse->colour.r;
+			a.vertexes[i].g = diffuse->colour.g;
+			a.vertexes[i].b = diffuse->colour.b;
+		}
+	}
+	toReturn.push_back(MeshData(a.vertexes, a.triangles, textures));
+}
+
 std::vector<MeshData> daeParser::parse(std::vector<char>& buffer, std::string directory)
 {
-	xmlNodeStore nodes = parseNodes(buffer);
+	auto nodes = parseNodes(buffer);
 	parseNodeTagNames(buffer, nodes);
-	xmlNodeVector asVec;
-	std::for_each(nodes.begin(), nodes.end(), [&](xmlNode* node) -> void
-	              {
-		              //todo
-		              asVec.push_back(*node);
-	              }
-	);
-	bufferParseResult result = parseLargeBuffers(nodes);
-	int x = sizeof(result.floatArrays[0]);
-	auto nodeParseResults = parseNodeTags(buffer, asVec);
-	std::vector<meshParseResult> meshParseResults = parseMeshTags(buffer, asVec, &result);
+	auto result = parseLargeBuffers(nodes);
+	auto nodeParseResults = parseNodeTags(buffer, nodes);
+	auto meshParseResults = parseMeshTags(buffer, nodes, &result);
 	//todo apply transforms to instance_geometries???
-	std::cout << result.floatArrays.size();
 	std::vector<MeshData> toReturn;
 	for (auto& a : meshParseResults)
 	{
-		diffuseTextureOrColour* diffuse = NULL;
-		std::vector<std::string> textures;
-		for (auto& b : a.textureIds)
-		{
-			auto texture = getFileNameFromMaterialID(nodes, b);
-			diffuse = &texture;
-			if (diffuse->which == diffuseTextureOrColour::tex)
-			{
-				std::string fullFileName = directory + diffuse->texture;
-				textures.push_back(fullFileName);
-			}
-		}
-		if (diffuse && diffuse->which == diffuseTextureOrColour::col && (!a.hasColourFromVertex))
-		{
-			for (int i = 0; i < a.vertexes.size(); i++)
-			{
-				a.vertexes[i].r = diffuse->colour.r;
-				a.vertexes[i].g = diffuse->colour.g;
-				a.vertexes[i].b = diffuse->colour.b;
-			}
-		}
-		toReturn.push_back(MeshData(a.vertexes, a.triangles, textures));
+		populateMeshDataWithCorrectColourAndTextures(directory, nodes, toReturn, a);
 	}
 	return toReturn;
 }
@@ -132,13 +128,13 @@ diffuseTextureOrColour daeParser::getFileNameFromMaterialID(xmlNodeStore nodes, 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-use-emplace"
 
-std::vector<parseNodeTagsResult> daeParser::parseNodeTags(std::vector<char> buffer, xmlNodeVector nodes)
+std::vector<parseNodeTagsResult> daeParser::parseNodeTags(std::vector<char> buffer, xmlNodeStore nodes)
 {
 	std::vector<parseNodeTagsResult> toReturn;
 	auto nodeTags = filterByTagName(nodes, "node");
-	mapXmlNodes(nodeTags, [&](xmlNode node) -> xmlNode
+	alterXmlNodes(nodeTags, [&](xmlNode* node) -> void
 	{
-		std::vector<xmlNode *> children = node.children;
+		std::vector<xmlNode *> children = node->children;
 		auto i_g = filterByTagName(children, "instance_geometry");
 		if (filterByTagName(children, "matrix").size() == 1)
 		{
@@ -149,7 +145,6 @@ std::vector<parseNodeTagsResult> daeParser::parseNodeTags(std::vector<char> buff
 		{
 			toReturn.push_back(parseNodeTagsResult(i_g));
 		}
-		return node;
 	});
 	return toReturn;
 }
@@ -336,17 +331,17 @@ meshParseResult daeParser::parseTriangleTag(bufferParseResult* largeBuffers,
 	return thisResult2;
 }
 
-std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, xmlNodeVector nodes,
+std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, xmlNodeStore nodes,
                                                       bufferParseResult* largeBuffers)
 {
 	std::mutex mtx;
 	std::vector<meshParseResult> results;
-	std::vector<xmlNode> tags = filterByTagName(nodes, "geometry");
+	auto tags = filterByTagName(nodes, "geometry");
 	std::vector<std::thread> threads;
 	for (auto& geometryTag : tags)
 	{
-		std::string id = geometryTag.getAttribute("id");
-		xmlNode tag = *geometryTag.children[0];
+		std::string id = geometryTag->getAttribute("id");
+		xmlNode tag = *geometryTag->children[0];
 		if (tag.tagName != "mesh")
 		{
 			throw std::invalid_argument("unexpected state");
