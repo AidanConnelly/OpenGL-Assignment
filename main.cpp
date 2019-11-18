@@ -12,6 +12,8 @@
 #include "vsSolution/vsSolution/objParser.h"
 #include <experimental/filesystem>
 #include <thread>
+#include "vsSolution/vsSolution/HuffmanCoding.h"
+#include "src/GMM.h"
 
 struct makeInstancesJob
 {
@@ -360,6 +362,26 @@ int openGLloop()
 
 int main(int argcp, char** argv)
 {
+	//std::vector<char> buffer;
+	const float tolerance = 0.0001;
+	//encode(1.46f,tolerance,buffer,index);
+	//index = 0;
+	//float f = decode(buffer, tolerance, index);
+	// while (true) {
+	// 	int index = 0;
+	// 	std::vector<char> buffer;
+	// 	std::vector<float> floats = { -1.0f, -0.1f, -0.01f, -0.001f,-0.0001f, -0.0f, +0.0f, +0.0001f, +0.001f };
+	// 	index = 0;
+	// 	encodeArray(buffer, index, floats, tolerance);
+	// 	index = 0;
+	// 	std::vector<float> decoded = decodeArray(buffer, index, floats.size(), tolerance);
+	// }
+	
+	gmm toFit;
+	toFit.init(2);
+	std::vector<float> valuesToFit = {-1.0f, 0.0f, 4.0f, 5.0f};
+	toFit.fit(valuesToFit);
+
 	std::thread navigation([] { consoleControl.loopNavigation(); });
 	return openGLloop();
 }
