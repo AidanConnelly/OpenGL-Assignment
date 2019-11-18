@@ -4,7 +4,7 @@
 #include<math.h>
 
 const int NUMBER_OF_CLUSTERS = 16;
-const int FIT_ITERATIONS = 250;
+const int FIT_ITERATIONS = 800;
 
 const float PI = 3.14159265359;
 const float SQRT_2_PI = sqrt(2*PI);
@@ -76,18 +76,35 @@ struct gmm{
 			}
 			END_LOOP
 
-			float sumLogEnt = 0;
-			for (int i = 0; i < dat.size(); i++) {
-				int j = maxEntropyGaussian[i];
-				sumLogEnt += logEnt[i,j];
-				float valTakeMean = dat[i] - means[j];
-				entDeriv.means[j] += valTakeMean / (width[j] * width[j]);
-				entDeriv.width[j] += ((valTakeMean * valTakeMean)- width[j] * width[j]) / (width[j] * width[j] * width[j]);
+			float* softMaxCoef = new float[n * m];
+			float* softMaxSum = new float[n];
+			for(int i = 0;i<n;i++)
+			{
+				softMaxSum[i] = 0;
 			}
+			BEGIN_LOOP
+				int jMax = maxEntropyGaussian[i];
+				float thisEnt = logEnt[i + j * n];
+				float maxEnt = logEnt[i + jMax * n];
+				float thisSoftMax = exp(thisEnt - maxEnt);
+				softMaxCoef[i + j * n] = thisSoftMax;
+				softMaxSum[i] += thisSoftMax;
+			END_LOOP
+			
+			float sumLogEnt = 0;
+			BEGIN_LOOP
+				if (j == maxEntropyGaussian[i]) {
+					sumLogEnt += logEnt[i, j];
+				}
+				float softMaxDeriv = softMaxCoef[i + j * n] / softMaxSum[i];
+				float valTakeMean = dat[i] - means[j];
+				entDeriv.means[j] += softMaxDeriv*( valTakeMean / (width[j] * width[j]));
+				entDeriv.width[j] += softMaxDeriv*(((valTakeMean * valTakeMean)- width[j] * width[j]) / (width[j] * width[j] * width[j]));
+			END_LOOP
 			sumLogEnt /= ((float)n);
 			std::cout << "mean log ent: " << sumLogEnt << std::endl;
 
-			float stepSize = 0.025/((float) n);
+			float stepSize = 0.18/((float) n);
 			for (int j = 0; j < m; j++) {
 				means[j] += stepSize * entDeriv.means[j];
 				width[j] += stepSize * entDeriv.width[j];

@@ -14,6 +14,7 @@
 #include <thread>
 #include "vsSolution/vsSolution/HuffmanCoding.h"
 #include "src/GMM.h"
+#include "src/dotFuzFormat.h"
 
 struct makeInstancesJob
 {
@@ -35,6 +36,10 @@ class ConsoleControl
 	int numTextureOverridesWrtn;
 	int numTextureOverridesRead;
 
+	std::vector<int> exportMeshQueue;
+	int exportMeshWrtn;
+	int exportMeshRead;
+	
 	void printDirectoryStrucuture(std::experimental::filesystem::path current)
 	{
 		if (exists(current))
@@ -118,8 +123,23 @@ class ConsoleControl
 		}
 	}
 
+	void queueExportMesh()
+	{
+		exportMeshQueue.push_back(0);
+		exportMeshWrtn++;
+	}
+	
 public:
 
+	void exportMesh(std::vector<MultiMesh*> meshes){
+		if (exportMeshWrtn > exportMeshRead) {
+			std::vector<char> buffer;
+			int index;
+			encodeMultiMesh(meshes[0], 0.01);
+			exportMeshRead++;
+		}
+	}
+	
 	void loopNavigation()
 	{
 		auto current = std::experimental::filesystem::path("C://");
@@ -149,6 +169,10 @@ public:
 			else if (str.rfind(overrideTextureCmdPrefix, 0) == 0)
 			{
 				overrideTexture(current, str.substr(overrideTextureCmdPrefix.size(), str.size() - 5));
+			}
+			else if(str=="export")
+			{
+				queueExportMesh();
 			}
 		}
 	}
@@ -314,6 +338,7 @@ int openGLloop()
 	{
 		consoleControl.loadMeshesInto(meshes, meshInstances);
 		consoleControl.loadOverrideTextures(overrideTextures);
+		consoleControl.exportMesh(meshes);
 		processInput(window);
 
 		glClearColor(0.09f, 0.12f, 0.14f, 1.0f);
@@ -377,11 +402,6 @@ int main(int argcp, char** argv)
 	// 	std::vector<float> decoded = decodeArray(buffer, index, floats.size(), tolerance);
 	// }
 	
-	gmm toFit;
-	toFit.init(2);
-	std::vector<float> valuesToFit = {-1.0f, 0.0f, 4.0f, 5.0f};
-	toFit.fit(valuesToFit);
-
 	std::thread navigation([] { consoleControl.loopNavigation(); });
 	return openGLloop();
 }
