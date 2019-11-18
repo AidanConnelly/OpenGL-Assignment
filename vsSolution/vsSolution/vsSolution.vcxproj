@@ -145,6 +145,8 @@
     <ClInclude Include="..\..\src\Texture.h" />
     <ClInclude Include="..\..\src\Vertex.h" />
     <ClInclude Include="..\..\stb_image.h" />
+    <ClInclude Include="DoParallel.h" />
+    <ClInclude Include="HuffmanCoding.h" />
     <ClInclude Include="objParser.h" />
   </ItemGroup>
   <ItemGroup>

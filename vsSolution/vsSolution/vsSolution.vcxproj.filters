@@ -107,6 +107,12 @@
     <ClInclude Include="objParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DoParallel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HuffmanCoding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\experiments\preliminary\fileThroughput\results.md" />
