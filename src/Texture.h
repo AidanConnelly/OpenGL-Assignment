@@ -22,10 +22,14 @@ public:
 		GLint uniformLocation = glGetUniformLocation(program.ID, "ourTexture");
 		glUniform1i(uniformLocation, slot);
 	}
+
+	// ~Texture();
 private:
+	unsigned char* data;
 	GLuint textureId;
 	GLint width, height, nrChannels;
-	};
+
+};
 
 
 #endif //OPENGLSETUP_TEXTURE_H

@@ -95,6 +95,25 @@ public:
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	}
 
+	void getBounds(glm::vec3& minPos, glm::vec3& maxPos)
+	{
+		minPos.x = vertexes[0].x;
+		minPos.y = vertexes[0].y;
+		minPos.z = vertexes[0].z;
+		maxPos.x = vertexes[0].x;
+		maxPos.y = vertexes[0].y;
+		maxPos.z = vertexes[0].z;
+		for(Vertex &v: vertexes)
+		{
+#define checkIndexMin(I) if(minPos.I>v.I){minPos.I = v.I;}
+#define checkIndexMax(I) if(maxPos.I<v.I){maxPos.I = v.I;}
+#define checkIndex(I) checkIndexMin(I); checkIndexMax(I);
+			checkIndex(x);
+			checkIndex(y);
+			checkIndex(z);
+		}
+	}
+	
 	Mesh(
 		std::vector<Vertex>* vrtxes,
 		std::vector<Triangle>* triags,
@@ -132,9 +151,9 @@ public:
 	GLuint EBO;
 	GLuint VAO;
 	std::vector<Triangle> triangles;
-private:
 	std::vector<Vertex> vertexes;
 	std::vector<Texture> textures;
+private:
 	GLuint VBO;
 
 	void CheckForOpenGLErrors()

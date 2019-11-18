@@ -1,11 +1,17 @@
+#pragma once
+
 #include<vector>
 #include<math.h>
 
 const int NUMBER_OF_CLUSTERS = 16;
-const int FIT_ITERATIONS = 200;
+const int FIT_ITERATIONS = 250;
 
 const float PI = 3.14159265359;
 const float SQRT_2_PI = sqrt(2*PI);
+
+
+const float mili = 0.001;
+const float MIN_WIDTH = 0.05 * mili * mili * mili;
 
 struct gmm{
     std::vector<float> means;
@@ -70,17 +76,25 @@ struct gmm{
 			}
 			END_LOOP
 
-				for (int i = 0; i < dat.size(); i++) {
-					int j = maxEntropyGaussian[i];
-					float valTakeMean = dat[i] - means[j];
-					entDeriv.means[j] += valTakeMean / (width[j] * width[j]);
-					entDeriv.width[j] += ((valTakeMean * valTakeMean)- width[j] * width[j]) / (width[j] * width[j] * width[j]);
-				}
+			float sumLogEnt = 0;
+			for (int i = 0; i < dat.size(); i++) {
+				int j = maxEntropyGaussian[i];
+				sumLogEnt += logEnt[i,j];
+				float valTakeMean = dat[i] - means[j];
+				entDeriv.means[j] += valTakeMean / (width[j] * width[j]);
+				entDeriv.width[j] += ((valTakeMean * valTakeMean)- width[j] * width[j]) / (width[j] * width[j] * width[j]);
+			}
+			sumLogEnt /= ((float)n);
+			std::cout << "mean log ent: " << sumLogEnt << std::endl;
 
-			float stepSize = 0.1;
+			float stepSize = 0.025/((float) n);
 			for (int j = 0; j < m; j++) {
 				means[j] += stepSize * entDeriv.means[j];
 				width[j] += stepSize * entDeriv.width[j];
+				if(width[j]< MIN_WIDTH)
+				{
+					width[j] = MIN_WIDTH;
+				}
 			}
 		}
 	}
