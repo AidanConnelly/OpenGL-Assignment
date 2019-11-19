@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <vector>
+#include "bitBuffer.h"
 
 static const float ENCODING_STD_DEV = 1.37;
 static const float LN_2 = 0.69314718056;
@@ -18,34 +19,6 @@ float boundaryFromLength(int length)
 	float numerator = length - ADDATIVE_COEF;
 	float denominator = 1.0f / (2.0f * ENCODING_STD_DEV * ENCODING_STD_DEV * LN_2);;
 	return sqrt(numerator / denominator);
-}
-
-void writeBitToCharVector(std::vector<char>& toWriteTo, int& bitIndex, bool bitToWrite)
-{
-	int charIndex = bitIndex / 8;
-	int subIndex = bitIndex - 8 * charIndex;
-	if (subIndex == 0)
-	{
-		char zeros = 0x00;
-		toWriteTo.push_back(zeros);
-	}
-	int one_at_end = 128 * (bitToWrite ? 1 : 0);
-	int our_one = one_at_end >> subIndex;
-
-	// ReSharper disable once CppCStyleCast
-	char result = toWriteTo[charIndex] | our_one;
-	toWriteTo[charIndex] = result;
-	bitIndex++;
-}
-
-bool readBitFromCharVector(std::vector<char>& toReadFrom, int& bitIndex)
-{
-	int charIndex = bitIndex / 8;
-	int subIndex = bitIndex - 8 * charIndex;
-	char atIndex = toReadFrom[charIndex];
-	char masked = atIndex & 128 >> subIndex;
-	bitIndex++;
-	return masked != 0x00;
 }
 
 void encode(float toEncode, float tolerance, std::vector<char>& toWriteTo, int& bitIndex)
@@ -90,12 +63,7 @@ void encode(float toEncode, float tolerance, std::vector<char>& toWriteTo, int& 
 		intToEncode = max - 1;
 	}
 
-	//Write bits
-	for (int i = (precision - 1); i >= 0; i--)
-	{
-		bool bit = 1 << i & intToEncode;
-		writeBitToCharVector(toWriteTo, bitIndex, bit);
-	}
+	writeIntToDigits(toWriteTo, bitIndex,intToEncode, precision);
 }
 
 float decode(std::vector<char>& toDecode, float tolerance, int& bitIndex)
@@ -122,13 +90,7 @@ float decode(std::vector<char>& toDecode, float tolerance, int& bitIndex)
 	}
 	while (subdivisions > 1);
 	int max = 1 << precision;
-	int value = 0;
-	for (int i = (precision - 1); i >= 0; i--)
-	{
-		int bitReading = 1 << i;
-		bool bitValue = readBitFromCharVector(toDecode, bitIndex);
-		value += bitValue * bitReading;
-	}
+	int value = readIntToDigits(toDecode,bitIndex,precision);
 	float asFloat = ((float)value) / ((float)max);
 	float inDistribution = ((asFloat * range) + lowerBound);
 	return sign * inDistribution / ENCODING_STD_DEV;
