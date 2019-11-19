@@ -6,6 +6,49 @@
  * Used for
  * Zipping
 
+Contents: 
+ * tolerance `float32`
+ * number of clusters `int32`
+ * number of triangles `int32`
+ * number of vertexes `int32`
+ * cluster parameters `n 2x float32`
+ * float indexes and lengths `n 2x int32`
+ * floats `huffman coding`
+ * triangle vertexes `special int`
+ * float indexes `special int`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Encoding:
  * Make float array
  * Dedup float array via indexes
@@ -44,3 +87,5 @@ anyway:
  * bit for sign
  * bit for where in gaussian
  * bit (set on a per-gaussian basis) for where in band it is
+
+

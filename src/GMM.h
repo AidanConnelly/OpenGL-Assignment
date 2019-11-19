@@ -1,10 +1,13 @@
-#pragma once
+#ifndef GMM_H
+#define GMM_H
 
 #include<vector>
+#include<stdio.h>
 #include<math.h>
 
 const int NUMBER_OF_CLUSTERS = 16;
-const int FIT_ITERATIONS = 800;
+//const int FIT_ITERATIONS = 800;
+const int FIT_ITERATIONS = 8;
 
 const float PI = 3.14159265359;
 const float SQRT_2_PI = sqrt(2*PI);
@@ -27,6 +30,30 @@ struct gmm{
             width.push_back(uniformRandom()+0.1);
         }
     }
+
+	float logEnt(float val, int j){
+    	return
+		- log(SQRT_2_PI * width[j])
+		- (val - means[j]) * (val - means[j]) / (2 * width[j] * width[j]);
+	}
+
+	float inDistribution(float x, int distrib) {
+		return (x - means[distrib])/width[distrib];
+	}
+
+	float outDistribution(float x, int distrib) {
+		return (x * width[distrib]) + means[distrib];
+    }
+
+	int gaussian(float x){
+		int toReturn = 0;
+		for(int i = 0;i<means.size();i++){
+			if(logEnt(x, i)>logEnt(x,toReturn)){
+				toReturn = i;
+			}
+		}
+		return toReturn;
+	}
 
     void fit(std::vector<float> dat){
         gmm entDeriv;
@@ -51,19 +78,18 @@ struct gmm{
             }
 
 			//Initial entropy
-			float* logEnt = new float[n * m];
+			float* logEntropies = new float[n * m];
 			BEGIN_LOOP
-				logEnt[i + j * n] =
-				-log(SQRT_2_PI * width[j])
-				- (dat[i] - means[j]) * (dat[i] - means[j]) / (2 * width[j] * width[j]);
+				float val = dat[i];
+				logEntropies[i + j * n] = logEnt(val, j);
 			END_LOOP
 
 			BEGIN_LOOP
 				bool shouldSet = false;
 			bool valid = maxEntropyGaussian[i] >= 0 && maxEntropyGaussian[i] <= m;
 			if (valid) {
-				float alternativeLogEnt = logEnt[i + j * n];
-				float currentLogEnt = logEnt[i + n * maxEntropyGaussian[i]];
+				float alternativeLogEnt = logEntropies[i + j * n];
+				float currentLogEnt = logEntropies[i + n * maxEntropyGaussian[i]];
 				if (alternativeLogEnt > currentLogEnt) {
 					shouldSet = true;
 				}
@@ -84,8 +110,8 @@ struct gmm{
 			}
 			BEGIN_LOOP
 				int jMax = maxEntropyGaussian[i];
-				float thisEnt = logEnt[i + j * n];
-				float maxEnt = logEnt[i + jMax * n];
+				float thisEnt = logEntropies[i + j * n];
+				float maxEnt = logEntropies[i + jMax * n];
 				float thisSoftMax = exp(thisEnt - maxEnt);
 				softMaxCoef[i + j * n] = thisSoftMax;
 				softMaxSum[i] += thisSoftMax;
@@ -94,7 +120,7 @@ struct gmm{
 			float sumLogEnt = 0;
 			BEGIN_LOOP
 				if (j == maxEntropyGaussian[i]) {
-					sumLogEnt += logEnt[i, j];
+					sumLogEnt += logEntropies[i, j];
 				}
 				float softMaxDeriv = softMaxCoef[i + j * n] / softMaxSum[i];
 				float valTakeMean = dat[i] - means[j];
@@ -102,7 +128,7 @@ struct gmm{
 				entDeriv.width[j] += softMaxDeriv*(((valTakeMean * valTakeMean)- width[j] * width[j]) / (width[j] * width[j] * width[j]));
 			END_LOOP
 			sumLogEnt /= ((float)n);
-			std::cout << "mean log ent: " << sumLogEnt << std::endl;
+			//std::cout << "mean log ent: " << sumLogEnt << std::endl;
 
 			float stepSize = 0.18/((float) n);
 			for (int j = 0; j < m; j++) {
@@ -116,3 +142,5 @@ struct gmm{
 		}
 	}
 };
+
+#endif

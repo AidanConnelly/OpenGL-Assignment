@@ -12,7 +12,7 @@
 #include "vsSolution/vsSolution/objParser.h"
 #include <experimental/filesystem>
 #include <thread>
-#include "vsSolution/vsSolution/HuffmanCoding.h"
+#include "src/HuffmanCoding.h"
 #include "src/GMM.h"
 #include "src/dotFuzFormat.h"
 
@@ -39,7 +39,7 @@ class ConsoleControl
 	std::vector<int> exportMeshQueue;
 	int exportMeshWrtn;
 	int exportMeshRead;
-	
+
 	void printDirectoryStrucuture(std::experimental::filesystem::path current)
 	{
 		if (exists(current))
@@ -128,18 +128,21 @@ class ConsoleControl
 		exportMeshQueue.push_back(0);
 		exportMeshWrtn++;
 	}
-	
+
 public:
 
-	void exportMesh(std::vector<MultiMesh*> meshes){
-		if (exportMeshWrtn > exportMeshRead) {
+	void exportMesh(std::vector<MultiMesh*> meshes)
+	{
+		if (exportMeshWrtn > exportMeshRead)
+		{
 			std::vector<char> buffer;
-			int index;
-			encodeMultiMesh(meshes[0], 0.01);
+			int bitIndex = 0;
+			encodeMultiMesh(meshes[0], 0.01, buffer, bitIndex);
+			decodeMultiMesh(buffer);
 			exportMeshRead++;
 		}
 	}
-	
+
 	void loopNavigation()
 	{
 		auto current = std::experimental::filesystem::path("C://");
@@ -154,7 +157,7 @@ public:
 			{
 				return;
 			}
-			else if(str =="..")
+			else if (str == "..")
 			{
 				current = current.parent_path();
 			}
@@ -170,7 +173,7 @@ public:
 			{
 				overrideTexture(current, str.substr(overrideTextureCmdPrefix.size(), str.size() - 5));
 			}
-			else if(str=="export")
+			else if (str == "export")
 			{
 				queueExportMesh();
 			}
@@ -387,13 +390,13 @@ int openGLloop()
 
 int main(int argcp, char** argv)
 {
-	//std::vector<char> buffer;
+	std::vector<char> buffer;
 	const float tolerance = 0.0001;
 	//encode(1.46f,tolerance,buffer,index);
 	//index = 0;
 	//float f = decode(buffer, tolerance, index);
 	// while (true) {
-	// 	int index = 0;
+	int index = 0;
 	// 	std::vector<char> buffer;
 	// 	std::vector<float> floats = { -1.0f, -0.1f, -0.01f, -0.001f,-0.0001f, -0.0f, +0.0f, +0.0001f, +0.001f };
 	// 	index = 0;
@@ -401,7 +404,13 @@ int main(int argcp, char** argv)
 	// 	index = 0;
 	// 	std::vector<float> decoded = decodeArray(buffer, index, floats.size(), tolerance);
 	// }
-	
+	//
+
+	writeInt32(buffer, index, 5);
+	index = 0;
+	int read = readInt32(buffer, index);
+
+
 	std::thread navigation([] { consoleControl.loopNavigation(); });
 	return openGLloop();
 }
