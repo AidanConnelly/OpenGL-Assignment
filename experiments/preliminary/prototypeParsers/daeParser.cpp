@@ -47,9 +47,10 @@ void daeParser::populateMeshDataWithCorrectColourAndTextures(std::string directo
 	{
 		for (int i = 0; i < a.vertexes.size(); i++)
 		{
-			a.vertexes[i].r = diffuse->colour.r;
-			a.vertexes[i].g = diffuse->colour.g;
-			a.vertexes[i].b = diffuse->colour.b;
+		    //todo - GCC 4.6 note
+			a.vertexes[i].r = diffuse->colour.x;
+			a.vertexes[i].g = diffuse->colour.y;
+			a.vertexes[i].b = diffuse->colour.z;
 		}
 	}
 	toReturn.push_back(MeshData(a.vertexes, a.triangles, textures));

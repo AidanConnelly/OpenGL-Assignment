@@ -10,7 +10,7 @@
 #include "src/Mesh.h"
 #include <iostream>
 #include "vsSolution/vsSolution/objParser.h"
-#include <experimental/filesystem>
+#include <filesystem>
 #include <thread>
 #include "src/HuffmanCoding.h"
 #include "src/GMM.h"
@@ -40,7 +40,7 @@ class ConsoleControl
 	int exportMeshWrtn;
 	int exportMeshRead;
 
-	void printDirectoryStrucuture(std::experimental::filesystem::path current)
+	void printDirectoryStrucuture(std::filesystem::path current)
 	{
 		if (exists(current))
 		{
@@ -48,14 +48,14 @@ class ConsoleControl
 			{
 				try
 				{
-					auto currentDirContents = std::experimental::filesystem::directory_iterator(current);
+					auto currentDirContents = std::filesystem::directory_iterator(current);
 					for (const auto& file : currentDirContents)
 					{
 						// std::string folderChar = "📁";
 						std::string folderChar = "o";
 						// std::string fileChar = "🗎";
 						std::string fileChar = "i";
-						std::cout << (std::experimental::filesystem::is_directory(file)
+						std::cout << (std::filesystem::is_directory(file)
 							              ? " " + folderChar + "\t"
 							              : " " + fileChar + "\t");
 						std::cout << file.path().filename() << std::endl;
@@ -73,7 +73,7 @@ class ConsoleControl
 		}
 	}
 
-	void loadMesh(std::experimental::filesystem::path current, std::string str)
+	void loadMesh(std::filesystem::path current, std::string str)
 	{
 		std::string toLoad = str.substr(5, str.size() - 5);
 		std::string fullFilePath = (current / toLoad).string();
@@ -114,7 +114,7 @@ class ConsoleControl
 		}
 	}
 
-	void overrideTexture(std::experimental::filesystem::path current, std::string str)
+	void overrideTexture(std::filesystem::path current, std::string str)
 	{
 		if (exists(current / str) && !is_directory(current / str))
 		{
@@ -147,7 +147,7 @@ public:
 
 	void loopNavigation()
 	{
-		auto current = std::experimental::filesystem::path("C://");
+		auto current = std::filesystem::path("C://");
 		while (true)
 		{
 			printDirectoryStrucuture(current);
@@ -305,10 +305,10 @@ int openGLloop()
 
 	const ShaderType& vertexShaderType = VertexShaderType();
 
-	Shader vShader = Shader("C:\\Users\\aidan\\Documents\\soft356a3\\shaders\\vertex.glsl", &vertexShaderType);
+	Shader vShader = Shader("shaders\\vertex.glsl", &vertexShaderType);
 
 	const ShaderType& fragmentShaderType = FragmentShaderType();
-	Shader fShader = Shader("C:\\Users\\aidan\\Documents\\soft356a3\\shaders\\fragment.glsl", &fragmentShaderType);
+	Shader fShader = Shader("shaders\\fragment.glsl", &fragmentShaderType);
 
 	ShaderProgram program = ShaderProgram();
 	program.AttachShader(vShader);
@@ -354,7 +354,7 @@ int openGLloop()
 		program.use();
 
 		int timeLoc = glGetUniformLocation(program.ID, "time");
-		double time = (std::chrono::system_clock::now() - start).count() / 10000000.0;
+		double time = (std::chrono::system_clock::now() - start).count() / 1000000000.0;
 		glUniform1f(timeLoc, time);
 
 		glm::mat4 view = glm::mat4(1.0f);

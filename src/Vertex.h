@@ -5,7 +5,7 @@
 #ifndef OPENGLSETUP_VERTEX_H
 #define OPENGLSETUP_VERTEX_H
 
-#include <glm/vec3.hpp>
+#include "glm/vec3.hpp"
 
 struct Vertex
 {

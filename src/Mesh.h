@@ -12,9 +12,8 @@
 #include "Texture.h"
 #include "Vertex.h"
 #include <glm/glm.hpp> //includes GLM
-#include <glm/ext/matrix_transform.hpp> // GLM: translate, rotate
-#include <glm/ext/matrix_clip_space.hpp> // GLM: perspective and ortho 
 #include <glm/gtc/type_ptr.hpp> // GLM: access to the value_ptr
+#include <glm/gtx/transform.hpp>
 
 class MeshData
 {

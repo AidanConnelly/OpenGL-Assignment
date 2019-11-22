@@ -317,17 +317,17 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 							vertexNormal = vertexNormals[vertexNormalIndex];
 						}
 					}
-					making.r = currentColour.r;
-					making.g = currentColour.g;
-					making.b = currentColour.b;
+					making.r = currentColour.x;
+					making.g = currentColour.y;
+					making.b = currentColour.z;
 					making.x = vertexPosition.x;
 					making.y = vertexPosition.y;
 					making.z = vertexPosition.z;
 					making.nX = vertexNormal.x;
 					making.nY = vertexNormal.y;
 					making.nZ = vertexNormal.z;
-					making.u = vertexCoordinate.s;
-					making.v = vertexCoordinate.t;
+					making.u = vertexCoordinate.x;
+					making.v = vertexCoordinate.y;
 					vertexes.push_back(making);
 				}
 				nextLine(i, buffer);
