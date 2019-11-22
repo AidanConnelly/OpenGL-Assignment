@@ -8,11 +8,23 @@
 #include <map>
 #include "../../experiments/preliminary/fileThroughput/fileThroughput.h"
 
+
+struct mtlMaterial{
+	float opacity;
+	float specularExponent;
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
+	std::string diffuseMap;
+
+	bool hasDiffuseMap;
+};
+
 struct MaterialLibParseResults
 {
-	std::map<std::string, glm::vec3> diffuse;
-	std::map<std::string, std::string> diffuseMap;
+	std::map<std::string, mtlMaterial> materials;
 };
+
 
 enum MTLParseState
 {

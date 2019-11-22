@@ -2,10 +2,27 @@
 
 #include "objParser.h"
 
+glm::vec3 parseColour(int&i,std::vector<char>&buffer){
+	i += 2;
+	float r, g, b;
+	r = parseAFloat(&i, buffer);
+	g = r;
+	b = r;
+	if (buffer[++i] != '\n')
+	{
+		g = parseAFloat(&i, buffer);
+		if (buffer[++i] != '\n')
+		{
+			b = parseAFloat(&i, buffer);
+		}
+	}
+	return glm::vec3(r,g,b);
+}
+
 MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::string directory)
 {
 	auto toReturn = new MaterialLibParseResults;
-	auto buffer = fileThroughput::getBytes(fullPath);
+	std::vector<char> buffer = fileThroughput::getBytes(fullPath);
 
 	MTLParseState state = mtlNotBegun;
 	LineReadingState lineState = beginningOfLine;
@@ -25,6 +42,7 @@ MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::strin
 					thisMtlName += buffer[i];
 					i++;
 				}
+				toReturn->materials[thisMtlName] = mtlMaterial();
 				state = mtlHasBegun;
 			}
 		}
@@ -35,23 +53,21 @@ MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::strin
 				lineState = middleOfLine;
 				if (buffer[i] == 'K')
 				{
-					if (buffer[++i] == 'd')
+					i++;
+					if (buffer[i] == 'a')
 					{
 						//"Kd"
-						i += 2;
-						float r, g, b;
-						r = parseAFloat(&i, buffer);
-						g = r;
-						b = r;
-						if (buffer[++i] != '\n')
-						{
-							g = parseAFloat(&i, buffer);
-							if (buffer[++i] != '\n')
-							{
-								b = parseAFloat(&i, buffer);
-							}
-						}
-						toReturn->diffuse.insert_or_assign(thisMtlName, glm::vec3(r, g, b));
+						toReturn->materials[thisMtlName].ambient = parseColour(i, buffer);
+					}
+					if (buffer[i] == 'd')
+					{
+						//"Kd"
+						toReturn->materials[thisMtlName].diffuse = parseColour(i, buffer);
+					}
+					if (buffer[i] == 's')
+					{
+						//"Kd"
+						toReturn->materials[thisMtlName].specular = parseColour(i, buffer);
 					}
 				}
 				if (buffer[i] == 'm')
@@ -69,8 +85,19 @@ MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::strin
 						}
 						std::cout << filePath << std::endl;
 						std::string from_file = directory+filePath;
-						toReturn->diffuseMap.insert_or_assign(thisMtlName, from_file);
+						toReturn->materials[thisMtlName].diffuseMap = from_file;
+						toReturn->materials[thisMtlName].hasDiffuseMap = true;
 					}
+				}
+				if(buffer[i]=='d'){
+					i+=2;
+					float d = parseAFloat(&i,buffer);
+					toReturn->materials[thisMtlName].opacity = d;
+				}
+				if(buffer[i]=='T'){
+					i+=3;
+					float tr = parseAFloat(&i,buffer);
+					toReturn->materials[thisMtlName].opacity = 1-tr;
 				}
 			}
 		}
@@ -195,15 +222,17 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 			}
 			for (auto& mtlLibParseResult : mtlLibParseResults)
 			{
-				if (mtlLibParseResult->diffuseMap.count(materialName) == 1)
-				{
-					std::string toPush = mtlLibParseResult->diffuseMap[materialName];
-					constructing.texturePaths.push_back(toPush);
-				}
-				else if (mtlLibParseResult->diffuse.count(materialName) == 1)
-				{
-					currentColour = mtlLibParseResult->diffuse[materialName];
-				}
+				if(mtlLibParseResult->materials.count(materialName)){
+					mtlMaterial m = mtlLibParseResult->materials[materialName];
+					
+					if(m.hasDiffuseMap){
+						std::string toPush = m.diffuseMap;
+						constructing.texturePaths.push_back(toPush);
+					}
+					else{
+						currentColour = m.diffuse;
+					}
+				}	
 			}
 			nextLine(i, buffer);
 			//"usemtl"

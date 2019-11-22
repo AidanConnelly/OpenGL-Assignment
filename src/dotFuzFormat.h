@@ -14,7 +14,7 @@ struct listOfFloat
 	std::vector<float> floats;
 };
 
-void processVertex(float tolerance, std::map<int, listOfFloat>& floatLookup, std::vector<int>& vertexFloatIndexes, Vertex vertex)
+void processVertex(float tolerance, std::map<int, listOfFloat*>& floatLookup, std::vector<int>& vertexFloatIndexes, Vertex vertex)
 {
 	for (int i = 0; i < sizeof(Vertex)/4; i ++)
 	{
@@ -24,11 +24,11 @@ void processVertex(float tolerance, std::map<int, listOfFloat>& floatLookup, std
 		if (floatLookup.count(approximation) == 0)
 		{
 			const ContigousIndex size = floatLookup.size();
-			floatLookup[approximation] = listOfFloat{size, std::vector<float>{thisFloat}};
+			floatLookup[approximation] = new listOfFloat{size, std::vector<float>{thisFloat}};
 		}
 		else
 		{
-			floatLookup[approximation].floats.push_back(thisFloat);
+			floatLookup[approximation]->floats.push_back(thisFloat);
 		}
 		vertexFloatIndexes.push_back(approximation);
 
@@ -37,7 +37,7 @@ void processVertex(float tolerance, std::map<int, listOfFloat>& floatLookup, std
 
 void processTriangle(std::vector<int>& triangleIndexes, Triangle triangle)
 {
-	for (int i = 0; i < sizeof(Triangle); i += 3)
+	for (int i = 0; i < sizeof(Triangle)/4; i ++)
 	{
 		void* trglPtr = (void*)(&triangle);
 		int thisIndex = ((int*)trglPtr)[i];
@@ -100,11 +100,15 @@ void readFloatBufferIndexesAndLengths(std::vector<char>& buffer, int& bitIndex, 
 void readTriangleVertexIndexes(std::vector<char>& buffer, int& bitIndex, std::vector<int>& triangleIndexes, int digits, int triangleIndexs);
 void readVertexFloatIndexes(std::vector<char>& buffer, int& bitIndex, std::vector<int>& vertexIndexes, int digits, int vertexFloatIndexes);
 
+static std::vector<int> lastEncodeTriangleIndexes;
+static std::vector<int> lastEncodeFloatIndexes;
+static std::vector<float> lastFloatBuffer;
+
 void encodeMultiMesh(MultiMesh* meshToEncode, float tolerance, std::vector<char>& buffer, int& bitIndex )
 {
 	std::vector<int> meshCounts;
 
-	std::map<int, listOfFloat> floatLookup;
+	std::map<int, listOfFloat*> floatLookup;
 	std::vector<int> vertexFloatIndexes;
 	std::vector<int> triangleIndexes;
 
@@ -135,25 +139,30 @@ void encodeMultiMesh(MultiMesh* meshToEncode, float tolerance, std::vector<char>
 	{
 		floatsToCluster.push_back(0);
 	}
-	for (std::map<int, listOfFloat>::value_type& pair : floatLookup)
+	for (std::map<int, listOfFloat*>::value_type& pair : floatLookup)
 	{
 		float sum = 0;
-		for (float f : pair.second.floats)
+		for (float f : pair.second->floats)
 		{
 			sum += f;
 		}
-		ContigousIndex index = pair.second.index;
-		floatsToCluster[index] = sum / ((float)pair.second.floats.size());
+		ContigousIndex index = pair.second->index;
+		floatsToCluster[index] = sum / ((float)pair.second->floats.size());
 	}
 
 	gmm toFit;
 	int clusters = 16;
-	if (2 * clusters > floatsToCluster.size())
+	if (clusters > floatsToCluster.size() / 12)
 	{
 		clusters = floatsToCluster.size() / 12;
 	}
 	toFit.init(clusters);
-	toFit.fit(floatsToCluster);
+	int iterations = 800;
+	if(floatsToCluster.size() > 4000)
+	{
+		iterations = (500 * 4000)/floatsToCluster.size();
+	}
+	toFit.fit(floatsToCluster, iterations);
 	std::cout << "clustered";
 
 	std::vector<int> distribution;
@@ -164,16 +173,18 @@ void encodeMultiMesh(MultiMesh* meshToEncode, float tolerance, std::vector<char>
 		int distrib = toFit.gaussian(floatsToCluster[i]);
 		distribution.push_back(distrib);
 		if(distributionFloatCounts.count(distrib)==0){
-			distributionFloatCounts[distrib] = 0;
-			distributionToFloatsToClusterIndexMap[distrib] = std::vector<int>(i);
+			distributionToFloatsToClusterIndexMap[distrib] = std::vector<int>{ i };
+			distributionFloatCounts[distrib] = 1;
 		}
 		else{
-			distributionFloatCounts[distrib]++;
 			distributionToFloatsToClusterIndexMap[distrib].push_back(i);
+			distributionFloatCounts[distrib]++;
 		}
-		inDistributionIndex.push_back(distributionFloatCounts[distrib]);
+		inDistributionIndex.push_back(distributionFloatCounts[distrib]-1);
 	}
 
+	std::cout << std::endl << "clusters: " << distributionFloatCounts.size() << std::endl;
+	
 	int index = 0;
 	int maxEnd = 0;
 	std::map<int, int> distributionStarts;
@@ -192,14 +203,22 @@ void encodeMultiMesh(MultiMesh* meshToEncode, float tolerance, std::vector<char>
 	std::vector<int> finalLookup;
 	for(int i = 0;i<vertexFloatIndexes.size();i++){
 		int approxIndex = vertexFloatIndexes[i];
-		auto listOfFloat = floatLookup[approxIndex];
-		int floatsToClusterIndex = listOfFloat.index;
+		listOfFloat* listOfFloat = floatLookup[approxIndex];
+		int floatsToClusterIndex = listOfFloat->index;
 		int inDistIdx = inDistributionIndex[floatsToClusterIndex];
-		int distStartIdx = distributionStarts[i];
+		int distStartIdx = distributionStarts[distribution[floatsToClusterIndex]];
 		int finalIdx = inDistIdx + distStartIdx;
 		finalLookup.push_back( finalIdx);
 	}
-
+	
+	lastEncodeTriangleIndexes = triangleIndexes;
+	lastEncodeFloatIndexes = finalLookup;
+	lastFloatBuffer = std::vector<float>();
+	for (int i = 0; i < clusters; i++) {
+		for (int floatsToClusterIndex : distributionToFloatsToClusterIndexMap[i]) {
+			lastFloatBuffer.push_back(floatsToCluster[floatsToClusterIndex]);
+		}
+	}
 	int numberOfTriangles = triangleIndexes.size() / 3;
 	int numberOfVertexes = finalLookup.size() / 11;
 	writeTolerance(buffer, bitIndex, tolerance);
@@ -215,7 +234,7 @@ void encodeMultiMesh(MultiMesh* meshToEncode, float tolerance, std::vector<char>
 	writeVertexFloatIndexes(buffer, bitIndex, finalLookup, floatIndexesDigits);
 }
 
-void decodeMultiMesh(std::vector<char>& buffer){
+MultiMesh* decodeMultiMesh(std::vector<char>& buffer){
 	int bitIndex = 0;
 	auto tolerance = readTolerance(buffer, bitIndex);
 	auto clusters = readNumberOfClusters(buffer, bitIndex);
@@ -241,7 +260,44 @@ void decodeMultiMesh(std::vector<char>& buffer){
 	std::vector<int> finalLookup;
 	readTriangleVertexIndexes(buffer, bitIndex, triangleIndexes, triangleIndexesDigits, triangles * 3);
 	readVertexFloatIndexes(buffer, bitIndex, finalLookup, floatIndexesDigits, vertexes * 11);
+
+	bool problem = false;
+	for (int i = 0; i < lastEncodeTriangleIndexes.size(); i++) {
+		problem |= lastEncodeTriangleIndexes[i] != triangleIndexes[i];
+	}
+	for (int i = 0; i < lastEncodeFloatIndexes.size(); i++) {
+		problem |= lastEncodeFloatIndexes[i] != finalLookup[i];
+	}
+	for (int i = 0; i < lastFloatBuffer.size(); i++) {
+		problem |= abs(lastFloatBuffer[i] - floatBuffer[i])>2*tolerance;
+	}
+
 	std::cout << "read" << std::endl;
+	std::vector<Vertex>* outputVertexes = new std::vector<Vertex>();
+	std::vector<Triangle>* outputTriangles = new std::vector<Triangle>();
+	for(int i = 0;i < finalLookup.size();i+=11)
+	{
+		Vertex v;
+		void* vrtxPtr = (void*)(&v);
+		float* vrtxFltPtr = (float*)vrtxPtr;
+		for (int j = 0; j < 11; j++)
+		{
+			vrtxFltPtr[j] = floatBuffer[finalLookup[i + j]];
+		}
+		outputVertexes->push_back(v);
+	}
+	for(int i =0;i<triangleIndexes.size();i+=3)
+	{
+		Triangle t;
+		t.v1i = triangleIndexes[i];
+		t.v2i = triangleIndexes[i+1];
+		t.v3i = triangleIndexes[i+2];
+		outputTriangles->push_back(t);
+	}
+	Mesh* mesh = new Mesh(outputVertexes, outputTriangles, new std::vector<Texture>());
+	std::vector<Mesh*> meshes = std::vector<Mesh*>{ mesh };
+	MultiMesh* toReturn = new MultiMesh(meshes);
+	return toReturn;
 }
 
 #endif

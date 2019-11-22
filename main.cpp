@@ -131,14 +131,16 @@ class ConsoleControl
 
 public:
 
-	void exportMesh(std::vector<MultiMesh*> meshes)
+	void exportMesh(std::vector<MultiMesh*>& meshes, std::vector<MeshInstance>& instances)
 	{
 		if (exportMeshWrtn > exportMeshRead)
 		{
 			std::vector<char> buffer;
 			int bitIndex = 0;
-			encodeMultiMesh(meshes[0], 0.01, buffer, bitIndex);
-			decodeMultiMesh(buffer);
+			encodeMultiMesh(meshes[0], 1.0/1000.0, buffer, bitIndex);
+			MultiMesh* decoded = decodeMultiMesh(buffer);
+			meshes.push_back( decoded);
+			instances.push_back(MeshInstance(decoded));
 			exportMeshRead++;
 		}
 	}
@@ -341,7 +343,7 @@ int openGLloop()
 	{
 		consoleControl.loadMeshesInto(meshes, meshInstances);
 		consoleControl.loadOverrideTextures(overrideTextures);
-		consoleControl.exportMesh(meshes);
+		consoleControl.exportMesh(meshes, meshInstances);
 		processInput(window);
 
 		glClearColor(0.09f, 0.12f, 0.14f, 1.0f);
@@ -391,7 +393,6 @@ int openGLloop()
 int main(int argcp, char** argv)
 {
 	std::vector<char> buffer;
-	const float tolerance = 0.0001;
 	//encode(1.46f,tolerance,buffer,index);
 	//index = 0;
 	//float f = decode(buffer, tolerance, index);

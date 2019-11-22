@@ -16,8 +16,6 @@
 #include <glm/ext/matrix_clip_space.hpp> // GLM: perspective and ortho 
 #include <glm/gtc/type_ptr.hpp> // GLM: access to the value_ptr
 
-#define BUFFER_OFFSET(a) ((void*)(a))
-
 class MeshData
 {
 	public:
