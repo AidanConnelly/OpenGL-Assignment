@@ -168,13 +168,13 @@ void objParser::assertVertexesArePlanarAndConvex(std::vector<Vertex> vertexes)
 
 std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string directory)
 {
-	std::vector<MeshData> toReturn;
-	MeshData constructing;
+	std::map<std::string,MeshData> toReturn;
 	std::vector<MaterialLibParseResults*> mtlLibParseResults;
 	glm::vec3 currentColour = glm::vec3(0, 0, 0);
 	std::vector<glm::vec3> vertexPositions;
 	std::vector<glm::vec3> vertexNormals;
 	std::vector<glm::vec2> vertexCoordinates;
+	std::string materialName;
 	for (int i = 0; i < buffer.size(); i++)
 	{
 		switch (buffer[i])
@@ -214,24 +214,32 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 				i++;
 			}
 			i++;
-			std::string materialName;
+			materialName = "";
 			while (buffer[i] != '\n')
 			{
 				materialName += buffer[i];
 				i++;
 			}
+			if(toReturn.count(materialName)==0){
+				toReturn[materialName] = MeshData();
+			}
 			for (auto& mtlLibParseResult : mtlLibParseResults)
 			{
-				if(mtlLibParseResult->materials.count(materialName)){
+				if(mtlLibParseResult->materials.count(materialName)==1){
 					mtlMaterial m = mtlLibParseResult->materials[materialName];
 					
 					if(m.hasDiffuseMap){
 						std::string toPush = m.diffuseMap;
-						constructing.texturePaths.push_back(toPush);
+						toReturn[materialName].texturePaths.push_back(toPush);
 					}
 					else{
 						currentColour = m.diffuse;
 					}
+
+					toReturn[materialName].ambient = m.ambient;
+					toReturn[materialName].specular = m.specular;
+					toReturn[materialName].opacity = m.opacity;
+					toReturn[materialName].specularExponent = m.specularExponent;
 				}	
 			}
 			nextLine(i, buffer);
@@ -325,13 +333,13 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 				nextLine(i, buffer);
 				assertVertexesArePlanarAndConvex(vertexes);
 
-				unsigned offset = constructing.vertexes.size();
+				unsigned offset = toReturn[materialName].vertexes.size();
 				for(unsigned j = 0;j<vertexes.size();j++)
 				{
-					constructing.vertexes.push_back(vertexes[j]);
+					toReturn[materialName].vertexes.push_back(vertexes[j]);
 					if(j>1)
 					{
-						constructing.triangles.push_back(Triangle{ offset+0,offset+j - 1,offset+j });
+						toReturn[materialName].triangles.push_back(Triangle{ offset+0,offset+j - 1,offset+j });
 					}
 				}
 				//todo
@@ -342,6 +350,9 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 			break;
 		}
 	}
-	toReturn.push_back(constructing);
-	return toReturn;
+	std::vector<MeshData> actuallyReturn;
+	for(auto &pair : toReturn){
+		actuallyReturn.push_back(pair.second);
+	}
+	return actuallyReturn;
 }

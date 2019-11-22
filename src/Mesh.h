@@ -21,7 +21,6 @@ class MeshData
 	public:
 	MeshData()
 	{
-		std::cout << "calling empty constructor";
 	}
 	
 	MeshData(std::vector<Vertex> vertexes, std::vector<Triangle> triangles, std::vector<std::string> texturePaths)
@@ -43,6 +42,11 @@ class MeshData
 	std::vector<Triangle> triangles;
 	std::vector<Vertex> vertexes;
 	std::vector<Texture> textures;
+
+	float opacity = 1;
+	float specularExponent;
+	glm::vec3 ambient;
+	glm::vec3 specular;
 };
 
 class Mesh

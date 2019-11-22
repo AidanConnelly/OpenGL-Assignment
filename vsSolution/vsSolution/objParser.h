@@ -17,7 +17,7 @@ struct mtlMaterial{
 	glm::vec3 specular;
 	std::string diffuseMap;
 
-	bool hasDiffuseMap;
+	bool hasDiffuseMap = false;
 };
 
 struct MaterialLibParseResults
