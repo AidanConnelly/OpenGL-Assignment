@@ -56,7 +56,7 @@ MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::strin
 					i++;
 					if (buffer[i] == 'a')
 					{
-						//"Kd"
+						//"Ka"
 						toReturn->materials[thisMtlName].ambient = parseColour(i, buffer);
 					}
 					if (buffer[i] == 'd')
@@ -66,7 +66,7 @@ MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::strin
 					}
 					if (buffer[i] == 's')
 					{
-						//"Kd"
+						//"Ks"
 						toReturn->materials[thisMtlName].specular = parseColour(i, buffer);
 					}
 				}
@@ -98,6 +98,14 @@ MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::strin
 					i+=3;
 					float tr = parseAFloat(&i,buffer);
 					toReturn->materials[thisMtlName].opacity = 1-tr;
+				}
+				if(buffer[i]=='N'){
+				    i++;
+				    if(buffer[i]=='i'){
+				        i+=2;
+				        float exponent = parseAFloat(&i,buffer);
+				        toReturn->materials[thisMtlName].specularExponent = exponent;
+				    }
 				}
 			}
 		}

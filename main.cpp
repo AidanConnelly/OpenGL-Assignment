@@ -305,10 +305,10 @@ int openGLloop()
 
 	const ShaderType& vertexShaderType = VertexShaderType();
 
-	Shader vShader = Shader("shaders\\vertex.glsl", &vertexShaderType);
+	Shader vShader = Shader("..\\shaders\\vertex.glsl", &vertexShaderType);
 
 	const ShaderType& fragmentShaderType = FragmentShaderType();
-	Shader fShader = Shader("shaders\\fragment.glsl", &fragmentShaderType);
+	Shader fShader = Shader("..\\shaders\\fragment.glsl", &fragmentShaderType);
 
 	ShaderProgram program = ShaderProgram();
 	program.AttachShader(vShader);

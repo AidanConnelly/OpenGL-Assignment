@@ -133,7 +133,11 @@ public:
 		this->vertexes = mesh_data.vertexes;
 		this->triangles = mesh_data.triangles;
 		this->textures = mesh_data.textures;
-		
+		this->ambient = mesh_data.ambient;
+		this->opacity = mesh_data.opacity;
+		this->specular = mesh_data.specular;
+		this->specularExponent = mesh_data.specularExponent;
+
 		createThisMesh();
 	}
 
@@ -154,6 +158,12 @@ public:
 	std::vector<Triangle> triangles;
 	std::vector<Vertex> vertexes;
 	std::vector<Texture> textures;
+
+
+	float opacity = 1;
+	float specularExponent;
+	glm::vec3 ambient;
+	glm::vec3 specular;
 private:
 	GLuint VBO;
 
@@ -211,7 +221,16 @@ public:
 		glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 		glUniform1f(selectedLoc, selected?0.2:0.0);
 
+		int ambLoc = glGetUniformLocation(program.ID, "ambCol");
+		int opacityLoc = glGetUniformLocation(program.ID, "opacity");
+		int specLoc = glGetUniformLocation(program.ID, "specCol");
+		int specExpLoc = glGetUniformLocation(program.ID, "specExp");
+
 		for (auto& singleMesh : instanceOf->meshes) {
+			glUniform3f(ambLoc, singleMesh->ambient.x,singleMesh->ambient.y,singleMesh->ambient.z);
+			glUniform1f(opacityLoc, singleMesh->opacity);
+			glUniform3f(specLoc, singleMesh->specular.x,singleMesh->specular.y,singleMesh->specular.z);
+			glUniform1f(specExpLoc, singleMesh->specularExponent);
 			singleMesh->bind();
 			glDrawElements(GL_TRIANGLES, 3 * singleMesh->triangles.size(), GL_UNSIGNED_INT, 0);
 		}
