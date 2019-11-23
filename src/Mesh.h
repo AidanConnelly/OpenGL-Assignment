@@ -212,13 +212,15 @@ public:
 	void Draw(ShaderProgram program, glm::mat4 pv)
 	{
 		// Adding all matrices up to create combined matrix
-		glm::mat4 mvp = pv * translate*scaling;
+		glm::mat4 m = translate*scaling;
 
 		//adding the Uniform to the shader
 		//todo move into shader program class
-		int mvpLoc = glGetUniformLocation(program.ID, "mvp");
+		int mLoc = glGetUniformLocation(program.ID, "m");
+		int vpLoc = glGetUniformLocation(program.ID, "vp");
 		int selectedLoc = glGetUniformLocation(program.ID, "selected");
-		glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+        glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(m));
+        glUniformMatrix4fv(vpLoc, 1, GL_FALSE, glm::value_ptr(pv));
 		glUniform1f(selectedLoc, selected?0.2:0.0);
 
 		int ambLoc = glGetUniformLocation(program.ID, "ambCol");
