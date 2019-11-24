@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include "GMM.h"
+#include "HuffmanCoding.h"
 
 typedef unsigned int ContigousIndex;
 
