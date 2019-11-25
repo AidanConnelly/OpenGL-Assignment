@@ -9,12 +9,12 @@ uniform mat4 vp;
 out vec4 fragColour;
 out vec3 vNorm;
 out vec2 texCoord;
-out vec3 vPos;
+out vec3 worldVPos;
 void main()
 {
 	fragColour = vec4(vColour,1.0);
 	gl_Position = vp * m * vec4 (vPosition,1.0);
 	texCoord = aTexCoord;
 	vNorm = vNormal;
-	vPos =  vec3(m * vec4 (vPosition,1.0));
+	worldVPos =  vec3(m * vec4 (vPosition,1.0));
 } 

@@ -1,4 +1,4 @@
-ToolSet: 14.0 (local)@C:\Program Files (x86)\Microsoft Visual Studio 14.0
+ToolSet: w64 8.0 (local)@C:\msys32\mingw32
 Options: 
 
 Options:

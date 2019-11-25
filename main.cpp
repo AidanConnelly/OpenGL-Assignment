@@ -103,17 +103,23 @@ int openGLloop()
 	// std::vector<MeshData> results = daeParser::parse(toParse, directory);
 
 	const ShaderType& vertexShaderType = VertexShaderType();
+    const ShaderType& fragmentShaderType = FragmentShaderType();
 
-	Shader vShader = Shader("..\\shaders\\vertex.glsl", &vertexShaderType);
+    Shader meshVertexShader = Shader("..\\shaders\\meshVertex.glsl", &vertexShaderType);
+	Shader meshFragmentShader = Shader("..\\shaders\\meshFragment.glsl", &fragmentShaderType);
+	ShaderProgram meshProgram = ShaderProgram();
+	meshProgram.AttachShader(meshVertexShader);
+	meshProgram.AttachShader(meshFragmentShader);
+	meshProgram.Link();
 
-	const ShaderType& fragmentShaderType = FragmentShaderType();
-	Shader fShader = Shader("..\\shaders\\fragment.glsl", &fragmentShaderType);
+    Shader lightSourceVertexShader = Shader("..\\shaders\\lightSourceVertex.glsl",&vertexShaderType);
+    Shader lightSourceFragmentShader = Shader("..\\shaders\\lightSourceFragment.glsl",&fragmentShaderType);
+    ShaderProgram lightSourceProgram = ShaderProgram();
+    lightSourceProgram.AttachShader(lightSourceVertexShader);
+    lightSourceProgram.AttachShader(lightSourceFragmentShader);
+    lightSourceProgram.Link();
 
-	ShaderProgram program = ShaderProgram();
-	program.AttachShader(vShader);
-	program.AttachShader(fShader);
-	program.Link();
-
+    std::cout << "finished linking shader programs" << std::endl;
 	//
 	//    glGenVertexArrays(1, &VAO_Handle);
 	//    glGenBuffers(1, &VBO_Handle);
@@ -148,35 +154,71 @@ int openGLloop()
 		glClearColor(0.09f, 0.12f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//        program.use();
-		//        glBindVertexArray(VAO_Handle);
-		program.use();
+        double time = (std::chrono::system_clock::now() - start).count() / 1000000000.0;
 
-		int timeLoc = glGetUniformLocation(program.ID, "time");
-		double time = (std::chrono::system_clock::now() - start).count() / 1000000000.0;
+        // creating the projection matrix
+        glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3, 0.1f, 50000.0f);
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, -cameraPosition);
+        view = cameraRotation * view;
+
+        glm::vec3 lightPos = glm::vec3(20.0,20.0,20+4.5*sin(0.8*time));
+        lightSourceProgram.use();
+        int vpLoc = glGetUniformLocation(lightSourceProgram.ID, "vp");
+        glUniformMatrix4fv(vpLoc, 1, GL_FALSE, glm::value_ptr(projection * view));
+
+
+        unsigned int VAO;
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
+
+        unsigned int VBO;
+        glGenBuffers(1, &VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, 3*sizeof(float), glm::value_ptr(lightPos), GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        glDrawArrays(GL_POINTS, 0, 1);
+
+        auto ErrorCheckValue = glGetError();
+        if (ErrorCheckValue != GL_NO_ERROR)
+        {
+            fprintf(
+                    stderr,
+                    "ERROR: Could not create a VBO: %s \n");
+            std::cout << std::endl;
+            exit(-1);
+        }
+        meshProgram.use();
+		int timeLoc = glGetUniformLocation(meshProgram.ID, "time");
 		glUniform1f(timeLoc, time);
 
-		glm::mat4 view = glm::mat4(1.0f);
-		view = glm::translate(view, cameraPosition);
-		view = cameraRotation * view;
+        glUniform1f(glGetUniformLocation(meshProgram.ID, "ambientLight"), 0.05);
+        glUniform3fv(glGetUniformLocation(meshProgram.ID, "lightPos"), 1, glm::value_ptr(lightPos));
+        glUniform1f(glGetUniformLocation(meshProgram.ID, "lightPower"), 1100);
+        glUniform1f(glGetUniformLocation(meshProgram.ID, "specularSurfaceRoughness"),0.1);
+        int cameraLocationUniformLocation = glGetUniformLocation(meshProgram.ID, "cameraLocation");
+        glUniform3fv(cameraLocationUniformLocation, 1, glm::value_ptr(cameraPosition));
 
-		// creating the projection matrix
-		glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3, 0.1f, 50000.0f);
+
 		for (int i = 0; i < meshInstances.size(); i++)
 		{
 			auto mI = meshInstances[i];
 			if (overrideTextures.size() == 0)
 			{
-				mI.instanceOf->BindTextures(program);
+				mI.instanceOf->BindTextures(meshProgram);
 			}
 			else
 			{
-				int hasTextureLocation = glGetUniformLocation(program.ID, "hasTexture");
+				int hasTextureLocation = glGetUniformLocation(meshProgram.ID, "hasTexture");
 				glUniform1f(hasTextureLocation, 1.0f);
-				overrideTextures[i % overrideTextures.size()].bind(program, 0);
+				overrideTextures[i % overrideTextures.size()].bind(meshProgram, 0);
 			}
 			mI.selected = i == selected;
-			mI.Draw(program, projection * view);
+			mI.Draw(meshProgram, projection * view);
 		}
 
 		glfwSwapBuffers(window);

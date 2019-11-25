@@ -52,6 +52,8 @@ class ConsoleControl
     int exportMeshWrtn;
     int exportMeshRead;
 
+    bool phong = false;
+
     void printDirectoryStrucuture(std::filesystem::path current)
     {
         if (exists(current))
@@ -205,6 +207,9 @@ public:
             else if (str == "fuzz obj"){
                 fuzzObj();
             }
+            else if (str == "toggle phong"){
+                phong = true;
+            }
         }
     }
 
@@ -241,6 +246,10 @@ public:
             toLoadInto.push_back(Texture(overrideTextureJobs[i]));
             numTextureOverridesRead = i + 1;
         }
+    }
+
+    bool getPhong(){
+        return phong;
     }
 };
 

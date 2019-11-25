@@ -3,31 +3,38 @@
 out vec4 fColor;
 in vec4 fragColour;
 in vec3 vNorm;
-in vec3 vPos;
+in vec3 worldVPos;
 in vec2 texCoord;
 
-uniform mat4 m;
 uniform mat4 vp;
+uniform vec3 cameraLocation;
 
 uniform sampler2D ourTexture;
 uniform float time;
 uniform float selected;
 uniform float hasTexture;
+
 uniform vec3 lightPos;
+uniform float lightPower;
+uniform float ambientLight;
+
 uniform float specExp;
 uniform vec3 specCol;
 uniform float opacity;
 uniform vec3 ambCol;
+
+//0 for perfectly flat, 1 for 100% rough
+uniform float specularSurfaceRoughness;
 
 void main()
 {
     //fColor = vec4(0.5, 0.4, 0.8, 1.0);
 	//fColor = texture(ourTexture, texCoord) + sin(6*time)*selected*vec4(1.0,1.0,1.0,1.0);
 	vec3 normedVNorm = normalize(vNorm);
-	vec3 posToLight = normalize(lightPos - vPos);
+	vec3 posToLight = normalize(lightPos - worldVPos);
 
-	float dist = length(posToLight);
-
+	float dist = length(lightPos - worldVPos);
+	float dist2rd = dist * dist;
 //	vec3 lightDir = normalize(lightPos - vertPos);
 //	vec3 reflectDir = reflect(-lightDir, normal);
 //	vec3 viewDir = normalize(-vertPos);
@@ -35,19 +42,21 @@ void main()
 //	float lambertian = max(dot(lightDir,normal), 0.0);
 //	specular = pow(specAngle, 4.0);
 
-	vec3 viewDir = normalize(-vec3(vp*m*vec4(vPos,1.0)));
 	vec3 reflectDir = reflect(-posToLight, normedVNorm);
-
-	float viewDotReflect = clamp(dot(viewDir,reflectDir ),0,1);
+	vec3 viewDir = normalize(worldVPos - cameraLocation);
+	float viewDotReflect = clamp(dot(-viewDir,reflectDir ),0,1);
 	float diffuseCoef = clamp(dot(normedVNorm,posToLight),0,1);
-	vec4 diffuse = diffuseCoef* fragColour;
+	vec4 diffuse = lightPower * diffuseCoef* fragColour/dist2rd;
 
-	float specCoef = max(sign(diffuseCoef),0) * pow(viewDotReflect, specExp);
-	vec4 specular = specCoef * vec4(specCol,1.0);
-	vec4 ambient = 0.1 * vec4(ambCol,1.0);
+	float viewable = clamp(diffuseCoef/(specularSurfaceRoughness+0.0000001),0,1);
+	float specCoef = viewable * pow(viewDotReflect, specExp);
+	vec4 specular = lightPower * specCoef * vec4(specCol,1.0)/dist2rd;
+	vec4 ambient = ambientLight*fragColour*vec4(ambCol,1.0);
 	vec4 selected = hasTexture*texture(ourTexture, texCoord) + sin(6*time)*selected*vec4(1.0,1.0,1.0,1.0);
 	fColor = diffuse + ambient + specular + selected;
-//	fColor = vec4(diffuseCoef,specCoef,rename,1.0);
+	fColor = diffuse + ambient + specular ;//+ selected;
+//	fColor = diffuse;// + ambient + specular + selected;
+//	fColor = vec4(viewDotReflect,viewDotReflect,viewable,1.0);
 	//fColor = vec4(texCoord,0.5,1.0);
 	//fColor = fragColour;
 }

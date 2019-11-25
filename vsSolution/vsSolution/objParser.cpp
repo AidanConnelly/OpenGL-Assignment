@@ -101,7 +101,7 @@ MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::strin
 				}
 				if(buffer[i]=='N'){
 				    i++;
-				    if(buffer[i]=='i'){
+				    if(buffer[i]=='s'){
 				        i+=2;
 				        float exponent = parseAFloat(&i,buffer);
 				        toReturn->materials[thisMtlName].specularExponent = exponent;
