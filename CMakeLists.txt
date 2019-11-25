@@ -45,6 +45,7 @@ add_executable(soft356a3
         src/HuffmanCoding.h
         src/Mesh.cpp
         src/Mesh.h
+        src/safeIndex.h
         src/Texture.cpp
         src/Texture.h
         src/Vertex.cpp

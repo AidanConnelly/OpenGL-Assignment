@@ -8,3 +8,5 @@ vsSolution/packages/*
 *.ilk
 *.pdb
 *.VC.db
+/cmake-build-debug/CMakeFiles/
+/cmake-build-debug/CMakeFiles/

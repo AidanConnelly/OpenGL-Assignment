@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <src/safeIndex.h>
 #include "objParser.h"
 
 glm::vec3 parseColour(int&i,std::vector<char>&buffer){
@@ -303,7 +304,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 					glm::vec3 vertexNormal;
 					glm::vec2 vertexCoordinate;
 					int vertexPositionIndex = parseAnInt(&i, buffer) - 1;
-					vertexPosition = vertexPositions[vertexPositionIndex];
+					vertexPosition = safeAt(vertexPositions,vertexPositionIndex);
 					if (buffer[i] == '/')
 					{
 						i++;
@@ -311,7 +312,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 						{
 							//Was n/n/n or n/n
 							int vertexCoordinateIndex = parseAnInt(&i, buffer) - 1;
-							vertexCoordinate = vertexCoordinates[vertexCoordinateIndex];
+							vertexCoordinate = safeAt(vertexCoordinates,vertexCoordinateIndex);
 						}
 						else
 						{
@@ -322,7 +323,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 							i++;
 							//Was n//n or n/n/n
 							int vertexNormalIndex = parseAnInt(&i, buffer) - 1;
-							vertexNormal = vertexNormals[vertexNormalIndex];
+							vertexNormal = safeAt(vertexNormals,vertexNormalIndex);
 						}
 					}
 					making.r = currentColour.x;

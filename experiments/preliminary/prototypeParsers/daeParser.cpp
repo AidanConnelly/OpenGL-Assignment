@@ -533,22 +533,22 @@ xmlNodeStore daeParser::parseFloatArrays(std::vector<char> buffer, xmlNodeStore 
 	return floatArrays;
 }
 
-void daeParser::checkForQuotes(char thisChar, int* stackPos, parseStack* stack, xmlParsingStackMember* state)
+void daeParser::checkForQuotes(char thisChar, int* stackPos, parseStack& stack, xmlParsingStackMember& state)
 {
 	int newStackPos;
 	switch (thisChar)
 	{
 	case '"':
-		(*stack).push_back(*state);
+		stack.push_back(state);
 		newStackPos = *stackPos + 1;
 		*stackPos = newStackPos;
-		(*state).state = XMLParseState::DQuote;
+		state.state = XMLParseState::DQuote;
 		break;
 	case '\'':
-		(*stack).push_back(*state);
+        stack.push_back(state);
 		newStackPos = *stackPos + 1;
 		*stackPos = newStackPos;
-		(*state).state = XMLParseState::SQuote;
+		state.state = XMLParseState::SQuote;
 		break;
 	default:
 		break;
@@ -602,7 +602,7 @@ xmlNodeStore daeParser::parseNodes(const std::vector<char>& buffer)
 				}
 				nodes.push_back(state.node);
 
-				if (stackPos > 0)
+				if (stackPos > 0 && stackPos<=stack.size())
 				{
 					stack[stackPos - 1].node->children.push_back(state.node);
 				}
@@ -616,7 +616,7 @@ xmlNodeStore daeParser::parseNodes(const std::vector<char>& buffer)
 				state = xmlParsingStackMember(Start, new xmlNode(buffer));
 				break;
 			default:
-				checkForQuotes(thisChar, &stackPos, &stack, &state);
+				checkForQuotes(thisChar, &stackPos, stack, state);
 				break;
 			}
 			break;
@@ -631,7 +631,7 @@ xmlNodeStore daeParser::parseNodes(const std::vector<char>& buffer)
 				{
 					throw std::invalid_argument("");
 				}
-				if (stackPos > 0)
+				if (stackPos > 0 && stackPos<=stack.size())
 				{
 					stack[stackPos - 1].node->children.push_back(state.node);
 				}
@@ -639,7 +639,7 @@ xmlNodeStore daeParser::parseNodes(const std::vector<char>& buffer)
 			}
 			else
 			{
-				checkForQuotes(thisChar, &stackPos, &stack, &state);
+				checkForQuotes(thisChar, &stackPos, stack, state);
 			}
 			break;
 		case XMLParseState::DQuote:

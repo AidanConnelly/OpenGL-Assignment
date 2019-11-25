@@ -11,6 +11,7 @@
 #include <chrono>
 #include <functional>
 #include <vector>
+#include <filesystem>
 #include "../prototypeParsers/daeParser.h"
 
 inline std::string separator()
@@ -39,25 +40,27 @@ public:
 
     static std::vector<char> getBytes(std::string file) {
         std::vector<char> readed;
-        std::cout << readed.size() << std::endl;
-        for (int i = 0; i < 1; i++) {
+        if(exists(std::filesystem::path(file))) {
+            std::cout << readed.size() << std::endl;
+            for (int i = 0; i < 1; i++) {
 
-               //std::ifstream myfile("resources"+separator()+"largish.dae");
-			std::ifstream myfile(file);
+                //std::ifstream myfile("resources"+separator()+"largish.dae");
+                std::ifstream myfile(file);
 
-            int timesRead = 0;
+                int timesRead = 0;
 
-            //512 KB chunks for fast opening of smaller files
-            const int maxNChars = 512 * 1024;
-            char buffer[maxNChars]; // create a buffer
-            while (!myfile.eof()) {
-                timesRead++;
-                myfile.read(buffer, maxNChars); // read to buffer
-                int charsReaded = myfile.gcount();
-                readed.insert(readed.end(), buffer, buffer + charsReaded);
+                //512 KB chunks for fast opening of smaller files
+                const int maxNChars = 512 * 1024;
+                char buffer[maxNChars]; // create a buffer
+                while (!myfile.eof()) {
+                    timesRead++;
+                    myfile.read(buffer, maxNChars); // read to buffer
+                    int charsReaded = myfile.gcount();
+                    readed.insert(readed.end(), buffer, buffer + charsReaded);
+                }
+                std::cout << timesRead << std::endl;
+                myfile.close();
             }
-            std::cout << timesRead << std::endl;
-            myfile.close();
         }
         return readed;
     }
