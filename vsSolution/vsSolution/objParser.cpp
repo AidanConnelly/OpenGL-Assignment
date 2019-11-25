@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include <src/safeIndex.h>
 #include "objParser.h"
+#include "../../src/safeIndex.h"
 
 glm::vec3 parseColour(int&i,std::vector<char>&buffer){
 	i += 2;

@@ -104,16 +104,16 @@ int openGLloop()
 
 	const ShaderType& vertexShaderType = VertexShaderType();
     const ShaderType& fragmentShaderType = FragmentShaderType();
-
-    Shader meshVertexShader = Shader("..\\shaders\\meshVertex.glsl", &vertexShaderType);
-	Shader meshFragmentShader = Shader("..\\shaders\\meshFragment.glsl", &fragmentShaderType);
+	std::string prefix = "C:\\Users\\aidan\\Documents\\soft356a3\\shaders\\";
+    Shader meshVertexShader = Shader(prefix+"meshVertex.glsl", &vertexShaderType);
+	Shader meshFragmentShader = Shader(prefix + "meshFragment.glsl", &fragmentShaderType);
 	ShaderProgram meshProgram = ShaderProgram();
 	meshProgram.AttachShader(meshVertexShader);
 	meshProgram.AttachShader(meshFragmentShader);
 	meshProgram.Link();
 
-    Shader lightSourceVertexShader = Shader("..\\shaders\\lightSourceVertex.glsl",&vertexShaderType);
-    Shader lightSourceFragmentShader = Shader("..\\shaders\\lightSourceFragment.glsl",&fragmentShaderType);
+    Shader lightSourceVertexShader = Shader(prefix + "lightSourceVertex.glsl",&vertexShaderType);
+    Shader lightSourceFragmentShader = Shader(prefix + "lightSourceFragment.glsl",&fragmentShaderType);
     ShaderProgram lightSourceProgram = ShaderProgram();
     lightSourceProgram.AttachShader(lightSourceVertexShader);
     lightSourceProgram.AttachShader(lightSourceFragmentShader);

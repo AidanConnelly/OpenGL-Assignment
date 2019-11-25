@@ -15,7 +15,7 @@ class Shader {
 public:
     unsigned int shader;
 
-    Shader(const char *path, const ShaderType *shaderType) {
+    Shader(std::string path, const ShaderType *shaderType) {
 
         //debug statement
         std::cout << path;
@@ -28,7 +28,7 @@ public:
         shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
         try {
             // open files
-            shaderFile.open(path);
+            shaderFile.open(path.c_str());
             std::stringstream shaderStream;
             // read file's buffer contents into streams
             shaderStream << shaderFile.rdbuf();

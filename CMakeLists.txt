@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(soft356a3)
 
 set(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_FLAGS -O0)
 include_directories(.)
 include_directories(experiments)
 include_directories(experiments/preliminary/fileThroughput)

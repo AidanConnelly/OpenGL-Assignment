@@ -53,17 +53,24 @@ class ConsoleControl {
     bool phong = false;
     std::random_device engine;
 
-    void printDirectoryStrucuture(std::filesystem::path current) {
+    void listMeshes(){
+        std::cout << std::endl << "meshes: " << std::endl;
+        for(auto &pair: cache){
+            std::cout << pair.first << std::endl;
+        }
+    }
+
+    void printDirectoryStrucuture(filesystem::path current) {
         if (exists(current)) {
             if (current.extension().empty()) {
                 try {
-                    auto currentDirContents = std::filesystem::directory_iterator(current);
+                    auto currentDirContents = filesystem::directory_iterator(current);
                     for (const auto &file : currentDirContents) {
                         // std::string folderChar = "📁";
                         std::string folderChar = "o";
                         // std::string fileChar = "🗎";
                         std::string fileChar = "i";
-                        std::cout << (std::filesystem::is_directory(file)
+                        std::cout << (filesystem::is_directory(file)
                                       ? " " + folderChar + "\t"
                                       : " " + fileChar + "\t");
                         std::cout << file.path().filename() << std::endl;
@@ -78,7 +85,7 @@ class ConsoleControl {
         }
     }
 
-    void fuzz(std::filesystem::path current, std::string str) {
+    void fuzz(filesystem::path current, std::string str) {
         for (int i = 0; i < 100; i++) {
             std::string fullFilePath = (current / str).string();
             if (exists(current / str)) {
@@ -101,7 +108,7 @@ class ConsoleControl {
         std::cout << std::endl << "finished fuzzing" << std::endl;
     }
 
-    void loadMesh(std::filesystem::path current, std::string str) {
+    void loadMesh(filesystem::path current, std::string str) {
         std::string toLoad = str.substr(5, str.size() - 5);
         std::string fullFilePath = (current / toLoad).string();
         if (exists(current / toLoad)) {
@@ -111,7 +118,7 @@ class ConsoleControl {
         }
     }
 
-    void loadFromContents(const std::filesystem::path &current, const std::string &str, std::vector<char> &contents) {
+    void loadFromContents(const filesystem::path &current, const std::string &str, std::vector<char> &contents) {
         std::string fullFilePath = (current / str).string();
         std::string extension = (current / str).extension().string();
 
@@ -151,7 +158,7 @@ class ConsoleControl {
         }
     }
 
-    void overrideTexture(std::filesystem::path current, std::string str) {
+    void overrideTexture(filesystem::path current, std::string str) {
         if (exists(current / str) && !is_directory(current / str)) {
             overrideTextureJobs.push_back(absolute((current / str)).string());
             numTextureOverridesWrtn = overrideTextureJobs.size();
@@ -178,7 +185,7 @@ public:
     }
 
     void loopNavigation() {
-        auto current = std::filesystem::path("C://");
+        auto current = filesystem::path("C://");
         while (true) {
             printDirectoryStrucuture(current);
 
@@ -202,6 +209,9 @@ public:
                 fuzz(current, str.substr(fuzzPrefix.size(), str.size() - fuzzPrefix.size()));
             } else if (str == "toggle phong") {
                 phong = true;
+            }
+            else if (str == "list meshes"){
+                listMeshes();
             }
         }
     }

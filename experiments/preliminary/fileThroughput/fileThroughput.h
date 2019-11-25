@@ -11,8 +11,8 @@
 #include <chrono>
 #include <functional>
 #include <vector>
-#include <filesystem>
 #include "../prototypeParsers/daeParser.h"
+#include "../../../vsSolution/vsSolution/fs.h"
 
 inline std::string separator()
 {
@@ -40,7 +40,7 @@ public:
 
     static std::vector<char> getBytes(std::string file) {
         std::vector<char> readed;
-        if(exists(std::filesystem::path(file))) {
+        if(filesystem::exists(filesystem::path(file))) {
             std::cout << readed.size() << std::endl;
             for (int i = 0; i < 1; i++) {
 
