@@ -196,7 +196,7 @@ int openGLloop()
 		int timeLoc = glGetUniformLocation(meshProgram.ID, "time");
 		glUniform1f(timeLoc, time);
 
-        glUniform1f(glGetUniformLocation(meshProgram.ID, "ambientLight"), 0.05);
+        glUniform1f(glGetUniformLocation(meshProgram.ID, "ambientLight"), 0.2);
         glUniform3fv(glGetUniformLocation(meshProgram.ID, "lightPos"), 1, glm::value_ptr(lightPos));
         glUniform1f(glGetUniformLocation(meshProgram.ID, "lightPower"), 1100);
         glUniform1f(glGetUniformLocation(meshProgram.ID, "specularSurfaceRoughness"),0.1);

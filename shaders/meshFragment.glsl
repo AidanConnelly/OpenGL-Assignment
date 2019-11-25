@@ -28,35 +28,23 @@ uniform float specularSurfaceRoughness;
 
 void main()
 {
-    //fColor = vec4(0.5, 0.4, 0.8, 1.0);
-	//fColor = texture(ourTexture, texCoord) + sin(6*time)*selected*vec4(1.0,1.0,1.0,1.0);
 	vec3 normedVNorm = normalize(vNorm);
 	vec3 posToLight = normalize(lightPos - worldVPos);
 
 	float dist = length(lightPos - worldVPos);
 	float dist2rd = dist * dist;
-//	vec3 lightDir = normalize(lightPos - vertPos);
-//	vec3 reflectDir = reflect(-lightDir, normal);
-//	vec3 viewDir = normalize(-vertPos);
-//
-//	float lambertian = max(dot(lightDir,normal), 0.0);
-//	specular = pow(specAngle, 4.0);
+	vec4 baseColour = fragColour + hasTexture*texture(ourTexture, texCoord);
 
 	vec3 reflectDir = reflect(-posToLight, normedVNorm);
 	vec3 viewDir = normalize(worldVPos - cameraLocation);
 	float viewDotReflect = clamp(dot(-viewDir,reflectDir ),0,1);
 	float diffuseCoef = clamp(dot(normedVNorm,posToLight),0,1);
-	vec4 diffuse = lightPower * diffuseCoef* fragColour/dist2rd;
+	vec4 diffuse = lightPower * diffuseCoef* baseColour/dist2rd;
 
 	float viewable = clamp(diffuseCoef/(specularSurfaceRoughness+0.0000001),0,1);
 	float specCoef = viewable * pow(viewDotReflect, specExp);
 	vec4 specular = lightPower * specCoef * vec4(specCol,1.0)/dist2rd;
-	vec4 ambient = ambientLight*fragColour*vec4(ambCol,1.0);
-	vec4 selected = hasTexture*texture(ourTexture, texCoord) + sin(6*time)*selected*vec4(1.0,1.0,1.0,1.0);
+	vec4 ambient = ambientLight*baseColour*vec4(ambCol,1.0);
+	vec4 selected = baseColour * sin(6*time)*selected*vec4(1.0,1.0,1.0,1.0);
 	fColor = diffuse + ambient + specular + selected;
-	fColor = diffuse + ambient + specular ;//+ selected;
-//	fColor = diffuse;// + ambient + specular + selected;
-//	fColor = vec4(viewDotReflect,viewDotReflect,viewable,1.0);
-	//fColor = vec4(texCoord,0.5,1.0);
-	//fColor = fragColour;
 }

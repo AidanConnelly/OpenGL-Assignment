@@ -43,9 +43,9 @@ class MeshData
 	std::vector<Texture> textures;
 
 	float opacity = 1;
-	float specularExponent;
-	glm::vec3 ambient;
-	glm::vec3 specular;
+	float specularExponent = 2;
+	glm::vec3 ambient = glm::vec3(1.0,1.0,1.0);
+	glm::vec3 specular = glm::vec3(1.0,1.0,1.0);
 };
 
 class Mesh
