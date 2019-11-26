@@ -32,6 +32,11 @@ struct makeInstancesJob {
     int toMakeInstancesOf;
 };
 
+struct exportMeshJob{
+    int meshToExport;
+    std::string pathToExportTo;
+};
+
 class ConsoleControl {
     std::map<std::string, int> cache;
     std::vector<std::vector<MeshData> *> loaded;
@@ -46,7 +51,7 @@ class ConsoleControl {
     int numTextureOverridesWrtn;
     int numTextureOverridesRead;
 
-    std::vector<int> exportMeshQueue;
+    std::vector<exportMeshJob> exportMeshQueue;
     int exportMeshWrtn;
     int exportMeshRead;
 
@@ -56,7 +61,7 @@ class ConsoleControl {
     void listMeshes(){
         std::cout << std::endl << "meshes: " << std::endl;
         for(auto &pair: cache){
-            std::cout << pair.first << std::endl;
+            std::cout << pair.second << ") \t" << pair.first << std::endl;
         }
     }
 
@@ -165,8 +170,18 @@ class ConsoleControl {
         }
     }
 
-    void queueExportMesh() {
-        exportMeshQueue.push_back(0);
+    void queueExportMesh(filesystem::path current) {
+        listMeshes();
+        std::cout << std::endl << "number mesh to export?" << std::endl;
+        std::string str;
+        std::getline(std::cin, str);
+        int toExport = std::stoi(str,nullptr);
+        std::cout << std::endl << "enter file name: (???.fuz)" << std::endl;
+        std::string fileName;
+        std::getline(std::cin, fileName);
+        fileName += ".fuz";
+        fileName = (current/fileName).string();
+        exportMeshQueue.push_back(exportMeshJob{toExport,fileName});
         exportMeshWrtn++;
     }
 
@@ -176,10 +191,16 @@ public:
         if (exportMeshWrtn > exportMeshRead) {
             std::vector<char> buffer;
             int bitIndex = 0;
-            encodeMultiMesh(meshes[0], 1.0 / 1000.0, buffer, bitIndex);
-            MultiMesh *decoded = decodeMultiMesh(buffer);
-            meshes.push_back(decoded);
-            instances.push_back(MeshInstance(decoded));
+            exportMeshJob job = exportMeshQueue[exportMeshRead];
+            encodeMultiMesh(meshes[job.meshToExport], 1.0 / 1000.0, buffer, bitIndex);
+
+            std::string fileName = job.pathToExportTo;
+            std::ofstream fout(fileName, std::ios::out | std::ios::binary);
+            fout.write(&buffer[0], buffer.size() * sizeof(char));
+            fout.close();
+//            MultiMesh *decoded = decodeMultiMesh(buffer);
+//            meshes.push_back(decoded);
+//            instances.push_back(MeshInstance(decoded));
             exportMeshRead++;
         }
     }
@@ -204,13 +225,12 @@ public:
             } else if (str.rfind(overrideTextureCmdPrefix, 0) == 0) {
                 overrideTexture(current, str.substr(overrideTextureCmdPrefix.size(), str.size() - overrideTextureCmdPrefix.size()));
             } else if (str == "export") {
-                queueExportMesh();
+                queueExportMesh(current);
             } else if (str.rfind(fuzzPrefix, 0) == 0) {
                 fuzz(current, str.substr(fuzzPrefix.size(), str.size() - fuzzPrefix.size()));
             } else if (str == "toggle phong") {
                 phong = true;
-            }
-            else if (str == "list meshes"){
+            } else if (str == "list meshes"){
                 listMeshes();
             }
         }
