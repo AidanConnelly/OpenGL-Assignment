@@ -45,6 +45,6 @@ void main()
 	float specCoef = viewable * pow(viewDotReflect, specExp);
 	vec4 specular = lightPower * specCoef * vec4(specCol,1.0)/dist2rd;
 	vec4 ambient = ambientLight*baseColour*vec4(ambCol,1.0);
-	vec4 selected = baseColour * sin(6*time)*selected*vec4(1.0,1.0,1.0,1.0);
+	vec4 selected = sin(6*time)*selected*vec4(1.0,1.0,1.0,1.0);
 	fColor = diffuse + ambient + specular + selected;
-}
+}	

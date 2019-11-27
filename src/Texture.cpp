@@ -18,6 +18,7 @@ Texture::Texture(std::string fromFile) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    data = nullptr;
 	data = stbi_load(fromFile.c_str(), &width, &height, &nrChannels, 0);
 	if (data)
 	{

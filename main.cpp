@@ -40,7 +40,7 @@ float vertices[] = {
 unsigned int VAO_Handle;
 unsigned int VBO_Handle;
 
-glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, -2.0f);
+glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, +4.5f);
 glm::mat4 cameraRotation = glm::mat4(1.0f);
 
 int selected = 0;
@@ -93,7 +93,11 @@ int openGLloop()
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 
-	// std::string directory1 = "C:\\Users\\aidan\\..\\aidan\\Downloads\\Creeper\\";
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
+    // std::string directory1 = "C:\\Users\\aidan\\..\\aidan\\Downloads\\Creeper\\";
 	// std::string file = "relative.obj";
 	// std::vector<char> objContents = fileThroughput::getBytes(directory1 + file);
 	// std::vector<MeshData> results = objParser::parse(objContents, directory1);
@@ -143,7 +147,22 @@ int openGLloop()
 	//  +0.00f, +0.61f, -2.00f,
 
 	// creating the view matrix
+	
+	glm::vec3 lightPos = glm::vec3(20.0, 20.0, 20.0);
+
+	unsigned int VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	unsigned int VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(float), glm::value_ptr(lightPos), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	
 	auto start = std::chrono::system_clock::now();
+	
 	while (!glfwWindowShouldClose(window))
 	{
 		consoleControl.loadMeshesInto(meshes, meshInstances);
@@ -162,25 +181,13 @@ int openGLloop()
         view = glm::translate(view, -cameraPosition);
         view = cameraRotation * view;
 
-        glm::vec3 lightPos = glm::vec3(20.0,20.0,20+4.5*sin(0.8*time));
         lightSourceProgram.use();
-        int vpLoc = glGetUniformLocation(lightSourceProgram.ID, "vp");
-        glUniformMatrix4fv(vpLoc, 1, GL_FALSE, glm::value_ptr(projection * view));
-
-
-        unsigned int VAO;
-        glGenVertexArrays(1, &VAO);
-        glBindVertexArray(VAO);
-
-        unsigned int VBO;
-        glGenBuffers(1, &VBO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, 3*sizeof(float), glm::value_ptr(lightPos), GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
+        int vLoc = glGetUniformLocation(lightSourceProgram.ID, "v");
+        int pLoc = glGetUniformLocation(lightSourceProgram.ID, "p");
+		glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
         glDrawArrays(GL_POINTS, 0, 1);
 
         auto ErrorCheckValue = glGetError();
@@ -218,7 +225,11 @@ int openGLloop()
 				overrideTextures[i % overrideTextures.size()].bind(meshProgram, 0);
 			}
 			mI.selected = i == selected;
-			mI.Draw(meshProgram, projection * view);
+            vLoc = glGetUniformLocation(meshProgram.ID, "v");
+            pLoc = glGetUniformLocation(meshProgram.ID, "p");
+            glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
+            mI.Draw(meshProgram);
 		}
 
 		glfwSwapBuffers(window);

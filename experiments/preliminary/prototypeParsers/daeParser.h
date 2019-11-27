@@ -110,7 +110,7 @@ private:
 
 	static xmlNodeStore filterByTagName(xmlNodeStore nodes, const std::string& tagName);
 
-	static void checkForQuotes(char thisChar, int* stackPos, parseStack& stack, xmlParsingStackMember& state);
+	static void checkForQuotes(char thisChar, int& stackPos, parseStack& stack, xmlParsingStackMember& state);
 
 	static bool anyByAttrib(const xmlNodeStore& lookIn, std::string attrib, std::string value);
 
