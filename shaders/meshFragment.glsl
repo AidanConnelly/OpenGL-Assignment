@@ -6,6 +6,11 @@ in vec3 vNorm;
 in vec3 worldVPos;
 in vec2 texCoord;
 
+in vec3 tCentroid;
+in vec3 tNormal;
+in vec3 edgeAlong;
+in vec3 edgePerpendicular;
+
 uniform mat4 vp;
 uniform vec3 cameraLocation;
 
@@ -28,7 +33,7 @@ uniform float specularSurfaceRoughness;
 
 void main()
 {
-	vec3 normedVNorm = normalize(vNorm);
+	vec3 normedVNorm = normalize(tNormal);
 	vec3 posToLight = normalize(lightPos - worldVPos);
 
 	float dist = length(lightPos - worldVPos);
@@ -46,5 +51,5 @@ void main()
 	vec4 specular = lightPower * specCoef * vec4(specCol,1.0)/dist2rd;
 	vec4 ambient = ambientLight*baseColour*vec4(ambCol,1.0);
 	vec4 selected = sin(6*time)*selected*vec4(1.0,1.0,1.0,1.0);
-	fColor = diffuse + ambient + specular + selected;
+	fColor = vec4(gl_FragCoord.z,gl_FragCoord.z,gl_FragCoord.z,1.0);//diffuse + ambient + specular + selected;
 }	
