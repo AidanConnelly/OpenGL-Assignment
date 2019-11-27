@@ -107,12 +107,15 @@ int openGLloop()
 	// std::vector<MeshData> results = daeParser::parse(toParse, directory);
 
 	const ShaderType& vertexShaderType = VertexShaderType();
+    const ShaderType& geometryShaderType = GeometryShaderType();
     const ShaderType& fragmentShaderType = FragmentShaderType();
-	std::string prefix = "C:\\Users\\aidan\\Documents\\soft356a3\\shaders\\";
+	std::string prefix = "..\\shaders\\";
     Shader meshVertexShader = Shader(prefix+"meshVertex.glsl", &vertexShaderType);
+    Shader meshGeometryShader = Shader(prefix+"meshGeometry.glsl", &geometryShaderType);
 	Shader meshFragmentShader = Shader(prefix + "meshFragment.glsl", &fragmentShaderType);
 	ShaderProgram meshProgram = ShaderProgram();
 	meshProgram.AttachShader(meshVertexShader);
+	meshProgram.AttachShader(meshGeometryShader);
 	meshProgram.AttachShader(meshFragmentShader);
 	meshProgram.Link();
 

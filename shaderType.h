@@ -25,6 +25,16 @@ class VertexShaderType: public ShaderType{
     }
 };
 
+class GeometryShaderType:public ShaderType{
+    char* GetAsString() const override {
+        return "GEOMETRY";
+    }
+
+    int GetAsInt() const override{
+        return GL_GEOMETRY_SHADER;
+    }
+};
+
 class FragmentShaderType:public ShaderType{
     char* GetAsString() const override{
         return "FRAGMENT";
