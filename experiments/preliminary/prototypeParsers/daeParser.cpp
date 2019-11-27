@@ -508,7 +508,7 @@ xmlNodeStore daeParser::parseNodes(const std::vector<char> &buffer) {
                 break;
             case XMLParseState::NotEndTag:
                 switch (thisChar) {
-                    case '/':{
+                    case '/': {
                         //Next char will be ">", which shouldn't be a problem for the parser
                         state.node->endIndex = i;
                         if (state.node->endIndex < state.node->startIndex) {
@@ -516,10 +516,13 @@ xmlNodeStore daeParser::parseNodes(const std::vector<char> &buffer) {
                         }
                         nodes.push_back(state.node);
 
-                        int sPt1 = stackPos - 1;
-                        safeAt(stack, sPt1).node->children.push_back(state.node);
+                        if (stackPos > 0) {
+                            int sPt1 = stackPos - 1;
+                            safeAt(stack, sPt1).node->children.push_back(state.node);
+                        }
                         state.state = XMLParseState::Start;
-                        break;}
+                        break;
+                    }
                     case '>':
                         //this is a start tag
                         state.state = XMLParseState::Start;
@@ -535,14 +538,18 @@ xmlNodeStore daeParser::parseNodes(const std::vector<char> &buffer) {
             case XMLParseState::EndTag:
                 if (thisChar == '>') {
                     stackPos--;
-                    state = safeAt(stack, stackPos);
+                    if (stackPos > 0) {
+                        state = safeAt(stack, stackPos);
+                    }
                     stack.pop_back();
                     state.node->endIndex = i;
                     if (state.node->endIndex < state.node->startIndex) {
                         throw std::invalid_argument("");
                     }
-                    int sPt1 = stackPos - 1;
-                    safeAt(stack, sPt1).node->children.push_back(state.node);
+                    if (stackPos > 0) {
+                        int sPt1 = stackPos - 1;
+                        safeAt(stack, sPt1).node->children.push_back(state.node);
+                    }
                     nodes.push_back(state.node);
                 } else {
                     checkForQuotes(thisChar, stackPos, stack, state);
@@ -576,7 +583,7 @@ xmlNodeVector daeParser::mapXmlNodes(const xmlNodeVector &input, std::function<x
     return toReturn;
 }
 
-void daeParser::alterXmlNodes(xmlNodeStore &input, std::function<void(xmlNode *)> toMap) {
+void daeParser::alterXmlNodes(xmlNodeStore &input, std::function<void(xmlNode * )> toMap) {
     //TODO: make parallel
     for (auto &i : input) {
         toMap(i);

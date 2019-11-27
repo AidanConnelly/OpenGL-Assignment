@@ -93,9 +93,9 @@ int openGLloop()
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
+//    glEnable(GL_CULL_FACE);
+//    glCullFace(GL_BACK);
+//    glFrontFace(GL_CCW);
 
     // std::string directory1 = "C:\\Users\\aidan\\..\\aidan\\Downloads\\Creeper\\";
 	// std::string file = "relative.obj";
