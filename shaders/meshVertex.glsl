@@ -26,7 +26,10 @@ void main()
 	float dispR = theta / 3.1415926538;
 	dispPos.x = dispR * cos(phi);
 	dispPos.y = dispR * sin(phi);
-	dispPos.z = r/1000;
+
+	float near = 0.01;
+	float far = 100.01;
+	dispPos.z = (r-near)/(far-near);
 
 	gl_Position = vec4(dispPos,1.0);
 	texCoord = aTexCoord;
