@@ -66,7 +66,7 @@ int openGLloop()
 	// glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	// glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "soft356 part one", NULL, NULL);
+	// GLFWwindow *window = glfwCreateWindow(screenWidth, SCR_HEIGHT, "soft356 part one", NULL, NULL);
 	// if (window == NULL) {
 	//     std::cout << "Failed to create GLFW window" << std::endl;
 	//     glfwTerminate();
@@ -194,18 +194,42 @@ int openGLloop()
 
     const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
-    unsigned int colourMap;
-    glGenTextures(1, &colourMap);
-    glBindTexture(GL_TEXTURE_2D, colourMap);
+    unsigned int startMap;
+    unsigned int endMap;
+    unsigned int centroidMap;
+    unsigned int triangleMap;
+
+    unsigned int* IDs [] = {&startMap,&endMap, &centroidMap};
+    for(unsigned int*& ID: IDs) {
+        glGenTextures(1, ID);
+        glBindTexture(GL_TEXTURE_2D, *ID);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F,
+                     SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RG, GL_HALF_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (&ID - &IDs[0]), GL_TEXTURE_2D, *ID, 0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+        checkError();
+    }
+
+
+    glGenTextures(1, &triangleMap);
+    glBindTexture(GL_TEXTURE_2D, triangleMap);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F,
-                 SHADOW_WIDTH, SHADOW_HEIGHT, 0,   GL_RED, GL_FLOAT, NULL);
+                 SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RED,    GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colourMap, 0);
+    checkError();
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 3, GL_TEXTURE_2D, triangleMap, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
+    checkError();
+
 
     unsigned int depthMap;
     glGenTextures(1, &depthMap);
@@ -227,8 +251,6 @@ int openGLloop()
 		consoleControl.exportMesh(meshes, meshInstances);
 		processInput(window);
 
-		glClearColor(0.09f, 0.12f, 0.14f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         double time = (std::chrono::system_clock::now() - start).count() / 1000000000.0;
 
@@ -237,10 +259,12 @@ int openGLloop()
 
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        GLenum buffers[]{ GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2,GL_COLOR_ATTACHMENT3 };
+        glDrawBuffers( 4, buffers );
 
         checkError();
 
+        glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
         checkError();
 
@@ -273,6 +297,10 @@ int openGLloop()
         view = cameraRotation * view;
 
         checkError();
+
+        glClearColor(0.09f, 0.12f, 0.14f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         lightSourceProgram.use();
         int vLoc = glGetUniformLocation(lightSourceProgram.ID, "v");
         int pLoc = glGetUniformLocation(lightSourceProgram.ID, "p");
@@ -286,8 +314,8 @@ int openGLloop()
         meshProgram.use();
 
         glActiveTexture(GL_TEXTURE0 + 0);
-        glBindTexture(GL_TEXTURE_2D, colourMap);
-        GLint uniformLocation = glGetUniformLocation(meshProgram.ID, "colourMap");
+        glBindTexture(GL_TEXTURE_2D, triangleMap);
+        GLint uniformLocation = glGetUniformLocation(meshProgram.ID, "triangleMap");
         glUniform1i(uniformLocation, 0);
         checkError();
 

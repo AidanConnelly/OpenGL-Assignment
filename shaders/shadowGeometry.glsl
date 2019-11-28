@@ -6,28 +6,47 @@ layout(triangle_strip, max_vertices = 9) out;
 out vec4 tCentroid;
 out vec3 tNormal;
 out vec3 edgeAlong;
-out vec3 edgePerpendicular;
 out vec3 start;
+
+out vec3 vPos;
+out float triangleIndex;
 
 void doVertex(int index){
     gl_Position = gl_in[index].gl_Position;
+    vPos = vec3(gl_Position);
     EmitVertex();
 }
 
 void doCentroid(vec4 tCentroid){
     gl_Position = tCentroid;
+    vPos = vec3(gl_Position);
     EmitVertex();
 }
 
 void setEdgeDir(vec4 posFrom, vec4 posTo,vec3 tNormal){
     edgeAlong = posTo.xyz - posFrom.xyz;
-    edgePerpendicular = normalize(cross(tNormal, edgeAlong));
+}
+
+int shift(int toShift){
+    return (toShift<<7)|(toShift>>(32-7));
 }
 
 void main(){
     vec4 posA = gl_in[0].gl_Position;
     vec4 posB = gl_in[1].gl_Position;
     vec4 posC = gl_in[2].gl_Position;
+
+    int temp = 7*11*13*17;
+    temp =       temp  ^ floatBitsToInt(posA.x);
+    temp = shift(temp) ^ floatBitsToInt(posA.y);
+    temp = shift(temp) ^ floatBitsToInt(posA.z);
+    temp = shift(temp) ^ floatBitsToInt(posB.x);
+    temp = shift(temp) ^ floatBitsToInt(posB.y);
+    temp = shift(temp) ^ floatBitsToInt(posB.z);
+    temp = shift(temp) ^ floatBitsToInt(posC.x);
+    temp = shift(temp) ^ floatBitsToInt(posC.y);
+    temp = shift(temp) ^ floatBitsToInt(posC.z);
+    triangleIndex = intBitsToFloat(temp);
 
     tCentroid = (1.0/3.0) * (posA + posB + posC);
     tNormal = cross((posC -posB).xyz, (posA- posB).xyz);

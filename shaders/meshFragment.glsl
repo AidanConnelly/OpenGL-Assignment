@@ -15,7 +15,10 @@ in vec3 edgePerpendicular;
 uniform mat4 vp;
 uniform vec3 cameraLocation;
 
-uniform sampler2D colourMap;
+uniform sampler2D startMap;
+uniform sampler2D endMap;
+uniform sampler2D centroidMap;
+uniform sampler2D triangleMap;
 uniform sampler2D depthMap;
 uniform sampler2D ourTexture;
 
@@ -39,20 +42,23 @@ uniform float specularSurfaceRoughness;
 
 #define spotlightWidth 0.2
 
-float ShadowCalculation(vec4 fragPosLightSpace,vec3 normal, vec3 lightDir)
+vec4 ShadowCalculation(vec4 fragPosLightSpace,vec3 normal, vec3 lightDir)
 {
 	// perform perspective divide
-	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	vec3 projCoords = fragPosLightSpace.xyz / (-fragPosLightSpace.z);
 	// transform to [0,1] range
 	projCoords = projCoords * 0.5 + 0.5;
 	// get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-	float closestDepth = texture(depthMap, projCoords.xy).r;
+	vec4 start = texture(startMap, projCoords.xy);
+	vec4 end = texture(endMap, projCoords.xy);
+	vec4 centrd = texture(centroidMap, projCoords.xy);
+	float triangleIndex = texture(triangleMap, projCoords.xy).r;
 	// get depth of current fragment from light's perspective
 	float currentDepth = projCoords.z;
 	// check whether current frag pos is in shadow
 	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-	float shadow = currentDepth  - bias > closestDepth  ? 1.0 : 0.0;
-	return shadow;
+//	float shadow = currentDepth  - bias > closestDepth  ? 1.0 : 0.0;
+	return vec4((triangleIndex==0)?0:1,0,0,1);//centrd;//vec4(projCoords.x, projCoords.y,0.0,1.0);
 }
 
 void main()
@@ -62,9 +68,10 @@ void main()
 
 	float dist = length(lightPos - worldVPos);
 	float dist2rd = dist * dist;
-	float shadow = ShadowCalculation(FragPosLightSpace,worldVPos,-posToLight);
+	vec4 shadowVec4 = ShadowCalculation(FragPosLightSpace,worldVPos,-posToLight);
+	float shadow = 0.1;//ShadowCalculation(FragPosLightSpace,worldVPos,-posToLight);
 	float power = (1-shadow) * max((dot(posToLight,-lightDir)-(1-spotlightWidth))/spotlightWidth,0) * lightPower/dist2rd;
-	vec4 baseColour = fragColour + hasTexture*texture(ourTexture, texCoord);
+	vec4 baseColour = fragColour;// + hasTexture*texture(ourTexture, texCoord);
 
 	vec3 reflectDir = reflect(-posToLight, normedVNorm);
 	vec3 viewDir = normalize(worldVPos - cameraLocation);
@@ -77,5 +84,5 @@ void main()
 	vec4 specular = power*specCoef * vec4(specCol,1.0);
 	vec4 ambient = ambientLight*baseColour*vec4(ambCol,1.0);
 	vec4 selected = sin(6*time)*selected*vec4(1.0,1.0,1.0,1.0);
-	fColor = diffuse + ambient + specular + selected;
+	fColor = shadowVec4;//texture(startMap,vec2(gl_FragCoord.x/100,gl_FragCoord.y/100));//shadowVec4;//diffuse + ambient + specular + selected;
 }	
