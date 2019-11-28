@@ -27,7 +27,7 @@ void doVertex(int index){
 }
 
 void doCentroid(vec4 tCentroid){
-    fragColour = vec4(0,0,0,0);
+    //fragColour = vec4(0,0,0,0);
     gl_Position = tCentroid;
     EmitVertex();
 }
@@ -49,18 +49,18 @@ void main()
     setEdgeDir(posA, posB,tNormal);
     doVertex(0);
     doVertex(1);
-    doCentroid(tCentroid);
-    EndPrimitive();
-
-    setEdgeDir(posB, posC,tNormal);
-    doVertex(1);
+//    doCentroid(tCentroid);
+//    EndPrimitive();
+//
+//    setEdgeDir(posB, posC,tNormal);
+//    doVertex(1);
+//    doVertex(2);
+//    doCentroid(tCentroid);
+//    EndPrimitive();
+//
+//    setEdgeDir(posC, posA,tNormal);
     doVertex(2);
-    doCentroid(tCentroid);
-    EndPrimitive();
-
-    setEdgeDir(posC, posA,tNormal);
-    doVertex(2);
-    doVertex(0);
-    doCentroid(tCentroid);
+//    doVertex(0);
+//    doCentroid(tCentroid);
     EndPrimitive();
 }

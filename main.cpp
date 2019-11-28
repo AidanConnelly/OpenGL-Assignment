@@ -150,8 +150,8 @@ int openGLloop()
 	//  +0.00f, +0.61f, -2.00f,
 
 	// creating the view matrix
-	
-	glm::vec3 lightPos = glm::vec3(20.0, 20.0, 20.0);
+	glm::vec3 lightPos = glm::vec3(4.0, 4.0, 4.0);
+	glm::vec3 lightDir = glm::normalize(glm::vec3(-1.0, -1.0, -1.0));
 
 	unsigned int VAO;
 	glGenVertexArrays(1, &VAO);
@@ -208,7 +208,8 @@ int openGLloop()
 
         glUniform1f(glGetUniformLocation(meshProgram.ID, "ambientLight"), 0.2);
         glUniform3fv(glGetUniformLocation(meshProgram.ID, "lightPos"), 1, glm::value_ptr(lightPos));
-        glUniform1f(glGetUniformLocation(meshProgram.ID, "lightPower"), 1100);
+        glUniform3fv(glGetUniformLocation(meshProgram.ID, "lightDir"), 1, glm::value_ptr(lightDir));
+        glUniform1f(glGetUniformLocation(meshProgram.ID, "lightPower"), 40);
         glUniform1f(glGetUniformLocation(meshProgram.ID, "specularSurfaceRoughness"),0.1);
         int cameraLocationUniformLocation = glGetUniformLocation(meshProgram.ID, "cameraLocation");
         glUniform3fv(cameraLocationUniformLocation, 1, glm::value_ptr(cameraPosition));
