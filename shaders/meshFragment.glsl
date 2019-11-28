@@ -15,8 +15,10 @@ in vec3 edgePerpendicular;
 uniform mat4 vp;
 uniform vec3 cameraLocation;
 
+uniform sampler2D colourMap;
 uniform sampler2D depthMap;
 uniform sampler2D ourTexture;
+
 uniform float time;
 uniform float selected;
 uniform float hasTexture;

@@ -32,8 +32,8 @@ void shadowPassDrawMeshes(const ShaderProgram &shadowProgram);
 
 void checkError();
 
-const unsigned int SCR_WIDTH = 320;
-const unsigned int SCR_HEIGHT = 320;
+unsigned int screenWidth = 320;
+unsigned int scrHeight = 320;
 
 float vertices[] = {
 	-0.61f, +0.61f, -1.00f,
@@ -91,6 +91,7 @@ int openGLloop()
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Textured Cube", NULL, NULL);
 
 	glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glewInit();
 
 	// Enable depth test
@@ -132,9 +133,11 @@ int openGLloop()
     lightSourceProgram.Link();
 
     Shader shadowVertexShader = Shader(prefix + "shadowVertex.glsl",&vertexShaderType);
+    Shader shadowGeometryShader = Shader(prefix + "shadowGeometry.glsl",&geometryShaderType);
     Shader shadowFragmentShader = Shader(prefix + "shadowFragment.glsl",&fragmentShaderType);
     ShaderProgram shadowProgram = ShaderProgram();
     shadowProgram.AttachShader(shadowVertexShader);
+    shadowProgram.AttachShader(shadowGeometryShader);
     shadowProgram.AttachShader(shadowFragmentShader);
     shadowProgram.Link();
 
@@ -178,7 +181,7 @@ int openGLloop()
 	
 	auto start = std::chrono::system_clock::now();
 
-    float near_plane = 1.0f, far_plane = 7.5f;
+    float near_plane = 1.0f, far_plane = 1000.0f;
     glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
     glm::mat4 lightView = glm::lookAt(lightPos,
                                       lightPos+lightDir,
@@ -186,8 +189,23 @@ int openGLloop()
     glm::mat4 lightSpaceMatrix = lightProjection * lightView;
     unsigned int depthMapFBO;
     glGenFramebuffers(1, &depthMapFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
     const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+
+    unsigned int colourMap;
+    glGenTextures(1, &colourMap);
+    glBindTexture(GL_TEXTURE_2D, colourMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F,
+                 SHADOW_WIDTH, SHADOW_HEIGHT, 0,   GL_RED, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colourMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
 
     unsigned int depthMap;
     glGenTextures(1, &depthMap);
@@ -198,8 +216,6 @@ int openGLloop()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
@@ -220,9 +236,12 @@ int openGLloop()
         checkError();
 
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
         checkError();
 
-        glClear(GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
         checkError();
 
         checkError();
@@ -240,7 +259,7 @@ int openGLloop()
         checkError();
 
         // 2. then render scene as normal with shadow mapping (using depth map)
-        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        glViewport(0, 0, screenWidth, scrHeight);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         checkError();
 
@@ -265,6 +284,13 @@ int openGLloop()
 
         checkError();
         meshProgram.use();
+
+        glActiveTexture(GL_TEXTURE0 + 0);
+        glBindTexture(GL_TEXTURE_2D, colourMap);
+        GLint uniformLocation = glGetUniformLocation(meshProgram.ID, "colourMap");
+        glUniform1i(uniformLocation, 0);
+        checkError();
+
         glUniformMatrix4fv(glGetUniformLocation(meshProgram.ID, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
 
         int timeLoc = glGetUniformLocation(meshProgram.ID, "time");
@@ -437,5 +463,7 @@ void processInput(GLFWwindow* window)
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+    screenWidth = width;
+    scrHeight = height;
 	glViewport(0, 0, width, height);
 }
