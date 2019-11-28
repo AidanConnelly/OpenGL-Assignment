@@ -27,6 +27,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 void processInput(GLFWwindow* window);
 
+void drawMeshes(const ShaderProgram &meshProgram);
+void shadowPassDrawMeshes(const ShaderProgram &shadowProgram);
+
+void checkError();
+
 const unsigned int SCR_WIDTH = 320;
 const unsigned int SCR_HEIGHT = 320;
 
@@ -126,6 +131,13 @@ int openGLloop()
     lightSourceProgram.AttachShader(lightSourceFragmentShader);
     lightSourceProgram.Link();
 
+    Shader shadowVertexShader = Shader(prefix + "shadowVertex.glsl",&vertexShaderType);
+    Shader shadowFragmentShader = Shader(prefix + "shadowFragment.glsl",&fragmentShaderType);
+    ShaderProgram shadowProgram = ShaderProgram();
+    shadowProgram.AttachShader(shadowVertexShader);
+    shadowProgram.AttachShader(shadowFragmentShader);
+    shadowProgram.Link();
+
     std::cout << "finished linking shader programs" << std::endl;
 	//
 	//    glGenVertexArrays(1, &VAO_Handle);
@@ -165,8 +177,34 @@ int openGLloop()
 	glEnableVertexAttribArray(0);
 	
 	auto start = std::chrono::system_clock::now();
-	
-	while (!glfwWindowShouldClose(window))
+
+    float near_plane = 1.0f, far_plane = 7.5f;
+    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+    glm::mat4 lightView = glm::lookAt(lightPos,
+                                      lightPos+lightDir,
+                                      glm::vec3( 0.0f, 1.0f,  0.0f));
+    glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+    unsigned int depthMapFBO;
+    glGenFramebuffers(1, &depthMapFBO);
+
+    const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+
+    unsigned int depthMap;
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+                 SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    while (!glfwWindowShouldClose(window))
 	{
 		consoleControl.loadMeshesInto(meshes, meshInstances);
 		consoleControl.loadOverrideTextures(overrideTextures);
@@ -178,12 +216,44 @@ int openGLloop()
 
         double time = (std::chrono::system_clock::now() - start).count() / 1000000000.0;
 
+        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+        checkError();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+        checkError();
+
+        glClear(GL_DEPTH_BUFFER_BIT);
+        checkError();
+
+        checkError();
+        shadowProgram.use();
+        checkError();
+
+        glUniformMatrix4fv(glGetUniformLocation(shadowProgram.ID, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+
+        checkError();
+
+        shadowPassDrawMeshes(shadowProgram);
+        checkError();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        checkError();
+
+        // 2. then render scene as normal with shadow mapping (using depth map)
+        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        checkError();
+
+        glBindTexture(GL_TEXTURE_2D, depthMap);
+        checkError();
+
         // creating the projection matrix
         glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3, 0.1f, 50000.0f);
         glm::mat4 view = glm::mat4(1.0f);
         view = glm::translate(view, -cameraPosition);
         view = cameraRotation * view;
 
+        checkError();
         lightSourceProgram.use();
         int vLoc = glGetUniformLocation(lightSourceProgram.ID, "v");
         int pLoc = glGetUniformLocation(lightSourceProgram.ID, "p");
@@ -193,17 +263,11 @@ int openGLloop()
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glDrawArrays(GL_POINTS, 0, 1);
 
-        auto ErrorCheckValue = glGetError();
-        if (ErrorCheckValue != GL_NO_ERROR)
-        {
-            fprintf(
-                    stderr,
-                    "ERROR: Could not create a VBO: %s \n");
-            std::cout << std::endl;
-            exit(-1);
-        }
+        checkError();
         meshProgram.use();
-		int timeLoc = glGetUniformLocation(meshProgram.ID, "time");
+        glUniformMatrix4fv(glGetUniformLocation(meshProgram.ID, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+
+        int timeLoc = glGetUniformLocation(meshProgram.ID, "time");
 		glUniform1f(timeLoc, time);
 
         glUniform1f(glGetUniformLocation(meshProgram.ID, "ambientLight"), 0.2);
@@ -215,28 +279,13 @@ int openGLloop()
         glUniform3fv(cameraLocationUniformLocation, 1, glm::value_ptr(cameraPosition));
 
 
-		for (int i = 0; i < meshInstances.size(); i++)
-		{
-			auto mI = meshInstances[i];
-			if (overrideTextures.size() == 0)
-			{
-				mI.instanceOf->BindTextures(meshProgram);
-			}
-			else
-			{
-				int hasTextureLocation = glGetUniformLocation(meshProgram.ID, "hasTexture");
-				glUniform1f(hasTextureLocation, 1.0f);
-				overrideTextures[i % overrideTextures.size()].bind(meshProgram, 0);
-			}
-			mI.selected = i == selected;
-            vLoc = glGetUniformLocation(meshProgram.ID, "v");
-            pLoc = glGetUniformLocation(meshProgram.ID, "p");
-            glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(view));
-            glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
-            mI.Draw(meshProgram);
-		}
+        vLoc = glGetUniformLocation(meshProgram.ID, "v");
+        pLoc = glGetUniformLocation(meshProgram.ID, "p");
+        glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        drawMeshes(meshProgram);
 
-		glfwSwapBuffers(window);
+        glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
@@ -244,6 +293,45 @@ int openGLloop()
 	//	std::string lmao;
 	//	std::cin >> lmao;
 	return 0;
+}
+
+void checkError() {
+    auto ErrorCheckValue = glGetError();
+    if (ErrorCheckValue != GL_NO_ERROR)
+    {
+        fprintf(
+                stderr,
+                "ERROR: Could not create a VBO: %s \n");
+        std::cout << std::endl;
+        //exit(-1);
+    }
+}
+
+void drawMeshes(const ShaderProgram &meshProgram) {
+    for (int i = 0; i < meshInstances.size(); i++)
+    {
+        auto mI = meshInstances[i];
+        if (overrideTextures.size() == 0)
+        {
+            mI.instanceOf->BindTextures(meshProgram);
+        }
+        else
+        {
+            int hasTextureLocation = glGetUniformLocation(meshProgram.ID, "hasTexture");
+            glUniform1f(hasTextureLocation, 1.0f);
+            overrideTextures[i % overrideTextures.size()].bind(meshProgram, 0);
+        }
+        mI.selected = i == selected;
+        mI.Draw(meshProgram);
+    }
+}
+
+void shadowPassDrawMeshes(const ShaderProgram &shadowProgram) {
+    for (int i = 0; i < meshInstances.size(); i++)
+    {
+        auto mI = meshInstances[i];
+        mI.Draw(shadowProgram);
+    }
 }
 
 int main(int argcp, char** argv)

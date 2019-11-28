@@ -6,11 +6,13 @@ layout(location=3) in vec2 aTexCoord;
 uniform mat4 m;
 uniform mat4 v;
 uniform mat4 p;
+uniform mat4 lightSpaceMatrix;
 
 out vec4 v_fragColour;
 out vec3 v_vNorm;
 out vec2 v_texCoord;
 out vec3 v_worldVPos;
+out vec4 v_FragPosLightSpace;
 
 void main()
 {
@@ -18,5 +20,6 @@ void main()
 	v_fragColour = vec4(vColour,1.0);
 	v_texCoord = aTexCoord;
 	v_vNorm = vNormal;
-	v_worldVPos =  vec3(m * vec4 (vPosition,1.0));
+	v_worldVPos = vec3(m * vec4 (vPosition,1.0));
+	v_FragPosLightSpace = lightSpaceMatrix * vec4(v_worldVPos,1.0);
 } 

@@ -6,16 +6,19 @@ in vec4[3] v_fragColour;
 in vec3[3] v_vNorm;
 in vec2[3] v_texCoord;
 in vec3[3] v_worldVPos;
+in vec4[3] v_FragPosLightSpace;
 
 out vec4 fragColour;
 out vec3 vNorm;
 out vec2 texCoord;
 out vec3 worldVPos;
+out vec4 FragPosLightSpace;
 
 out vec4 tCentroid;
 out vec3 tNormal;
 out vec3 edgeAlong;
 out vec3 edgePerpendicular;
+
 
 void doVertex(int index){
     gl_Position = gl_in[index].gl_Position;
@@ -23,6 +26,7 @@ void doVertex(int index){
     vNorm = v_vNorm[index];
     texCoord = v_texCoord[index];
     worldVPos = v_worldVPos[index];
+    FragPosLightSpace = v_FragPosLightSpace[index];
     EmitVertex();
 }
 
