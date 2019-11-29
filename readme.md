@@ -37,18 +37,31 @@ This model loader has been developed with file I/O & parsing performance as a pr
 Goals:
 
  	☑ Import OBJ files
+
   ☑ Import DAE files
+
 	☑ Export to another format
+
   ☑ Load textures from models
+
   ☑ Override textures on models with another
+
   ☑ Implement PHONG lighting
+
   ☑ Implement shadow mapping
+
   ☑ Instances of models can be removed
+
   ☑ The data of a models can be deleted and the associated memory freed
+
   ☑ Safely fail fuzzed OBJ files
+  
   ☑ Safely fail fuzzed DAE files
+
   ☑ Free all memory promptly so as not to cause memory leaks
+
   ☑ Import from the format exported to
+
 
 ### Used software ###
 
