@@ -108,6 +108,18 @@ shaders:
 
 ### Commands and controls ###
 
+ - **exit** exits the program
+ - **..** goes up a directory
+ - **load `FILENAME`** loads the filename if it's a .obj, .fuz or .dae
+ - **`FOLDERNAME`** goes into a folder
+ - **override texture `TEXTUTE`** loads the texture and uses it when displaying a model
+ - **export** exports a model, will ask you which and what to call it
+ - **fuzz `FILENAME`** fuzzes loading a filename with varying levels of corruption, be careful, will actually load broken models into scene
+ - **list meshes** lists the available meshes
+ - **shadows on** turns on shadows
+ - **shadows off** turns off shadows
+ - **remove file** asks which file you want to remove, and removes it, freeing memory
+
 ### Dot fuz ###
 
 ### Shadow mapping technique ###
