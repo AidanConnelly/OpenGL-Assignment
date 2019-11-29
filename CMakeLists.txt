@@ -20,46 +20,40 @@ link_directories(vsSolution/packages/nupengl.core.redist.0.1.0.1/build/native/bi
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_executable(soft356a3
-        experiments/preliminary/fileThroughput/fileThroughput.cpp
-        experiments/preliminary/fileThroughput/fileThroughput.h
-        experiments/preliminary/prototypeParsers/bufferParseResult.cpp
-        experiments/preliminary/prototypeParsers/bufferParseResult.h
-        experiments/preliminary/prototypeParsers/daeParser.cpp
-        experiments/preliminary/prototypeParsers/daeParser.h
-        experiments/preliminary/prototypeParsers/prototypeObjParser.cpp
-        experiments/preliminary/prototypeParsers/prototypeObjParser.h
-        experiments/preliminary/prototypeParsers/stringToFloatFast.cpp
-        experiments/preliminary/prototypeParsers/stringToFloatFast.h
-        experiments/preliminary/prototypeParsers/typedefs.cpp
-        experiments/preliminary/prototypeParsers/typedefs.h
-        experiments/preliminary/prototypeParsers/xmlNode.cpp
-        experiments/preliminary/prototypeParsers/xmlNode.h
-        experiments/preliminary/prototypeParsers/XMLParseState.cpp
-        experiments/preliminary/prototypeParsers/XMLParseState.h
-        experiments/preliminary/prototypeParsers/xmlParsingStackMember.cpp
-        experiments/preliminary/prototypeParsers/xmlParsingStackMember.h
-        experiments/filesystem.h
+        src/daeParsing/bufferParseResult.h
+        src/daeParsing/daeParser.cpp
+        src/daeParsing/daeParser.h
+        src/daeParsing/stringToFloatFast.cpp
+        src/daeParsing/stringToFloatFast.h
+        src/daeParsing/typedefs.h
+        src/daeParsing/xmlNode.h
+        src/daeParsing/XMLParseState.h
+        src/daeParsing/xmlParsingStackMember.h
+        src/shaders
+        src/shaders/shader.h
+        src/shaders/shaderProgram.h
+        src/shaders/shaderType.cpp
+        src/shaders/shaderType.h
+        src/bitBuffer.cpp
         src/bitBuffer.h
+        src/consoleControl.h
+        src/DoParallel.h
         src/dotFuzFormat.cpp
         src/dotFuzFormat.h
+        src/fileReader.h
+        src/fs.h
         src/GMM.h
         src/HuffmanCoding.h
         src/Mesh.cpp
         src/Mesh.h
+        src/objParser.cpp
+        src/objParser.h
         src/safeIndex.h
         src/Texture.cpp
         src/Texture.h
         src/Vertex.cpp
         src/Vertex.h
-        vsSolution/vsSolution/bitBuffer.cpp
-        vsSolution/vsSolution/DoParallel.h
-        vsSolution/vsSolution/objParser.cpp
-        vsSolution/vsSolution/objParser.h
         main.cpp
-        shader.h
-        shaderProgram.h
-        shaderType.cpp
-        shaderType.h
         stb_image.h)
 
 target_link_libraries(soft356a3 :freeglut.lib :glew32.lib :glfw3dll.lib opengl32 glu32 gdi32)
