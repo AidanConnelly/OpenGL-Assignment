@@ -229,9 +229,9 @@ void encodeMultiMesh(MultiMesh* meshToEncode, float tolerance, std::vector<char>
 	writeClusterParameters(buffer, bitIndex, toFit);
 	writeFloatBufferIndexesAndLengths(buffer, bitIndex, clusters, distributionFloatCounts, distributionStarts);
 	writeFloatsOfMixture(buffer, bitIndex, tolerance, floatsToCluster, distributionToFloatsToClusterIndexMap, toFit);
-	int triangleIndexesDigits = ceil(log2(numberOfVertexes));
+	int triangleIndexesDigits = ceil(log2(numberOfVertexes+1));
 	writeTriangleVertexIndexes(buffer, bitIndex, triangleIndexes,triangleIndexesDigits);
-	int floatIndexesDigits = ceil(log2(maxEnd));
+	int floatIndexesDigits = ceil(log2(maxEnd+1));
 	writeVertexFloatIndexes(buffer, bitIndex, finalLookup, floatIndexesDigits);
 }
 
@@ -246,7 +246,7 @@ MeshData* decodeMultiMesh(std::vector<char>& buffer){
 	std::map<int,int> distributionStarts;
 	readFloatBufferIndexesAndLengths(buffer, bitIndex, clusters, distributionStarts, distributionFloatCounts);
 	auto floatBuffer = readFloatsOfMixture(buffer, bitIndex, tolerance, clusterParameters, distributionStarts, distributionFloatCounts, clusters);;
-	int triangleIndexesDigits = ceil(log2(vertexes));
+	int triangleIndexesDigits = ceil(log2(vertexes+1));
 	int maxEnd = 0;
 	for(int i = 0;i<clusters;i++)
 	{
@@ -256,7 +256,7 @@ MeshData* decodeMultiMesh(std::vector<char>& buffer){
 			maxEnd = thisEnd;
 		}
 	}
-	int floatIndexesDigits = ceil(log2(maxEnd));
+	int floatIndexesDigits = ceil(log2(maxEnd+1));
 	std::vector<int> triangleIndexes;
 	std::vector<int> finalLookup;
 	readTriangleVertexIndexes(buffer, bitIndex, triangleIndexes, triangleIndexesDigits, triangles * 3);
