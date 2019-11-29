@@ -18,7 +18,7 @@ public:
     Shader(std::string path, const ShaderType *shaderType) {
 
         //debug statement
-        std::cout << path;
+        std::cout << "loading shader: " << path << std::endl;
 
 
         std::string fromFile;

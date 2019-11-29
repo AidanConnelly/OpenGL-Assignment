@@ -42,7 +42,7 @@ int selectedMicro = 0;
 
 int openGLloop()
 {
-
+	glfwInit();
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Textured Cube", NULL, NULL);
 
 	glfwMakeContextCurrent(window);
@@ -55,6 +55,7 @@ int openGLloop()
 	const ShaderType& vertexShaderType = VertexShaderType();
   const ShaderType& geometryShaderType = GeometryShaderType();
   const ShaderType& fragmentShaderType = FragmentShaderType();
+
 	std::string prefix = "C:\\Users\\aconnelly\\source\\repos\\AidanConnelly\\soft356a3\\shaders\\";
 
   Shader meshShadowVertexShader = Shader(prefix+"shadowMeshVertex.glsl", &vertexShaderType);

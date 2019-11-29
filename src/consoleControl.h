@@ -73,9 +73,9 @@ class ConsoleControl {
                     auto currentDirContents = filesystem::directory_iterator(current);
                     for (const auto &file : currentDirContents) {
                         // std::string folderChar = "📁";
-                        std::string folderChar = "o";
+                        std::string folderChar = "folder->";
                         // std::string fileChar = "🗎";
-                        std::string fileChar = "i";
+                        std::string fileChar = "  file->";
                         std::cout << (filesystem::is_directory(file)
                                       ? " " + folderChar + "\t"
                                       : " " + fileChar + "\t");
@@ -256,7 +256,7 @@ public:
             std::string overrideTextureCmdPrefix = "override texture ";
             std::string fuzzPrefix = "fuzz ";
             if (str == "exit") {
-                return;
+                exit(0);
             } else if (str == "..") {
                 current = current.parent_path();
             } else if (str.rfind("load ", 0) == 0) {

@@ -303,6 +303,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 					Vertex making;
 					glm::vec3 vertexPosition;
 					glm::vec3 vertexNormal;
+					bool vertexNormalInitialized = false;
 					glm::vec2 vertexCoordinate;
 					bool vertexCoordinateInitialized = false;
 					int vertexPositionIndex = parseAnInt(&i, buffer) - 1;
@@ -327,6 +328,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 							//Was n//n or n/n/n
 							int vertexNormalIndex = parseAnInt(&i, buffer) - 1;
 							vertexNormal = safeAt(vertexNormals,vertexNormalIndex);
+							vertexNormalInitialized = true;
 						}
 					}
 					making.r = currentColour.x;
@@ -335,9 +337,16 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 					making.x = vertexPosition.x;
 					making.y = vertexPosition.y;
 					making.z = vertexPosition.z;
-					making.nX = vertexNormal.x;
-					making.nY = vertexNormal.y;
-					making.nZ = vertexNormal.z;
+					if (vertexNormalInitialized) {
+						making.nX = vertexNormal.x;
+						making.nY = vertexNormal.y;
+						making.nZ = vertexNormal.z;
+					}
+					else {
+						making.nX = 0;
+						making.nY = 0;
+						making.nZ = 0;
+					}
 					if (vertexCoordinateInitialized) {
 						making.u = vertexCoordinate.x;
 						making.v = vertexCoordinate.y;
