@@ -241,6 +241,10 @@ public:
                 phong = true;
             } else if (str == "list meshes") {
                 listMeshes();
+            } else if (str == "shadows on") {
+                shadows = true;
+            } else if (str == "shadows off"){
+                shadows = false;
             }
         }
     }
@@ -277,6 +281,8 @@ public:
     bool getPhong() {
         return phong;
     }
+
+    bool shadows = false;
 };
 
 #endif //OPENGLSETUP_CONSOLECONTROL_H

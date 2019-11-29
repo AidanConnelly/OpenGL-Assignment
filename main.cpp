@@ -117,14 +117,22 @@ int openGLloop()
     const ShaderType& geometryShaderType = GeometryShaderType();
     const ShaderType& fragmentShaderType = FragmentShaderType();
 	std::string prefix = "..\\shaders\\";
-    Shader meshVertexShader = Shader(prefix+"meshVertex.glsl", &vertexShaderType);
-    Shader meshGeometryShader = Shader(prefix+"meshGeometry.glsl", &geometryShaderType);
-	Shader meshFragmentShader = Shader(prefix + "meshFragment.glsl", &fragmentShaderType);
-	ShaderProgram meshProgram = ShaderProgram();
-	meshProgram.AttachShader(meshVertexShader);
-	meshProgram.AttachShader(meshGeometryShader);
-	meshProgram.AttachShader(meshFragmentShader);
-	meshProgram.Link();
+
+    Shader meshShadowVertexShader = Shader(prefix+"shadowMeshVertex.glsl", &vertexShaderType);
+    Shader meshShadowGeometryShader = Shader(prefix+"shadowMeshGeometry.glsl", &geometryShaderType);
+	Shader meshShadowFragmentShader = Shader(prefix + "shadowMeshFragment.glsl", &fragmentShaderType);
+	ShaderProgram meshShadowProgram = ShaderProgram();
+	meshShadowProgram.AttachShader(meshShadowVertexShader);
+	meshShadowProgram.AttachShader(meshShadowGeometryShader);
+	meshShadowProgram.AttachShader(meshShadowFragmentShader);
+	meshShadowProgram.Link();
+
+	Shader lightingMeshVertexShader = Shader(prefix + "lightingMeshVertex.glsl",&vertexShaderType);
+	Shader lightingMeshFragmentShader = Shader(prefix + "lightingMeshFragment.glsl",&fragmentShaderType);
+    ShaderProgram lightingMeshProgram = ShaderProgram();
+    lightingMeshProgram.AttachShader(lightingMeshVertexShader);
+    lightingMeshProgram.AttachShader(lightingMeshFragmentShader);
+    lightingMeshProgram.Link();
 
     Shader lightSourceVertexShader = Shader(prefix + "lightSourceVertex.glsl",&vertexShaderType);
     Shader lightSourceFragmentShader = Shader(prefix + "lightSourceFragment.glsl",&fragmentShaderType);
@@ -133,9 +141,9 @@ int openGLloop()
     lightSourceProgram.AttachShader(lightSourceFragmentShader);
     lightSourceProgram.Link();
 
-    Shader shadowVertexShader = Shader(prefix + "shadowVertex.glsl",&vertexShaderType);
-    Shader shadowGeometryShader = Shader(prefix + "shadowGeometry.glsl",&geometryShaderType);
-    Shader shadowFragmentShader = Shader(prefix + "shadowFragment.glsl",&fragmentShaderType);
+    Shader shadowVertexShader = Shader(prefix + "shadowPassVertex.glsl",&vertexShaderType);
+    Shader shadowGeometryShader = Shader(prefix + "shadowPassGeometry.glsl",&geometryShaderType);
+    Shader shadowFragmentShader = Shader(prefix + "shadowPassFragment.glsl",&fragmentShaderType);
     ShaderProgram shadowProgram = ShaderProgram();
     shadowProgram.AttachShader(shadowVertexShader);
     shadowProgram.AttachShader(shadowGeometryShader);
@@ -296,8 +304,9 @@ int openGLloop()
 
         // creating the projection matrix
         glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3, 0.1f, 50000.0f);
+
+        // don't move camera - it's a spot/sun light
         glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, -cameraPosition);
         view = cameraRotation * view;
 
         checkError();
@@ -315,29 +324,35 @@ int openGLloop()
         glDrawArrays(GL_POINTS, 0, 1);
 
         checkError();
+
+        ShaderProgram meshProgram = consoleControl.shadows?meshShadowProgram:lightingMeshProgram;
+
         meshProgram.use();
 
-
-        std::string uniformNames []= {"startMap",
-                                      "endMap",
-                                      "centroidMap",
-                                      "triangleMap",
-                                      "depthMap"};
-        unsigned int mapsIDs []= {startMap,
+        if(consoleControl.shadows) {
+            std::string uniformNames[] = {"startMap",
+                                          "endMap",
+                                          "centroidMap",
+                                          "triangleMap",
+                                          "depthMap"};
+            unsigned int mapsIDs[] = {startMap,
                                       endMap,
                                       centroidMap,
                                       triangleMap,
                                       depthMap};
-        for(int i= 0;i<5;i++){
-            glActiveTexture(GL_TEXTURE0 + i);
-            glBindTexture(GL_TEXTURE_2D, mapsIDs[i]);
-            GLint uniformLocation = glGetUniformLocation(meshProgram.ID, uniformNames[i].c_str());
-            glUniform1i(uniformLocation, i);
+            for (int i = 0; i < 5; i++) {
+                glActiveTexture(GL_TEXTURE0 + i);
+                glBindTexture(GL_TEXTURE_2D, mapsIDs[i]);
+                GLint uniformLocation = glGetUniformLocation(meshProgram.ID, uniformNames[i].c_str());
+                glUniform1i(uniformLocation, i);
+            }
+
+
+            checkError();
+
+            glUniformMatrix4fv(glGetUniformLocation(meshProgram.ID, "lightSpaceMatrix"), 1, GL_FALSE,
+                               glm::value_ptr(lightSpaceMatrix));
         }
-
-        checkError();
-
-        glUniformMatrix4fv(glGetUniformLocation(meshProgram.ID, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
 
         int timeLoc = glGetUniformLocation(meshProgram.ID, "time");
 		glUniform1f(timeLoc, time);
@@ -351,6 +366,11 @@ int openGLloop()
         int cameraLocationUniformLocation = glGetUniformLocation(meshProgram.ID, "cameraLocation");
         glUniform3fv(cameraLocationUniformLocation, 1, glm::value_ptr(cameraPosition));
 
+
+        // creating the projection matrix
+        view = glm::mat4(1.0f);
+        view = glm::translate(view, -cameraPosition);
+        view = cameraRotation * view;
 
         vLoc = glGetUniformLocation(meshProgram.ID, "v");
         pLoc = glGetUniformLocation(meshProgram.ID, "p");

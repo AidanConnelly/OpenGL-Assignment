@@ -51,7 +51,8 @@ void daeParser::populateMeshDataWithCorrectColourAndTextures(std::string directo
 }
 
 std::vector<MeshData> daeParser::parse(std::vector<char> &buffer, std::string directory) {
-    auto nodes = parseNodes(buffer);
+    std::vector<xmlNode*> toClean;
+    auto nodes = parseNodes(buffer,toClean);
     parseNodeTagNames(buffer, nodes);
     auto result = parseLargeBuffers(nodes);
     auto nodeParseResults = parseNodeTags(buffer, nodes);
@@ -60,6 +61,9 @@ std::vector<MeshData> daeParser::parse(std::vector<char> &buffer, std::string di
     std::vector<MeshData> toReturn;
     for (auto &a : meshParseResults) {
         populateMeshDataWithCorrectColourAndTextures(directory, nodes, toReturn, a);
+    }
+    for(xmlNode* cleanMe:toClean){
+        delete cleanMe;
     }
     return toReturn;
 }
@@ -137,7 +141,7 @@ std::vector<parseNodeTagsResult> daeParser::parseNodeTags(std::vector<char> buff
 
 meshParseResult daeParser::parseTriangleTag(bufferParseResult *largeBuffers,
                                             std::string id,
-                                            xmlNode tag, xmlNode *triangleTagPtr) {
+                                            xmlNode tag, xmlNode *triangleTagPtr, std::vector<textureCoordinateData*>& texCoordDataToClean, std::vector<colourData*>& colDataToClear) {
     meshParseResult thisResult2 = meshParseResult();
     thisResult2.meshID = id;
 
@@ -192,11 +196,7 @@ meshParseResult daeParser::parseTriangleTag(bufferParseResult *largeBuffers,
     const std::string &normalSourceId = normalInputTag.getAttribute("source");
     auto normalSourceTag = getSoleByAttrib(tag.children, "id", removeLeadingHash(normalSourceId));
 
-    struct textureCoordinateData {
-        xmlNode *ar;
-        paramInfo s;
-        paramInfo t;
-    };
+
 
     textureCoordinateData *tData = NULL;
     int tCoordOffset = 0;
@@ -211,14 +211,8 @@ meshParseResult daeParser::parseTriangleTag(bufferParseResult *largeBuffers,
         paramInfo sParam = prepareParam("S", &tCoordSourceTag, tCoordArray);
         paramInfo tParam = prepareParam("T", &tCoordSourceTag, tCoordArray);
         tData = new textureCoordinateData{tCoordArray, sParam, tParam};
+        texCoordDataToClean.push_back(tData);
     }
-    struct colourData {
-        xmlNode *ar;
-        paramInfo re;
-        paramInfo gr;
-        paramInfo bl;
-    };
-
     colourData *cData = NULL;
     int colourOffset = 0;
     bool hasColourFromVertex = anyByAttrib(triangleTagInputChildren, "semantic", "COLOR");
@@ -234,6 +228,7 @@ meshParseResult daeParser::parseTriangleTag(bufferParseResult *largeBuffers,
         paramInfo gParam = prepareParam("G", &colourSourceTag, colourArray);
         paramInfo bParam = prepareParam("B", &colourSourceTag, colourArray);
         colourData *made = new colourData{colourArray, rParam, gParam, bParam};
+        colDataToClear.push_back(made);
         cData = made;
     }
 
@@ -314,7 +309,15 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
         xmlNodeStore triangles = filterByTagName(tag.children, "triangles");
         //todo use doParallel
         auto fx = [&largeBuffers, id, tag, triangles, &mtx, &results](int i) {
-            const auto toPush = parseTriangleTag(largeBuffers, id, tag, triangles[i]);
+            std::vector<textureCoordinateData*> texCoordDataToClean;
+            std::vector<colourData*> colDataToClear;
+            const auto toPush = parseTriangleTag(largeBuffers, id, tag, triangles[i],texCoordDataToClean,colDataToClear);
+            for(textureCoordinateData* cleanMe : texCoordDataToClean){
+                delete cleanMe;
+            }
+            for(colourData* cleanMe : colDataToClear){
+                delete cleanMe;
+            }
             mtx.lock();
             results.push_back(toPush);
             mtx.unlock();
@@ -480,11 +483,12 @@ void daeParser::checkForQuotes(char thisChar, int &stackPos, parseStack &stack, 
     }
 }
 
-xmlNodeStore daeParser::parseNodes(const std::vector<char> &buffer) {
+xmlNodeStore daeParser::parseNodes(const std::vector<char> &buffer, std::vector<xmlNode*>& toClean) {
     xmlNodeStore nodes = {};
     //Loop over buffer
     parseStack stack = std::vector<xmlParsingStackMember>();
     auto *node = new xmlNode(buffer);
+    toClean.push_back(node);
     xmlParsingStackMember state = xmlParsingStackMember(Start, node);
     int stackPos = 0;
     for (unsigned i = 0; i < buffer.size(); i++) {
@@ -494,6 +498,7 @@ xmlNodeStore daeParser::parseNodes(const std::vector<char> &buffer) {
                 if (thisChar == '<') {
                     state.state = XMLParseState::TagOpened;
                     state.node = new xmlNode(buffer);
+                    toClean.push_back(state.node);
                     state.node->startIndex = i;
                 }
                 break;
@@ -529,6 +534,7 @@ xmlNodeStore daeParser::parseNodes(const std::vector<char> &buffer) {
                         stack.push_back(state);
                         stackPos++;
                         state = xmlParsingStackMember(Start, new xmlNode(buffer));
+                        toClean.push_back(state.node);
                         break;
                     default:
                         checkForQuotes(thisChar, stackPos, stack, state);

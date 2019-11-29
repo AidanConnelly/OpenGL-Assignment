@@ -26,6 +26,19 @@ struct paramInfo{
     unsigned idx;
 };
 
+struct textureCoordinateData {
+    xmlNode *ar;
+    paramInfo s;
+    paramInfo t;
+};
+
+struct colourData {
+    xmlNode *ar;
+    paramInfo re;
+    paramInfo gr;
+    paramInfo bl;
+};
+
 struct diffuseTextureOrColour
 {
 	enum which { tex, col, none };
@@ -114,7 +127,7 @@ private:
 
 	static bool anyByAttrib(const xmlNodeStore& lookIn, std::string attrib, std::string value);
 
-	static xmlNodeStore parseNodes(const std::vector<char>& buffer);
+	static xmlNodeStore parseNodes(const std::vector<char>& buffer, std::vector<xmlNode*>& toClean);
 
 	static xmlNodeVector mapXmlNodes(const xmlNodeVector& input, std::function<xmlNode(const xmlNode&)> toMap);
 
@@ -130,7 +143,7 @@ private:
 	                                                  bufferParseResult* largeBuffers);
 
 	static std::vector<parseNodeTagsResult> parseNodeTags(std::vector<char> buffer, xmlNodeStore nodes);
-	static meshParseResult parseTriangleTag(bufferParseResult* largeBuffers, std::string id, xmlNode tag, xmlNode* triangleTagPtr);
+	static meshParseResult parseTriangleTag(bufferParseResult* largeBuffers, std::string id, xmlNode tag, xmlNode* triangleTagPtr, std::vector<textureCoordinateData*>& texCoordDataToClean, std::vector<colourData*>& colDataToClear);
 
 	static xmlNode* getSoleByTag(const xmlNodeStore& toSearchIn, std::string toSearchFor);
 
