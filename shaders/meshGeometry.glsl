@@ -19,6 +19,11 @@ out vec3 tNormal;
 out vec3 edgeAlong;
 out vec3 edgePerpendicular;
 
+out float triangleIndex;
+
+int shift(int toShift){
+    return (toShift<<7)|(toShift>>(32-7));
+}
 
 void doVertex(int index){
     gl_Position = gl_in[index].gl_Position;
@@ -46,6 +51,21 @@ void main()
     vec4 posA = gl_in[0].gl_Position;
     vec4 posB = gl_in[1].gl_Position;
     vec4 posC = gl_in[2].gl_Position;
+    vec3 WposA = v_worldVPos[0];
+    vec3 WposB = v_worldVPos[1];
+    vec3 WposC = v_worldVPos[2];
+
+    int temp = 7*11*13*17;
+    temp =       temp  ^ floatBitsToInt(WposA.x);
+    temp = shift(temp) ^ floatBitsToInt(WposA.y);
+    temp = shift(temp) ^ floatBitsToInt(WposA.z);
+    temp = shift(temp) ^ floatBitsToInt(WposB.x);
+    temp = shift(temp) ^ floatBitsToInt(WposB.y);
+    temp = shift(temp) ^ floatBitsToInt(WposB.z);
+    temp = shift(temp) ^ floatBitsToInt(WposC.x);
+    temp = shift(temp) ^ floatBitsToInt(WposC.y);
+    temp = shift(temp) ^ floatBitsToInt(WposC.z);
+    triangleIndex = intBitsToFloat(temp);
 
     tCentroid = (1.0/3.0) * (posA + posB + posC);
     tNormal = cross((posC -posB).xyz, (posA- posB).xyz);

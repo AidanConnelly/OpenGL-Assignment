@@ -9,7 +9,9 @@ out vec3 edgeAlong;
 out vec3 start;
 
 out vec3 vPos;
-out float triangleIndex;
+out int triangleIndex;
+
+in vec3 wPos[3];
 
 void doVertex(int index){
     gl_Position = gl_in[index].gl_Position;
@@ -37,16 +39,16 @@ void main(){
     vec4 posC = gl_in[2].gl_Position;
 
     int temp = 7*11*13*17;
-    temp =       temp  ^ floatBitsToInt(posA.x);
-    temp = shift(temp) ^ floatBitsToInt(posA.y);
-    temp = shift(temp) ^ floatBitsToInt(posA.z);
-    temp = shift(temp) ^ floatBitsToInt(posB.x);
-    temp = shift(temp) ^ floatBitsToInt(posB.y);
-    temp = shift(temp) ^ floatBitsToInt(posB.z);
-    temp = shift(temp) ^ floatBitsToInt(posC.x);
-    temp = shift(temp) ^ floatBitsToInt(posC.y);
-    temp = shift(temp) ^ floatBitsToInt(posC.z);
-    triangleIndex = intBitsToFloat(temp);
+    temp =       temp  ^ floatBitsToInt((wPos[0]).x);
+    temp = shift(temp) ^ floatBitsToInt((wPos[0]).y);
+    temp = shift(temp) ^ floatBitsToInt((wPos[0]).z);
+    temp = shift(temp) ^ floatBitsToInt((wPos[1]).x);
+    temp = shift(temp) ^ floatBitsToInt((wPos[1]).y);
+    temp = shift(temp) ^ floatBitsToInt((wPos[1]).z);
+    temp = shift(temp) ^ floatBitsToInt((wPos[2]).x);
+    temp = shift(temp) ^ floatBitsToInt((wPos[2]).y);
+    temp = shift(temp) ^ floatBitsToInt((wPos[2]).z);
+    triangleIndex = temp;
 
     tCentroid = (1.0/3.0) * (posA + posB + posC);
     tNormal = cross((posC -posB).xyz, (posA- posB).xyz);

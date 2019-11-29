@@ -192,7 +192,7 @@ int openGLloop()
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-    const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+    const unsigned int SHADOW_WIDTH = 256, SHADOW_HEIGHT = SHADOW_WIDTH;
 
     unsigned int startMap;
     unsigned int endMap;
@@ -218,8 +218,11 @@ int openGLloop()
 
     glGenTextures(1, &triangleMap);
     glBindTexture(GL_TEXTURE_2D, triangleMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F,
-                 SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RED,    GL_FLOAT, NULL);
+    checkError();
+//    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8I,
+                 SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RGBA_INTEGER,    GL_BYTE, NULL);
+    checkError();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -313,10 +316,24 @@ int openGLloop()
         checkError();
         meshProgram.use();
 
-        glActiveTexture(GL_TEXTURE0 + 0);
-        glBindTexture(GL_TEXTURE_2D, triangleMap);
-        GLint uniformLocation = glGetUniformLocation(meshProgram.ID, "triangleMap");
-        glUniform1i(uniformLocation, 0);
+
+        std::string uniformNames []= {"startMap",
+                                      "endMap",
+                                      "centroidMap",
+                                      "triangleMap",
+                                      "depthMap"};
+        unsigned int mapsIDs []= {startMap,
+                                      endMap,
+                                      centroidMap,
+                                      triangleMap,
+                                      depthMap};
+        for(int i= 0;i<5;i++){
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, mapsIDs[i]);
+            GLint uniformLocation = glGetUniformLocation(meshProgram.ID, uniformNames[i].c_str());
+            glUniform1i(uniformLocation, i);
+        }
+
         checkError();
 
         glUniformMatrix4fv(glGetUniformLocation(meshProgram.ID, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
@@ -324,6 +341,7 @@ int openGLloop()
         int timeLoc = glGetUniformLocation(meshProgram.ID, "time");
 		glUniform1f(timeLoc, time);
 
+        glUniform1f(glGetUniformLocation(meshProgram.ID, "shadowMapSize"), (float)SHADOW_WIDTH);
         glUniform1f(glGetUniformLocation(meshProgram.ID, "ambientLight"), 0.2);
         glUniform3fv(glGetUniformLocation(meshProgram.ID, "lightPos"), 1, glm::value_ptr(lightPos));
         glUniform3fv(glGetUniformLocation(meshProgram.ID, "lightDir"), 1, glm::value_ptr(lightDir));
