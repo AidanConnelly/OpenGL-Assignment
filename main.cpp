@@ -49,6 +49,7 @@ glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, +4.5f);
 glm::mat4 cameraRotation = glm::mat4(1.0f);
 
 int selected = 0;
+int selectedMicro = 0;
 
 int openGLloop()
 {
@@ -460,6 +461,8 @@ void ifKeyMoveMesh(GLFWwindow* window, glm::vec3 direction, int key)
 	}
 }
 
+bool deleteKeyDown = false;
+
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -467,16 +470,31 @@ void processInput(GLFWwindow* window)
 		glfwSetWindowShouldClose(window, true);
 	}
 
+	const int microSelections = 30;
 	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
 	{
-		int n = meshInstances.size();
-		selected = (selected + n + 1) % n;
+		int n = microSelections*meshInstances.size();
+        selectedMicro = (selectedMicro + n + 1) % n;
+        selected = selectedMicro/microSelections;
 	}
 	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
 	{
-		int n = meshInstances.size();
-		selected = (selected + n - 1) % n;
+		int n = microSelections*meshInstances.size();
+        selectedMicro = (selectedMicro + n - 1) % n;
+        selected = selectedMicro/microSelections;
 	}
+
+
+	if(glfwGetKey(window,GLFW_KEY_DELETE)==GLFW_PRESS){
+        deleteKeyDown = true;
+	}
+	if(glfwGetKey(window,GLFW_KEY_DELETE)==GLFW_RELEASE){
+	    if(deleteKeyDown){
+            deleteKeyDown = false;
+            meshInstances.erase(meshInstances.begin()+selected);
+            selected = 0;
+        }
+    }
 
 	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
 	{

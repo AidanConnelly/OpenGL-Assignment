@@ -188,7 +188,7 @@ struct gmm
 			                                sumLogEnt,
 			                                sumSoftMaxLogEnt, this);
 			sumLogEnt /= ((double)n);
-			//sumSoftMaxLogEnt;
+
 			if (iterations > 100) {
 				if (t % (iterations / 100) == 0)
 				{
