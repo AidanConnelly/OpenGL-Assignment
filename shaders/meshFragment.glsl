@@ -136,25 +136,6 @@ triangleShadowList GetShadowsOnPoint(vec4 fragPosLightSpace, vec3 normal, vec3 l
         }
 	}
 
-    //	if(shadowTriangleIndex!=0){
-    //		bool in0 = list.tIdxs[0] == shadowTriangleIndex;
-    //		bool in1 = list.tIdxs[1] == shadowTriangleIndex;
-    //		bool in2 = list.tIdxs[2] == shadowTriangleIndex;
-    //		bool inListAlready = in0 || in1 || in2;
-    //		if(!inListAlready){
-    //			//					vec4 start = texture(startMap, projCoords.xy);
-    //			//					vec4 end = texture(endMap, projCoords.xy);
-    //			//					vec4 centrd = texture(centroidMap, projCoords.xy);
-    //			int idx = list.index;//list.index;
-    //			//					list.starts[idx] = start.xy;
-    //			//					list.ends[idx] = end.xy;
-    //			//					list.centrds[idx] = centrd.xy;
-    //			list.tIdxs[idx] = shadowTriangleIndex;
-    //			//					list.depths[idx] = texture(depthMap, projCoords.xy).r;
-    //			list.index = idx + 1;
-    //		}
-    //	}
-
     return list;
 }
 
@@ -166,13 +147,12 @@ float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
     triangleShadowList result = GetShadowsOnPoint(fragPosLightSpace, worldVPos, lightDir);
 
     float shadowCoef = 1.0;
-    fColor = vec4(1.0,1.0, 1.0,1.0);
 
     float anyNotInShadow = 0;
     for (int i = 0;i<NUMBER_OF_TRIANGLES_IN_TRIANGLE_LIST;i++){
         if (i< result.index){
             float closestDepth = result.depths[i];
-            float bias = 0.0005;
+            float bias = 0.00010;
 
 
 
@@ -192,14 +172,13 @@ float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
 
                 vec2 lineToX = x - closestPointOnLine;
                 if(dot(lineToX,centrd-start)>0){
-                    fColor *= vec4(0,0,0,0);
+                    shadowCoef = 0;
                 }
                 else {
                     float dist = clamp(distance(x, closestPointOnLine)*shadowMapSize,0,1);
-                    fColor *= vec4(dist, dist, dist, 1.0);
+                    shadowCoef *= dist;
                 }
-                //                float toReduceBy = clamp(1 - distance(closestPointOnLine, x), 0, 1);
-//                shadowCoef -= toReduceBy;
+                //
             }
             else{
                 anyNotInShadow = 1;
@@ -207,8 +186,7 @@ float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
         }
     }
 
-    fColor *= anyNotInShadow;
-//    return 0.25*result.index;
+    shadowCoef *= anyNotInShadow;
 
     return shadowCoef;
 }
@@ -221,9 +199,9 @@ void main()
     float dist = length(lightPos - worldVPos);
     float dist2rd = dist * dist;
     vec4 shadowVec4 = vec4(1.0, 1.0, 1.0, 1.0);//ShadowCalculation(FragPosLightSpace,worldVPos,-posToLight);
-    float shadow = 0.1;//ShadowCalculation(FragPosLightSpace,worldVPos,-posToLight);
-    float power = (1-shadow) * max((dot(posToLight, -lightDir)-(1-spotlightWidth))/spotlightWidth, 0) * lightPower/dist2rd;
-    vec4 baseColour = fragColour;// + hasTexture*texture(ourTexture, texCoord);
+    float shadow = shadowCoef(FragPosLightSpace, worldVPos, -posToLight);
+    float power = shadow * max((dot(posToLight, -lightDir)-(1-spotlightWidth))/spotlightWidth, 0) * lightPower/dist2rd;
+    vec4 baseColour = fragColour + hasTexture*texture(ourTexture, texCoord);
 
     vec3 reflectDir = reflect(-posToLight, normedVNorm);
     vec3 viewDir = normalize(worldVPos - cameraLocation);
@@ -236,6 +214,5 @@ void main()
     vec4 specular = power*specCoef * vec4(specCol, 1.0);
     vec4 ambient = ambientLight*baseColour*vec4(ambCol, 1.0);
     vec4 selected = sin(6*time)*selected*vec4(1.0, 1.0, 1.0, 1.0);
-    float s = shadowCoef(FragPosLightSpace, worldVPos, -posToLight);
-//    fColor = vec4(s, s, s, 1);//texture(startMap,vec2(gl_FragCoord.x/100,gl_FragCoord.y/100));//shadowVec4;//diffuse + ambient + specular + selected;
+    fColor = diffuse + ambient + specular + selected;
 }	

@@ -192,13 +192,13 @@ struct gmm
 			if (iterations > 100) {
 				if (t % (iterations / 100) == 0)
 				{
-					std::cout << (int)(t / ((float)(iterations / 100))) << "%: mean log ent: " << sumLogEnt << " nats"
+					std::cout << (int)(t / ((float)(iterations / 100.0))) << "%: mean log ent: " << sumLogEnt << " nats"
 						"\t" << "mean softmax log ent: " << sumSoftMaxLogEnt / ((double)n) << " nats" << std::endl;
 				}
 			}
 			else
 			{
-				std::cout << (int)(t / ((float)(iterations / 100))) << "%: mean log ent: " << sumLogEnt << " nats"
+				std::cout << (int)(t / ((float)(iterations / 100.0))) << "%: mean log ent: " << sumLogEnt << " nats"
 					"\t" << "mean softmax log ent: " << sumSoftMaxLogEnt / ((double)n) << " nats" << std::endl;				
 			}
 

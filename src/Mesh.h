@@ -141,14 +141,14 @@ public:
 		createThisMesh();
 	}
 
-	void BindTextures(ShaderProgram program)
+	void BindTextures(ShaderProgram program, int startingSlot)
 	{
 		int hasTextureLocation = glGetUniformLocation(program.ID, "hasTexture");
 		glUniform1f(hasTextureLocation, 0.0f);
 		for (int i = 0; i < textures.size(); i++)
 		{
 			glUniform1f(hasTextureLocation, 1.0f);
-			textures[i].bind(program, i);
+			textures[i].bind(program, i+startingSlot);
 			CheckForOpenGLErrors();
 		}
 	}
@@ -191,10 +191,10 @@ public:
 	
 	std::vector<Mesh*> meshes;
 	
-	void BindTextures(const ShaderProgram& program){
+	void BindTextures(const ShaderProgram& program, int startingSlot){
 		for(auto &a: meshes)
 		{
-			a->BindTextures(program);
+			a->BindTextures(program,startingSlot);
 		}
 	}
 };

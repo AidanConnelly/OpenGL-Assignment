@@ -235,7 +235,7 @@ void encodeMultiMesh(MultiMesh* meshToEncode, float tolerance, std::vector<char>
 	writeVertexFloatIndexes(buffer, bitIndex, finalLookup, floatIndexesDigits);
 }
 
-MultiMesh* decodeMultiMesh(std::vector<char>& buffer){
+MeshData* decodeMultiMesh(std::vector<char>& buffer){
 	int bitIndex = 0;
 	auto tolerance = readTolerance(buffer, bitIndex);
 	auto clusters = readNumberOfClusters(buffer, bitIndex);
@@ -295,10 +295,7 @@ MultiMesh* decodeMultiMesh(std::vector<char>& buffer){
 		t.v3i = triangleIndexes[i+2];
 		outputTriangles->push_back(t);
 	}
-	Mesh* mesh = new Mesh(outputVertexes, outputTriangles, new std::vector<Texture>());
-	std::vector<Mesh*> meshes = std::vector<Mesh*>{ mesh };
-	MultiMesh* toReturn = new MultiMesh(meshes);
-	return toReturn;
+	return new MeshData(*outputVertexes,*outputTriangles,std::vector<std::string>());
 }
 
 #endif

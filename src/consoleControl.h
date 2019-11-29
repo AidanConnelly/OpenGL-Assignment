@@ -32,7 +32,7 @@ struct makeInstancesJob {
     int toMakeInstancesOf;
 };
 
-struct exportMeshJob{
+struct exportMeshJob {
     int meshToExport;
     std::string pathToExportTo;
 };
@@ -58,9 +58,9 @@ class ConsoleControl {
     bool phong = false;
     std::random_device engine;
 
-    void listMeshes(){
+    void listMeshes() {
         std::cout << std::endl << "meshes: " << std::endl;
-        for(auto &pair: cache){
+        for (auto &pair: cache) {
             std::cout << pair.second << ") \t" << pair.first << std::endl;
         }
     }
@@ -99,7 +99,8 @@ class ConsoleControl {
                 float logLowerCorruptionRate = log(1.0 / ((float) contents.size()));
                 float logUpperCorruptionRate = 0;
                 float logCorruptionRate =
-                        (logUpperCorruptionRate - logLowerCorruptionRate) * ((float) rand() / (float) (RAND_MAX)) + logLowerCorruptionRate;
+                        (logUpperCorruptionRate - logLowerCorruptionRate) * ((float) rand() / (float) (RAND_MAX)) +
+                        logLowerCorruptionRate;
                 float corruptionRate = exp(logCorruptionRate);
                 std::cout << std::endl << "fuzzing corruption rate: " << corruptionRate << std::endl;
                 for (auto &byte: contents) {
@@ -119,7 +120,11 @@ class ConsoleControl {
         if (exists(current / toLoad)) {
             std::vector<char> contents = fileThroughput::getBytes(fullFilePath);
 
-            loadFromContents(current, toLoad, contents);
+            if (!cache.count(fullFilePath)) {
+                loadFromContents(current, toLoad, contents);
+            } else {
+                makeInstanceOfPath(fullFilePath);
+            }
         }
     }
 
@@ -128,25 +133,27 @@ class ConsoleControl {
         std::string extension = (current / str).extension().string();
 
         std::vector<MeshData> *results = NULL;
-        if (!cache.count(fullFilePath)) {
-            //todo
-            if (extension == ".obj") {
-                try {
-                    std::vector<MeshData> toResults = objParser::parse(contents, current.string() + "\\");
-                    results = new std::vector<MeshData>(std::move(toResults));
-                }
-                catch (...) {
-                    std::cout << std::endl << "Couldn't load OBJ" << std::endl;
-                }
-            } else if (extension == ".dae") {
-                try {
-                    std::vector<MeshData> toResults = daeParser::parse(contents, current.string() + "\\");
-                    results = new std::vector<MeshData>(std::move(toResults));
-                }
-                catch (...) {
-                    std::cout << std::endl << "Couldn't load DAE" << std::endl;
-                }
+        //todo
+        if (extension == ".obj") {
+            try {
+                std::vector<MeshData> toResults = objParser::parse(contents, current.string() + "\\");
+                results = new std::vector<MeshData>(std::move(toResults));
             }
+            catch (...) {
+                std::cout << std::endl << "Couldn't load OBJ" << std::endl;
+            }
+        } else if (extension == ".dae") {
+            try {
+                std::vector<MeshData> toResults = daeParser::parse(contents, current.string() + "\\");
+                results = new std::vector<MeshData>(std::move(toResults));
+            }
+            catch (...) {
+                std::cout << std::endl << "Couldn't load DAE" << std::endl;
+            }
+        } else if (extension == ".fuz") {
+            std::vector<MeshData> toResults;
+            toResults.push_back(*decodeMultiMesh(contents));
+            results = new std::vector<MeshData>(std::move(toResults));
         }
 
         if (results) {
@@ -155,12 +162,15 @@ class ConsoleControl {
 
             int size = loaded.size();
             numMeshDataWrtn = size;
+            makeInstanceOfPath(fullFilePath);
 
-            //Add a mesh instance
-            toMakeInstanceOf.push_back(makeInstancesJob{cache[fullFilePath]});
-            int jobSize = toMakeInstanceOf.size();
-            numMakeInstanceJobWrtn = jobSize;
         }
+    }
+
+    void makeInstanceOfPath(const std::string &fullFilePath) {//Add a mesh instance
+        toMakeInstanceOf.push_back(makeInstancesJob{cache[fullFilePath]});
+        int jobSize = toMakeInstanceOf.size();
+        numMakeInstanceJobWrtn = jobSize;
     }
 
     void overrideTexture(filesystem::path current, std::string str) {
@@ -175,13 +185,13 @@ class ConsoleControl {
         std::cout << std::endl << "number mesh to export?" << std::endl;
         std::string str;
         std::getline(std::cin, str);
-        int toExport = std::stoi(str,nullptr);
+        int toExport = std::stoi(str, nullptr);
         std::cout << std::endl << "enter file name: (???.fuz)" << std::endl;
         std::string fileName;
         std::getline(std::cin, fileName);
         fileName += ".fuz";
-        fileName = (current/fileName).string();
-        exportMeshQueue.push_back(exportMeshJob{toExport,fileName});
+        fileName = (current / fileName).string();
+        exportMeshQueue.push_back(exportMeshJob{toExport, fileName});
         exportMeshWrtn++;
     }
 
@@ -198,9 +208,7 @@ public:
             std::ofstream fout(fileName, std::ios::out | std::ios::binary);
             fout.write(&buffer[0], buffer.size() * sizeof(char));
             fout.close();
-//            MultiMesh *decoded = decodeMultiMesh(buffer);
-//            meshes.push_back(decoded);
-//            instances.push_back(MeshInstance(decoded));
+
             exportMeshRead++;
         }
     }
@@ -223,14 +231,15 @@ public:
             } else if (exists(current / str) && is_directory(current / str)) {
                 current = current / str;
             } else if (str.rfind(overrideTextureCmdPrefix, 0) == 0) {
-                overrideTexture(current, str.substr(overrideTextureCmdPrefix.size(), str.size() - overrideTextureCmdPrefix.size()));
+                overrideTexture(current, str.substr(overrideTextureCmdPrefix.size(),
+                                                    str.size() - overrideTextureCmdPrefix.size()));
             } else if (str == "export") {
                 queueExportMesh(current);
             } else if (str.rfind(fuzzPrefix, 0) == 0) {
                 fuzz(current, str.substr(fuzzPrefix.size(), str.size() - fuzzPrefix.size()));
             } else if (str == "toggle phong") {
                 phong = true;
-            } else if (str == "list meshes"){
+            } else if (str == "list meshes") {
                 listMeshes();
             }
         }

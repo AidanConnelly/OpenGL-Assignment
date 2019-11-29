@@ -32,8 +32,8 @@ void shadowPassDrawMeshes(const ShaderProgram &shadowProgram);
 
 void checkError();
 
-unsigned int screenWidth = 320;
-unsigned int scrHeight = 320;
+unsigned int screenWidth = 800;
+unsigned int scrHeight = 600;
 
 float vertices[] = {
 	-0.61f, +0.61f, -1.00f,
@@ -182,7 +182,7 @@ int openGLloop()
 	auto start = std::chrono::system_clock::now();
 
     float near_plane = 1.0f, far_plane = 1000.0f;
-    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+    glm::mat4 lightProjection = glm::ortho(-8.0f, 8.0f, -8.0f, 8.0f, near_plane, far_plane);
     glm::mat4 lightView = glm::lookAt(lightPos,
                                       lightPos+lightDir,
                                       glm::vec3( 0.0f, 1.0f,  0.0f));
@@ -192,7 +192,7 @@ int openGLloop()
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-    const unsigned int SHADOW_WIDTH = 256, SHADOW_HEIGHT = SHADOW_WIDTH;
+    const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = SHADOW_WIDTH;
 
     unsigned int startMap;
     unsigned int endMap;
@@ -383,15 +383,16 @@ void drawMeshes(const ShaderProgram &meshProgram) {
     for (int i = 0; i < meshInstances.size(); i++)
     {
         auto mI = meshInstances[i];
+        const int startingSlot = 5;
         if (overrideTextures.size() == 0)
         {
-            mI.instanceOf->BindTextures(meshProgram);
+            mI.instanceOf->BindTextures(meshProgram,startingSlot);
         }
         else
         {
             int hasTextureLocation = glGetUniformLocation(meshProgram.ID, "hasTexture");
             glUniform1f(hasTextureLocation, 1.0f);
-            overrideTextures[i % overrideTextures.size()].bind(meshProgram, 0);
+            overrideTextures[i % overrideTextures.size()].bind(meshProgram, startingSlot);
         }
         mI.selected = i == selected;
         mI.Draw(meshProgram);
