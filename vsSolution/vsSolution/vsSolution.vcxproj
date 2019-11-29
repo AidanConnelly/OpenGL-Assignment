@@ -69,7 +69,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\aconnelly\source\repos\soft356a3\src;C:\Users\m\Documents\v15\Projects\soft356a3\src;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\aconnelly\source\repos\AidanConnelly\soft356a3\vsSolution\packages\glm.0.9.9.600\build\native\include;C:\Users\aconnelly\source\repos\soft356a3\src;C:\Users\m\Documents\v15\Projects\soft356a3\src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -114,6 +114,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\main.cpp" />
     <ClCompile Include="..\..\src\bitBuffer.cpp" />
     <ClCompile Include="..\..\src\daeParsing\daeParser.cpp" />
     <ClCompile Include="..\..\src\daeParsing\stringToFloatFast.cpp" />

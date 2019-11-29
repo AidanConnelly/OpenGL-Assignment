@@ -2,16 +2,16 @@
 // Created by m on 14/10/2019.
 //
 
-#include "safeIndex.h"
+#include "../safeIndex.h"
 #include "daeParser.h"
 #include "stringToFloatFast.h"
 #include "xmlNode.h"
 #include "bufferParseResult.h"
 #include "typedefs.h"
 #include "XMLParseState.h"
-#include "Vertex.h"
-#include "DoParallel.h"
-#include "Mesh.h"
+#include "../Vertex.h"
+#include "../DoParallel.h"
+#include "../Mesh.h"
 #include <vector>
 
 void daeParser::parseNodeTagNames(std::vector<char> &buffer, xmlNodeStore &nodes) {

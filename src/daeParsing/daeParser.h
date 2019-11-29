@@ -11,9 +11,8 @@
 #include <vector>
 #include <functional>
 #include <set>
-#include <glm/include/glm/gtc/type_ptr.hpp>
-#include <src/Vertex.h>
-#include <src/Mesh.h>
+#include "../Vertex.h"
+#include "../Mesh.h"
 #include "xmlNode.h"
 #include "xmlParsingStackMember.h"
 #include "bufferParseResult.h"
