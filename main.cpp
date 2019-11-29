@@ -261,6 +261,7 @@ int openGLloop()
 		consoleControl.loadMeshesInto(meshes, meshInstances);
 		consoleControl.loadOverrideTextures(overrideTextures);
 		consoleControl.exportMesh(meshes, meshInstances);
+		consoleControl.removeMesh(meshes,meshInstances);
 		processInput(window);
 
 

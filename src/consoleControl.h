@@ -55,6 +55,10 @@ class ConsoleControl {
     int exportMeshWrtn;
     int exportMeshRead;
 
+    std::vector<int> removeMeshQueue;
+    int removeMeshWrtn;
+    int removeMeshRead;
+
     bool phong = false;
     std::random_device engine;
 
@@ -152,7 +156,8 @@ class ConsoleControl {
             }
         } else if (extension == ".fuz") {
             std::vector<MeshData> toResults;
-            toResults.push_back(*decodeMultiMesh(contents));
+            MeshData meshData = decodeMultiMesh(contents);
+            toResults.push_back(meshData);
             results = new std::vector<MeshData>(std::move(toResults));
         }
 
@@ -213,6 +218,25 @@ public:
         }
     }
 
+    void removeMesh(std::vector<MultiMesh*> &meshes, std::vector<MeshInstance> &instances){
+        if(removeMeshWrtn>removeMeshRead){
+            int toRemove = removeMeshQueue[removeMeshRead];
+            auto multiMeshPtr = meshes[toRemove];
+            for(MeshInstance& instance:instances){
+                if(instance.instanceOf == multiMeshPtr){
+                    instances.erase(instances.begin()+(&instance-&instances[0]));
+                }
+            }
+            for(auto& pair:cache){
+                if(pair.second == toRemove){
+                    cache.erase(cache.find(pair.first));
+                }
+            }
+            meshes[toRemove] = nullptr;
+            delete multiMeshPtr;
+        }
+    }
+
     void loopNavigation() {
         auto current = filesystem::path("C://");
         while (true) {
@@ -245,6 +269,14 @@ public:
                 shadows = true;
             } else if (str == "shadows off"){
                 shadows = false;
+            } else if (str == "remove file"){
+                listMeshes();
+                std::cout << std::endl << "number mesh to remove?" << std::endl;
+                std::string str;
+                std::getline(std::cin, str);
+                int toExport = std::stoi(str, nullptr);
+                removeMeshQueue.push_back(toExport);
+                removeMeshWrtn = removeMeshQueue.size();
             }
         }
     }
@@ -252,12 +284,18 @@ public:
     void loadMeshesInto(std::vector<MultiMesh *> &meshes, std::vector<MeshInstance> &meshInstances) {
         for (int i = numMeshDataRead; i < numMeshDataWrtn; i++) {
             std::vector<Mesh *> toMakeMultiMeshOf;
-            for (MeshData &a : *loaded[i]) {
+            std::vector<MeshData> *ptrToMeshDataVector = loaded[i];
+            for (MeshData &a : *ptrToMeshDataVector) {
                 a.BindTextures();
+
+                //deleted when multimesh deleted
                 Mesh *meshPtr = new Mesh(a);
                 toMakeMultiMeshOf.push_back(meshPtr);
                 numMeshDataRead = i + 1;
             }
+            delete ptrToMeshDataVector;
+
+            //deleted when mesh removed from cache
             MultiMesh *multiMesh = new MultiMesh(toMakeMultiMeshOf);
             meshes.push_back(multiMesh);
         }

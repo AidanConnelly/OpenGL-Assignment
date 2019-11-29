@@ -195,6 +195,14 @@ public:
 			a->BindTextures(program,startingSlot);
 		}
 	}
+
+    virtual ~MultiMesh() {
+        for(Mesh* toDelete: this->meshes){
+            delete toDelete;
+        }
+    }
+
+
 };
 
 class MeshInstance

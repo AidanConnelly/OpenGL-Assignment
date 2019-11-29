@@ -109,6 +109,7 @@ void encodeMultiMesh(MultiMesh* meshToEncode, float tolerance, std::vector<char>
 {
 	std::vector<int> meshCounts;
 
+	//got to delete all the values
 	std::map<int, listOfFloat*> floatLookup;
 	std::vector<int> vertexFloatIndexes;
 	std::vector<int> triangleIndexes;
@@ -233,9 +234,14 @@ void encodeMultiMesh(MultiMesh* meshToEncode, float tolerance, std::vector<char>
 	writeTriangleVertexIndexes(buffer, bitIndex, triangleIndexes,triangleIndexesDigits);
 	int floatIndexesDigits = ceil(log2(maxEnd+1));
 	writeVertexFloatIndexes(buffer, bitIndex, finalLookup, floatIndexesDigits);
+
+	//free memory
+    for(auto pair: floatLookup){
+        delete pair.second;
+    }
 }
 
-MeshData* decodeMultiMesh(std::vector<char>& buffer){
+MeshData decodeMultiMesh(std::vector<char>& buffer){
 	int bitIndex = 0;
 	auto tolerance = readTolerance(buffer, bitIndex);
 	auto clusters = readNumberOfClusters(buffer, bitIndex);
@@ -274,8 +280,8 @@ MeshData* decodeMultiMesh(std::vector<char>& buffer){
 	}
 
 	std::cout << "read" << std::endl;
-	std::vector<Vertex>* outputVertexes = new std::vector<Vertex>();
-	std::vector<Triangle>* outputTriangles = new std::vector<Triangle>();
+	std::vector<Vertex> outputVertexes;
+	std::vector<Triangle> outputTriangles;
 	for(int i = 0;i < finalLookup.size();i+=11)
 	{
 		Vertex v;
@@ -285,17 +291,16 @@ MeshData* decodeMultiMesh(std::vector<char>& buffer){
 		{
 			vrtxFltPtr[j] = floatBuffer[finalLookup[i + j]];
 		}
-		outputVertexes->push_back(v);
+		outputVertexes.push_back(v);
 	}
-	for(int i =0;i<triangleIndexes.size();i+=3)
-	{
-		Triangle t;
-		t.v1i = triangleIndexes[i];
-		t.v2i = triangleIndexes[i+1];
-		t.v3i = triangleIndexes[i+2];
-		outputTriangles->push_back(t);
-	}
-	return new MeshData(*outputVertexes,*outputTriangles,std::vector<std::string>());
+	for(int i =0;i<triangleIndexes.size();i+=3) {
+        Triangle t;
+        t.v1i = triangleIndexes[i];
+        t.v2i = triangleIndexes[i + 1];
+        t.v3i = triangleIndexes[i + 2];
+        outputTriangles.push_back(t);
+    }
+	return MeshData(outputVertexes,outputTriangles,std::vector<std::string>());
 }
 
 #endif
