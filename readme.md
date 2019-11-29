@@ -135,13 +135,29 @@ As entertainment systems become more connected, space taken for assets will be m
 
 Dot-FUZ (Distribution, Optimization, Three-D, Format, Used for, Zipping) uses information theory to code the data into as few bits as possible.
 
-          **key term: nat, the unit of information arcording 1 base e digit**
+    *key term: nat, the unit of information arcording 1 base e digit*
 
 It fits a gaussian mixture model to mazimise the entropy of the distribution, i.e. is most likely to give the data to be encoded. A maximum entropy model of the underlying data is extreamly useful, as when the length of a symbol is proportional to the negative logarithm of the probability of the symbol, the maximum entropy distribution minimizes the average message length.
 
 The format can either be lossless or lossy depending on a tolerance setting, if the tolerance setting is set to be the minimum value of a float/double, it's effectively lossless. However the tolerance is used twice, once to deduplicate all float values (all colour values, positions, normal values, and texture coordinates), and once to specifiy the bits of precisison when encoding that float into a binary string.
 
-The overall process then is to bucket all the floating point values, fit a GMM to the bucketed floats, and then write these floats in an ultra-compressed format, which could take around a dozen bits, rather than 32
-  
+The overall process then is to bucket all the floating point values, fit a GMM to the bucketed floats, and then write these floats in an ultra-compressed format, which could take around a dozen bits, rather than 32.
+
+The file format is successful, compressing the 10MB pouf.dae to 4MB.  
 
 ### Shadow mapping technique ###
+
+The typical problem of "Jaggies" (see wikipedia) in shadows is approached via multi-sampling or other methods. 
+
+The approach used here is different, the "staircases" are smoothed by sampling the nearby pixels in the relevant shadow maps to recover the information (edge start, edge end, center of triangle), of the triangles which are causing the staircase.
+
+This is done by encoding this information about the triangle causing the staircases into multiple shadow maps. The information encoded is:
+ * Start of edge (shadowmap texture coordinates x, y)
+ * End of edge (shadowmap texture coordinates x, y)
+ * The center of the triangle (shadowmap texture coordinates x, y)
+ * A hash of the triangles vertexes positions, stored as 4, 8 bit floats (RGBA_8I)
+ * And of course the standard depth to light
+ 
+This information requires the use of geometry shader to discover, and a geometry shader so as to divide a triangle into subtriangles which have a defined outside edge, although these are the same shader.
+
+The main difficulty with this apparoach is the **significant** nondeteminism of NVIDIA GPUs, preventing simple de-duplication of the triangles responsible for the artifact
