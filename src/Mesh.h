@@ -8,7 +8,6 @@
 
 #include <utility>
 #include <vector>
-#include "../shaderProgram.h"
 #include "Texture.h"
 #include "Vertex.h"
 #include <glm/glm.hpp> //includes GLM

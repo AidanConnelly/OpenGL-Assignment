@@ -12,16 +12,13 @@
 #include "src/dotFuzFormat.h"
 #include "src/GMM.h"
 #include "src/HuffmanCoding.h"
+#include "src/daeParsing/daeParser.h"
 #include <thread>
 #include <filesystem>
-#include "vsSolution/vsSolution/objParser.h"
+#include "../src/objParser.h"
 #include <iostream>
 #include "src/Mesh.h"
 #include "src/Texture.h"
-#include "experiments/filesystem.h"
-#include "experiments/preliminary/fileThroughput/fileThroughput.h"
-#include "shaderProgram.h"
-#include "shader.h"
 #include "GLFW/glfw3.h"
 #include "GL/freeglut.h"
 #include "GL/glew.h"
@@ -98,7 +95,7 @@ class ConsoleControl {
         for (int i = 0; i < 100; i++) {
             std::string fullFilePath = (current / str).string();
             if (exists(current / str)) {
-                std::vector<char> contents = fileThroughput::getBytes(fullFilePath);
+                std::vector<char> contents = fileReader::read(fullFilePath);
 
                 float logLowerCorruptionRate = log(1.0 / ((float) contents.size()));
                 float logUpperCorruptionRate = 0;
@@ -122,7 +119,7 @@ class ConsoleControl {
         std::string toLoad = str.substr(5, str.size() - 5);
         std::string fullFilePath = (current / toLoad).string();
         if (exists(current / toLoad)) {
-            std::vector<char> contents = fileThroughput::getBytes(fullFilePath);
+            std::vector<char> contents = fileReader::read(fullFilePath);
 
             if (!cache.count(fullFilePath)) {
                 loadFromContents(current, toLoad, contents);

@@ -7,7 +7,7 @@
 #include <string>
 #include <iostream>
 #include <GL/glew.h>
-#include "../shaderProgram.h"
+#include "shaders/shaderProgram.h"
 
 
 class Texture {

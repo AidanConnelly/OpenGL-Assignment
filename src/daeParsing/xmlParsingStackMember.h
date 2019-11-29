@@ -17,9 +17,6 @@ struct xmlParsingStackMember {
     //Pointer to prevent collection
     xmlNode * node;
     XMLParseState state;
-
-    ~xmlParsingStackMember(){
-    }
 };
 
 #endif //OPENGLSETUP_XMLPARSINGSTACKMEMBER_H

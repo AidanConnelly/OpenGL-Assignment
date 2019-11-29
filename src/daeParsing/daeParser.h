@@ -16,8 +16,8 @@
 #include "bufferParseResult.h"
 #include "typedefs.h"
 #include "stringToFloatFast.h"
-#include "../../../src/Vertex.h"
-#include "../../../src/Mesh.h"
+#include "glm/glm.hpp"
+#include "glm/mat4x4.hpp"
 
 struct paramInfo{
     paramInfo(int stride, int idx);
@@ -109,7 +109,7 @@ private:
 	static void parseNodeTagNames(std::vector<char>& buffer, xmlNodeStore& nodes);
 	static void populateMeshDataWithCorrectColourAndTextures(std::string directory, xmlNodeStore nodes,
                                                              std::vector<MeshData> &toReturn,
-                                                             std::vector<meshParseResult>::value_type &a,
+                                                             std::vector<meshParseResult>::value_type &meshParseResult,
                                                              std::vector<parseNodeTagsResult> &nodesTagsResults);
 
 	static xmlNodeVector filterByTagName(const xmlNodeVector& nodes, const std::string& tagName);

@@ -17,18 +17,4 @@ struct bufferParseResult {
 	xmlNodeStore indexArrays;
 };
 
-#include <algorithm>
-#include <cctype>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <utility>
-#include <exception>
-#include <stdexcept>
-#include <functional>
-#include <iterator>
-#include "xmlNode.h"
-#include "xmlParsingStackMember.h"
-#include "typedefs.h"
-
 #endif //OPENGLSETUP_BUFFERPARSERESULT_H

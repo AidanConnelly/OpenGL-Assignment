@@ -2,14 +2,13 @@
 #include "GL/freeglut.h"
 #include "GLFW/glfw3.h"
 
-#include "shader.h"
-#include "shaderProgram.h"
-#include "experiments/preliminary/fileThroughput/fileThroughput.h"
-#include "experiments/filesystem.h"
+#include "src/shaders/shader.h"
+#include "src/shaders/shaderProgram.h"
+#include "src/fileReader.h"
 #include "src/Texture.h"
 #include "src/Mesh.h"
 #include <iostream>
-#include "vsSolution/vsSolution/objParser.h"
+#include "src/objParser.h"
 #include <filesystem>
 #include <thread>
 #include "src/HuffmanCoding.h"

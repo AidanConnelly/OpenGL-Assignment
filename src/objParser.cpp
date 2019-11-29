@@ -1,7 +1,9 @@
 ﻿#pragma once
 
 #include "objParser.h"
-#include "../../src/safeIndex.h"
+#include "safeIndex.h"
+#include "daeParsing/stringToFloatFast.h"
+#include "fileReader.h"
 
 glm::vec3 parseColour(int&i,std::vector<char>&buffer){
 	i += 2;
@@ -23,7 +25,7 @@ glm::vec3 parseColour(int&i,std::vector<char>&buffer){
 MaterialLibParseResults* objParser::parseMtlLib(std::string fullPath, std::string directory)
 {
 	auto toReturn = new MaterialLibParseResults;
-	std::vector<char> buffer = fileThroughput::getBytes(fullPath);
+	std::vector<char> buffer = fileReader::read(fullPath);
 
 	MTLParseState state = mtlNotBegun;
 	LineReadingState lineState = beginningOfLine;

@@ -34,11 +34,6 @@ struct xmlNode {
 		mtx.unlock();
     }
 
-    ~xmlNode() {
-    	//todo
-        // printf("+");
-    }
-
     void getValue(int subStrIdx, std::string& toReturn)
     {
 	    while(buffer[subStrIdx]!='\"'){

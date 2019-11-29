@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1459A543-BE31-471C-8175-4D300A299C8C}</ProjectGuid>
     <RootNamespace>vsSolution</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -40,7 +40,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -69,7 +69,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\m\Documents\v15\Projects\soft356a3\src;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\aconnelly\source\repos\soft356a3\src;C:\Users\m\Documents\v15\Projects\soft356a3\src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -114,49 +114,40 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\experiments\preliminary\fileThroughput\fileThroughput.cpp" />
-    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\daeParser.cpp" />
-    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\prototypeObjParser.cpp" />
-    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\stringToFloatFast.cpp" />
-    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\xmlNode.cpp" />
-    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\XMLParseState.cpp" />
-    <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\xmlParsingStackMember.cpp" />
-    <ClCompile Include="..\..\main.cpp" />
-    <ClCompile Include="..\..\shaderType.cpp" />
-    <ClCompile Include="..\..\src\consoleControl.cpp" />
+    <ClCompile Include="..\..\src\bitBuffer.cpp" />
+    <ClCompile Include="..\..\src\daeParsing\daeParser.cpp" />
+    <ClCompile Include="..\..\src\daeParsing\stringToFloatFast.cpp" />
     <ClCompile Include="..\..\src\dotFuzFormat.cpp" />
     <ClCompile Include="..\..\src\Mesh.cpp" />
+    <ClCompile Include="..\..\src\objParser.cpp" />
+    <ClCompile Include="..\..\src\shaders\shaderType.cpp" />
     <ClCompile Include="..\..\src\Texture.cpp" />
     <ClCompile Include="..\..\src\Vertex.cpp" />
-    <ClCompile Include="bitBuffer.cpp" />
-    <ClCompile Include="objParser.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\experiments\preliminary\fileThroughput\fileThroughput.h" />
-    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\bufferParseResult.h" />
-    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\daeParser.h" />
-    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\prototypeObjParser.h" />
-    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\stringToFloatFast.h" />
-    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\typedefs.h" />
-    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\xmlNode.h" />
-    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\XMLParseState.h" />
-    <ClInclude Include="..\..\experiments\preliminary\prototypeParsers\xmlParsingStackMember.h" />
-    <ClInclude Include="..\..\shader.h" />
-    <ClInclude Include="..\..\shaderProgram.h" />
-    <ClInclude Include="..\..\shaderType.h" />
     <ClInclude Include="..\..\src\bitBuffer.h" />
     <ClInclude Include="..\..\src\consoleControl.h" />
+    <ClInclude Include="..\..\src\daeParsing\bufferParseResult.h" />
+    <ClInclude Include="..\..\src\daeParsing\daeParser.h" />
+    <ClInclude Include="..\..\src\daeParsing\stringToFloatFast.h" />
+    <ClInclude Include="..\..\src\daeParsing\typedefs.h" />
+    <ClInclude Include="..\..\src\daeParsing\xmlNode.h" />
+    <ClInclude Include="..\..\src\daeParsing\XMLParseState.h" />
+    <ClInclude Include="..\..\src\daeParsing\xmlParsingStackMember.h" />
+    <ClInclude Include="..\..\src\DoParallel.h" />
     <ClInclude Include="..\..\src\dotFuzFormat.h" />
+    <ClInclude Include="..\..\src\fileReader.h" />
+    <ClInclude Include="..\..\src\fs.h" />
     <ClInclude Include="..\..\src\GMM.h" />
     <ClInclude Include="..\..\src\HuffmanCoding.h" />
     <ClInclude Include="..\..\src\Mesh.h" />
+    <ClInclude Include="..\..\src\objParser.h" />
     <ClInclude Include="..\..\src\safeIndex.h" />
+    <ClInclude Include="..\..\src\shaders\shader.h" />
+    <ClInclude Include="..\..\src\shaders\shaderProgram.h" />
+    <ClInclude Include="..\..\src\shaders\shaderType.h" />
     <ClInclude Include="..\..\src\Texture.h" />
     <ClInclude Include="..\..\src\Vertex.h" />
-    <ClInclude Include="..\..\stb_image.h" />
-    <ClInclude Include="DoParallel.h" />
-    <ClInclude Include="HuffmanCoding.h" />
-    <ClInclude Include="objParser.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\experiments\preliminary\fileThroughput\results.md" />

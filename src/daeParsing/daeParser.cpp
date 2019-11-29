@@ -2,17 +2,17 @@
 // Created by m on 14/10/2019.
 //
 
-#include "../../../src/safeIndex.h"
+#include "safeIndex.h"
 #include "daeParser.h"
 #include "stringToFloatFast.h"
 #include "xmlNode.h"
 #include "bufferParseResult.h"
 #include "typedefs.h"
 #include "XMLParseState.h"
-#include "../../../src/Vertex.h"
-#include "../../../vsSolution/vsSolution/DoParallel.h"
-
-//#include <glm/gtc/type_ptr.hpp>
+#include "Vertex.h"
+#include "DoParallel.h"
+#include "Mesh.h"
+#include <vector>
 
 void daeParser::parseNodeTagNames(std::vector<char> &buffer, xmlNodeStore &nodes) {
     alterXmlNodes(nodes, [&](xmlNode *node) -> xmlNode {
@@ -43,7 +43,8 @@ void daeParser::populateMeshDataWithCorrectColourAndTextures(std::string directo
     }
     if (diffuse && diffuse->which == diffuseTextureOrColour::col && (!meshParseResult.hasColourFromVertex)) {
         for (int i = 0; i < meshParseResult.vertexes.size(); i++) {
-            //todo - GCC 4.6 note
+
+            //Use XYZ rather than RGB for support from older versions of GCC
             meshParseResult.vertexes[i].r = diffuse->colour.x;
             meshParseResult.vertexes[i].g = diffuse->colour.y;
             meshParseResult.vertexes[i].b = diffuse->colour.z;
@@ -69,7 +70,6 @@ std::vector<MeshData> daeParser::parse(std::vector<char> &buffer, std::string di
     std::vector<textureCoordinateData*> texCoordDataToClean;
     std::vector<colourData*> colDataToClear;
     auto meshParseResults = parseMeshTags(buffer, nodes, &result,texCoordDataToClean,colDataToClear);
-    //todo apply transforms to instance_geometries???
     std::vector<MeshData> toReturn;
     for (auto &a : meshParseResults) {
         populateMeshDataWithCorrectColourAndTextures(directory, nodes, toReturn, a, nodeParseResults);
@@ -164,8 +164,6 @@ meshParseResult daeParser::parseTriangleTag(bufferParseResult *largeBuffers,
     thisResult2.meshID = id;
 
     if (triangleTagPtr->hasAttribute("material")) {
-        //todo change this
-//        thisResult2.meshID += triangleTagPtr->getAttribute("material");
         thisResult2.textureIds.push_back(triangleTagPtr->getAttribute("material"));
     }
     auto triangleTag = *triangleTagPtr;
@@ -274,24 +272,15 @@ meshParseResult daeParser::parseTriangleTag(bufferParseResult *largeBuffers,
             unsigned colourIndex = thisTriangleIndexArray->indexesIfApplicable[(maxOffset + 1) * vertexIndex +
                                                                                colourOffset];
 
-            //vertex X
             building.x = positnFloat->floatsIfApplicable[xParam.stride * positnIndex + xParam.idx];
-            //vertex Y
             building.y = positnFloat->floatsIfApplicable[yParam.stride * positnIndex + yParam.idx];
-            //vertex Z
             building.z = positnFloat->floatsIfApplicable[zParam.stride * positnIndex + zParam.idx];
-
-            //vertexNormal X
             building.nX = nrmlFloat->floatsIfApplicable[nXParam.stride * normalIndex + nXParam.idx];
-            //vertexNormal Y
             building.nY = nrmlFloat->floatsIfApplicable[nYParam.stride * normalIndex + nYParam.idx];
-            //vertexNormal Z
             building.nZ = nrmlFloat->floatsIfApplicable[nZParam.stride * normalIndex + nZParam.idx];
 
             if (tData) {
-                //texCoord U
                 building.u = tData->ar->floatsIfApplicable[tData->s.stride * tCoordIndex + tData->s.idx];
-                //texCoord V
                 building.v = tData->ar->floatsIfApplicable[tData->t.stride * tCoordIndex + tData->t.idx];
             }
 
@@ -594,7 +583,6 @@ xmlNodeStore daeParser::parseNodes(const std::vector<char> &buffer, std::vector<
 }
 
 xmlNodeVector daeParser::mapXmlNodes(const xmlNodeVector &input, std::function<xmlNode(const xmlNode &)> toMap) {
-    //TODO: make parallel
     xmlNodeVector toReturn;
     std::transform(input.begin(), input.end(), std::back_inserter(toReturn),
                    [&](const xmlNode &node) -> xmlNode { return toMap(node); });
@@ -602,14 +590,12 @@ xmlNodeVector daeParser::mapXmlNodes(const xmlNodeVector &input, std::function<x
 }
 
 void daeParser::alterXmlNodes(xmlNodeStore &input, std::function<void(xmlNode * )> toMap) {
-    //TODO: make parallel
     for (auto &i : input) {
         toMap(i);
     }
 }
 
 xmlNodeStore daeParser::parseIndexBuffer(const std::vector<char> &buffer, xmlNodeStore indexBuffers) {
-    //todo use doParallel
     auto fx = [&buffer, &indexBuffers](int i) -> void {
         xmlNode *node = indexBuffers[i];
         int index = node->startIndex;

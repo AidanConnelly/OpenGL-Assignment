@@ -4,9 +4,8 @@
 
 #include <string>
 #include <vector>
-#include "../../src/Mesh.h"
+#include "Mesh.h"
 #include <map>
-#include "../../experiments/preliminary/fileThroughput/fileThroughput.h"
 
 
 struct mtlMaterial{
