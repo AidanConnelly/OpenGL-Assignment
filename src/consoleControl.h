@@ -222,18 +222,30 @@ public:
         if(removeMeshWrtn>removeMeshRead){
             int toRemove = removeMeshQueue[removeMeshRead];
             auto multiMeshPtr = meshes[toRemove];
+			std::vector<std::vector<MeshInstance>::iterator> toErase;
             for(MeshInstance& instance:instances){
                 if(instance.instanceOf == multiMeshPtr){
-                    instances.erase(instances.begin()+(&instance-&instances[0]));
+	                std::vector<MeshInstance>::iterator eraseMe = instances.begin()+(&instance-&instances[0]);
+					toErase.push_back(eraseMe);
                 }
             }
+        	for(auto eraseMe:toErase)
+        	{
+				instances.erase(eraseMe);
+        	}
+			std::vector<std::string> toRemoveFromCache;
             for(auto& pair:cache){
                 if(pair.second == toRemove){
-                    cache.erase(cache.find(pair.first));
+					toRemoveFromCache.push_back(pair.first);
                 }
             }
+        	for(auto toRemove:toRemoveFromCache)
+        	{
+				cache.erase(cache.find(toRemove));
+        	}
             meshes[toRemove] = nullptr;
             delete multiMeshPtr;
+			removeMeshRead++;
         }
     }
 
