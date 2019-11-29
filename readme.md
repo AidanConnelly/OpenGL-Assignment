@@ -129,6 +129,12 @@ Key presses:
  * Move camera - WASD SHIFT CTRL
  * Turn camera - IJKL QE
 
+### DAE PARSING ###
+
+The parsing of the DAE is initially done in serial, as it's not clear how the most efficient way to parse a heirarchical data structure in parallel, and doing so in serial may be more efficient in terms of computing power. However this is extreamly light weight parsing only the start and end index and the children of each node. Then, the real heavy weight processing, such as converting the character arrays to floats, can be done in parallel.
+
+Regular expressions can be fast, however this method will surely be faster.
+
 ### Dot fuz ###
 
 As entertainment systems become more connected, space taken for assets will be more and more of a burden. And even while most assets are not downloaded on the fly, AAA games are approaching the limits of a sensible download (users are not keen to wait for dozens of gigabytes).
