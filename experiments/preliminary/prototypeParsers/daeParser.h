@@ -140,7 +140,9 @@ private:
 	static bufferParseResult parseLargeBuffers(xmlNodeStore nodesWithTagName);
 
 	static std::vector<meshParseResult> parseMeshTags(std::vector<char> buffer, xmlNodeStore nodes,
-	                                                  bufferParseResult* largeBuffers);
+	                                                  bufferParseResult* largeBuffers,
+                                                      std::vector<textureCoordinateData*>& texCoordDataToClean,
+                                                      std::vector<colourData*>& colDataToClear);
 
 	static std::vector<parseNodeTagsResult> parseNodeTags(std::vector<char> buffer, xmlNodeStore nodes);
 	static meshParseResult parseTriangleTag(bufferParseResult* largeBuffers, std::string id, xmlNode tag, xmlNode* triangleTagPtr, std::vector<textureCoordinateData*>& texCoordDataToClean, std::vector<colourData*>& colDataToClear);

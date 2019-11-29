@@ -56,13 +56,21 @@ std::vector<MeshData> daeParser::parse(std::vector<char> &buffer, std::string di
     parseNodeTagNames(buffer, nodes);
     auto result = parseLargeBuffers(nodes);
     auto nodeParseResults = parseNodeTags(buffer, nodes);
-    auto meshParseResults = parseMeshTags(buffer, nodes, &result);
+    std::vector<textureCoordinateData*> texCoordDataToClean;
+    std::vector<colourData*> colDataToClear;
+    auto meshParseResults = parseMeshTags(buffer, nodes, &result,texCoordDataToClean,colDataToClear);
     //todo apply transforms to instance_geometries???
     std::vector<MeshData> toReturn;
     for (auto &a : meshParseResults) {
         populateMeshDataWithCorrectColourAndTextures(directory, nodes, toReturn, a);
     }
     for(xmlNode* cleanMe:toClean){
+        delete cleanMe;
+    }
+    for(textureCoordinateData* cleanMe : texCoordDataToClean){
+        delete cleanMe;
+    }
+    for(colourData* cleanMe : colDataToClear){
         delete cleanMe;
     }
     return toReturn;
@@ -295,7 +303,9 @@ meshParseResult daeParser::parseTriangleTag(bufferParseResult *largeBuffers,
 }
 
 std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, xmlNodeStore nodes,
-                                                      bufferParseResult *largeBuffers) {
+                                                      bufferParseResult *largeBuffers,
+                                                      std::vector<textureCoordinateData*>& texCoordDataToClean,
+                                                      std::vector<colourData*>& colDataToClear) {
     std::mutex mtx;
     std::vector<meshParseResult> results;
     auto tags = filterByTagName(nodes, "geometry");
@@ -308,16 +318,8 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
         }
         xmlNodeStore triangles = filterByTagName(tag.children, "triangles");
         //todo use doParallel
-        auto fx = [&largeBuffers, id, tag, triangles, &mtx, &results](int i) {
-            std::vector<textureCoordinateData*> texCoordDataToClean;
-            std::vector<colourData*> colDataToClear;
+        auto fx = [&largeBuffers, id, tag, triangles, &mtx, &results,&texCoordDataToClean, &colDataToClear](int i) {
             const auto toPush = parseTriangleTag(largeBuffers, id, tag, triangles[i],texCoordDataToClean,colDataToClear);
-            for(textureCoordinateData* cleanMe : texCoordDataToClean){
-                delete cleanMe;
-            }
-            for(colourData* cleanMe : colDataToClear){
-                delete cleanMe;
-            }
             mtx.lock();
             results.push_back(toPush);
             mtx.unlock();

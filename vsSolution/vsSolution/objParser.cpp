@@ -363,5 +363,8 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 	for(auto &pair : toReturn){
 		actuallyReturn.push_back(pair.second);
 	}
+	for(MaterialLibParseResults* cleanMe: mtlLibParseResults){
+	    delete cleanMe;
+	}
 	return actuallyReturn;
 }
