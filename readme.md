@@ -135,7 +135,7 @@ As entertainment systems become more connected, space taken for assets will be m
 
 Dot-FUZ (Distribution, Optimization, Three-D, Format, Used for, Zipping) uses information theory to code the data into as few bits as possible.
 
-**key term: nat, the unit of information arcording 1 base e digit**
+          **key term: nat, the unit of information arcording 1 base e digit**
 
 It fits a gaussian mixture model to mazimise the entropy of the distribution, i.e. is most likely to give the data to be encoded. A maximum entropy model of the underlying data is extreamly useful, as when the length of a symbol is proportional to the negative logarithm of the probability of the symbol, the maximum entropy distribution minimizes the average message length.
 
