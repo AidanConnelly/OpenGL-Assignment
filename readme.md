@@ -24,24 +24,42 @@ Evaluation of the
 export file format
 are sound.
 
-## Introduction ##
+### Introduction ###
 
 This model loader can load COLLADA and .OBJ files, export and load to a compressed file format, move the models in 3D space, switch between PHONG spot lighting and lighting with shadows, (using a special shadow map filtering technique). It uses CPU-parallelism to speed up loading of COLLADA & OBJ files.
 
-## Description ##
+### Description ###
 
-## Project aims ##
+This model loader has been developed with file I/O & parsing performance as a priority. This has causes the use of a finite state machine parsing first stage, then possibly followed by a second map-reduce-esque stage, where mapping and filtering of elements can be parallelized.
 
-## Used software ##
+### Project aims ###
 
-## Used libraries ##
+Goals:
 
-## Setup ##
+ 	☑ Import OBJ files
+  ☑ Import DAE files
+	☑ Export to another format
+  ☑ Load textures from models
+  ☑ Override textures on models with another
+  ☑ Implement PHONG lighting
+  ☑ Implement shadow mapping
+  ☑ Instances of models can be removed
+  ☑ The data of a models can be deleted and the associated memory freed
+  ☑ Safely fail fuzzed OBJ files
+  ☑ Safely fail fuzzed DAE files
+  ☑ Free all memory promptly so as not to cause memory leaks
+  ☑ Import from the format exported to
 
-## Source layout ##
+### Used software ###
 
-## Commands and controls ##
+### Used libraries ###
 
-## Dot fuz ##
+### Setup ###
 
-## Shadow mapping technique ##
+### Source layout ###
+
+### Commands and controls ###
+
+### Dot fuz ###
+
+### Shadow mapping technique ###
