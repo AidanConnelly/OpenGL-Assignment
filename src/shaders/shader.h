@@ -38,7 +38,7 @@ public:
             fromFile = shaderStream.str();
         }
         catch (std::ifstream::failure e) {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+            std::cout << "Shader error " << std::endl;
         }
 
         const char *shaderCode = fromFile.c_str();
@@ -56,4 +56,3 @@ private:
 };
 
 #endif
-

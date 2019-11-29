@@ -7,7 +7,7 @@
 #include <string>
 #include <iostream>
 #include <GL/glew.h>
-#include "shaders/shaderProgram.h"
+#include "../shaders/shaderProgram.h"
 
 
 class Texture {
@@ -16,14 +16,12 @@ public:
 
 	void bind(ShaderProgram program, int slot)
 	{
-		//todo
 		glActiveTexture(GL_TEXTURE0 + slot);
 		glBindTexture(GL_TEXTURE_2D, textureId);
 		GLint uniformLocation = glGetUniformLocation(program.ID, "ourTexture");
 		glUniform1i(uniformLocation, slot);
 	}
 
-	// ~Texture();
 private:
 	unsigned char* data;
 	GLuint textureId;

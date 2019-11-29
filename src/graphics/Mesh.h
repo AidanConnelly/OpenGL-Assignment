@@ -20,7 +20,7 @@ class MeshData
 	MeshData()
 	{
 	}
-	
+
 	MeshData(std::vector<Vertex> vertexes, std::vector<Triangle> triangles, std::vector<std::string> texturePaths)
 	{
 		this->vertexes = std::move(vertexes);
@@ -54,40 +54,32 @@ class Mesh
 public:
 	void createThisMesh()
 	{
-		CheckForOpenGLErrors();
 		glGenVertexArrays(1, &VAO);
-		CheckForOpenGLErrors();
 		glBindVertexArray(VAO);
 		glGenBuffers(1, &VBO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		CheckForOpenGLErrors();
-		
+
 		unsigned int cnt = vertexes.size();
 		auto* pos = (float*)&vertexes[0];
 		float x0 = pos[0];
 		float x1 = pos[1];
 		size_t sizeOfVertex = sizeof(Vertex);
 		glBufferData(GL_ARRAY_BUFFER, sizeOfVertex * cnt, pos, GL_STATIC_DRAW);
-		CheckForOpenGLErrors();
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeOfVertex, (void*)(0 * sizeof(float))); //xyz
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeOfVertex, (void*)(3 * sizeof(float))); //nrm
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeOfVertex, (void*)(6 * sizeof(float))); //rgb
 		glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeOfVertex, (void*)(9 * sizeof(float))); //uv
-		CheckForOpenGLErrors();
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
 		glEnableVertexAttribArray(3);
-		CheckForOpenGLErrors();
 
 		glGenBuffers(1, &EBO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		CheckForOpenGLErrors();
 
 		unsigned int trigCount = triangles.size();
 		size_t shouldb12Bytes = sizeof(Triangle);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, shouldb12Bytes * trigCount, &triangles[0], GL_STATIC_DRAW);
-		CheckForOpenGLErrors();
 	}
 
 	void bind()
@@ -115,7 +107,7 @@ public:
 			checkIndex(z);
 		}
 	}
-	
+
 	Mesh(MeshData mesh_data){
 
 	    glm::mat4 inv = glm::inverse(mesh_data.pendingTransform);
@@ -146,7 +138,6 @@ public:
 		{
 			glUniform1f(hasTextureLocation, 1.0f);
 			textures[i].bind(program, i+startingSlot);
-			CheckForOpenGLErrors();
 		}
 	}
 
@@ -163,19 +154,6 @@ public:
 	glm::vec3 specular;
 private:
 	GLuint VBO;
-
-	void CheckForOpenGLErrors()
-	{
-		auto ErrorCheckValue = glGetError();
-		if (ErrorCheckValue != GL_NO_ERROR)
-		{
-			fprintf(
-				stderr,
-				"ERROR: Could not create a VBO: %s \n");
-			std::cout << std::endl;
-			exit(-1);
-		}
-	}
 };
 
 class MultiMesh
@@ -185,9 +163,9 @@ public:
 	{
 		this->meshes = meshes;
 	}
-	
+
 	std::vector<Mesh*> meshes;
-	
+
 	void BindTextures(const ShaderProgram& program, int startingSlot){
 		for(auto &a: meshes)
 		{
@@ -216,14 +194,11 @@ public:
 
 	void Draw(ShaderProgram program)
 	{
-		// Adding all matrices up to create combined matrix
 		glm::mat4 m = translate*scaling;
 
-		//adding the Uniform to the shader
-		//todo move into shader program class
 		int mLoc = glGetUniformLocation(program.ID, "m");
 		int selectedLoc = glGetUniformLocation(program.ID, "selected");
-        glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(m));
+    glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(m));
 		glUniform1f(selectedLoc, selected?0.2:0.0);
 
 		int ambLoc = glGetUniformLocation(program.ID, "ambCol");
@@ -239,9 +214,6 @@ public:
 			singleMesh->bind();
 			glDrawElements(GL_TRIANGLES, 3 * singleMesh->triangles.size(), GL_UNSIGNED_INT, 0);
 		}
-
-		auto ErrorCheckValue = glGetError();
-		std::cout << "";
 	}
 
 	MultiMesh* instanceOf;

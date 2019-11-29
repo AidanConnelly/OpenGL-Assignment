@@ -4,16 +4,16 @@
 
 #include "src/shaders/shader.h"
 #include "src/shaders/shaderProgram.h"
-#include "src/fileReader.h"
-#include "src/Texture.h"
-#include "src/Mesh.h"
+#include "src/files/fileReader.h"
+#include "src/graphics/Texture.h"
+#include "src/graphics/Mesh.h"
 #include <iostream>
-#include "src/objParser.h"
+#include "src/objParsing/objParser.h"
 #include <filesystem>
 #include <thread>
-#include "src/HuffmanCoding.h"
-#include "src/GMM.h"
-#include "src/dotFuzFormat.h"
+#include "src/dotFuz/HuffmanCoding.h"
+#include "src/dotFuz/GMM.h"
+#include "src/dotFuz/dotFuzFormat.h"
 #include "src/consoleControl.h"
 
 std::vector<MultiMesh*> meshes;
@@ -34,16 +34,6 @@ void checkError();
 unsigned int screenWidth = 800;
 unsigned int scrHeight = 600;
 
-float vertices[] = {
-	-0.61f, +0.61f, -1.00f,
-	+0.61f, -0.61f, -1.00f,
-	+0.00f, +0.61f, -2.00f,
-	+0.00f, +0.61f, -1.00f,
-};
-
-unsigned int VAO_Handle;
-unsigned int VBO_Handle;
-
 glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, +4.5f);
 glm::mat4 cameraRotation = glm::mat4(1.0f);
 
@@ -52,41 +42,6 @@ int selectedMicro = 0;
 
 int openGLloop()
 {
-	////	for (xmlNode &r : results) {
-	////		printf("%d |%s \t|\t%d\t-> %d\t", r.children.size(),r.tagName.c_str(), r.startIndex, r.endIndex);
-	////		std::cout<< r.children.size()<<" |"<<r.tagName<<" \t|"<<r.startIndex<<"\t->\t"<<r.endIndex<<"\t ";
-	////		for (int i = r.startIndex; i <= r.endIndex; i++) {
-	////			std::cout << toParse[i];
-	////		}
-	////		std::cout << std::endl;
-	////	}
-	//
-	// glfwInit();
-	// glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	// glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	// glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	// GLFWwindow *window = glfwCreateWindow(screenWidth, SCR_HEIGHT, "soft356 part one", NULL, NULL);
-	// if (window == NULL) {
-	//     std::cout << "Failed to create GLFW window" << std::endl;
-	//     glfwTerminate();
-	//     return -1;
-	// }
-	//
-	// glfwMakeContextCurrent(window);
-	// glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-	//    glutInit(&argcp,argv);
-	//
-	//    glutCreateWindow("GLEW Test");
-	// GLenum err = glewInit();
-	// if (GLEW_OK != err)
-	// {
-	// 	/* Problem: glewInit failed, something is seriously wrong. */
-	// 	fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-	// }
-	// fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-	glfwInit();
 
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Textured Cube", NULL, NULL);
 
@@ -94,31 +49,16 @@ int openGLloop()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glewInit();
 
-	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 
-//    glEnable(GL_CULL_FACE);
-//    glCullFace(GL_BACK);
-//    glFrontFace(GL_CCW);
-
-    // std::string directory1 = "C:\\Users\\aidan\\..\\aidan\\Downloads\\Creeper\\";
-	// std::string file = "relative.obj";
-	// std::vector<char> objContents = fileThroughput::getBytes(directory1 + file);
-	// std::vector<MeshData> results = objParser::parse(objContents, directory1);
-
-	// std::string directory = R"(C:\Users\aidan\Downloads\Creeper-dae(1)\)";
-	// std::vector<char> toParse = fileThroughput::getBytes(directory + "Creeper.dae");
-	// std::vector<MeshData> results = daeParser::parse(toParse, directory);
-
 	const ShaderType& vertexShaderType = VertexShaderType();
-    const ShaderType& geometryShaderType = GeometryShaderType();
-    const ShaderType& fragmentShaderType = FragmentShaderType();
-	std::string prefix = "C:\\Users\\m\\Documents\\v15\\Projects\\soft356a3\\shaders\\";
+  const ShaderType& geometryShaderType = GeometryShaderType();
+  const ShaderType& fragmentShaderType = FragmentShaderType();
+	std::string prefix = "C:\\Users\\aconnelly\\source\\repos\\AidanConnelly\\soft356a3\\shaders\\";
 
-    Shader meshShadowVertexShader = Shader(prefix+"shadowMeshVertex.glsl", &vertexShaderType);
-    Shader meshShadowGeometryShader = Shader(prefix+"shadowMeshGeometry.glsl", &geometryShaderType);
+  Shader meshShadowVertexShader = Shader(prefix+"shadowMeshVertex.glsl", &vertexShaderType);
+  Shader meshShadowGeometryShader = Shader(prefix+"shadowMeshGeometry.glsl", &geometryShaderType);
 	Shader meshShadowFragmentShader = Shader(prefix + "shadowMeshFragment.glsl", &fragmentShaderType);
 	ShaderProgram meshShadowProgram = ShaderProgram();
 	meshShadowProgram.AttachShader(meshShadowVertexShader);
@@ -128,51 +68,31 @@ int openGLloop()
 
 	Shader lightingMeshVertexShader = Shader(prefix + "lightingMeshVertex.glsl",&vertexShaderType);
 	Shader lightingMeshFragmentShader = Shader(prefix + "lightingMeshFragment.glsl",&fragmentShaderType);
-    ShaderProgram lightingMeshProgram = ShaderProgram();
-    lightingMeshProgram.AttachShader(lightingMeshVertexShader);
-    lightingMeshProgram.AttachShader(lightingMeshFragmentShader);
-    lightingMeshProgram.Link();
+  ShaderProgram lightingMeshProgram = ShaderProgram();
+  lightingMeshProgram.AttachShader(lightingMeshVertexShader);
+  lightingMeshProgram.AttachShader(lightingMeshFragmentShader);
+  lightingMeshProgram.Link();
 
-    Shader lightSourceVertexShader = Shader(prefix + "lightSourceVertex.glsl",&vertexShaderType);
-    Shader lightSourceFragmentShader = Shader(prefix + "lightSourceFragment.glsl",&fragmentShaderType);
-    ShaderProgram lightSourceProgram = ShaderProgram();
-    lightSourceProgram.AttachShader(lightSourceVertexShader);
-    lightSourceProgram.AttachShader(lightSourceFragmentShader);
-    lightSourceProgram.Link();
+  Shader lightSourceVertexShader = Shader(prefix + "lightSourceVertex.glsl",&vertexShaderType);
+  Shader lightSourceFragmentShader = Shader(prefix + "lightSourceFragment.glsl",&fragmentShaderType);
+  ShaderProgram lightSourceProgram = ShaderProgram();
+  lightSourceProgram.AttachShader(lightSourceVertexShader);
+  lightSourceProgram.AttachShader(lightSourceFragmentShader);
+  lightSourceProgram.Link();
 
-    Shader shadowVertexShader = Shader(prefix + "shadowPassVertex.glsl",&vertexShaderType);
-    Shader shadowGeometryShader = Shader(prefix + "shadowPassGeometry.glsl",&geometryShaderType);
-    Shader shadowFragmentShader = Shader(prefix + "shadowPassFragment.glsl",&fragmentShaderType);
-    ShaderProgram shadowProgram = ShaderProgram();
-    shadowProgram.AttachShader(shadowVertexShader);
-    shadowProgram.AttachShader(shadowGeometryShader);
-    shadowProgram.AttachShader(shadowFragmentShader);
-    shadowProgram.Link();
+  Shader shadowVertexShader = Shader(prefix + "shadowPassVertex.glsl",&vertexShaderType);
+  Shader shadowGeometryShader = Shader(prefix + "shadowPassGeometry.glsl",&geometryShaderType);
+  Shader shadowFragmentShader = Shader(prefix + "shadowPassFragment.glsl",&fragmentShaderType);
+  ShaderProgram shadowProgram = ShaderProgram();
+  shadowProgram.AttachShader(shadowVertexShader);
+  shadowProgram.AttachShader(shadowGeometryShader);
+  shadowProgram.AttachShader(shadowFragmentShader);
+  shadowProgram.Link();
 
-    std::cout << "finished linking shader programs" << std::endl;
-	//
-	//    glGenVertexArrays(1, &VAO_Handle);
-	//    glGenBuffers(1, &VBO_Handle);
-	//
-	//    glBindVertexArray(VAO_Handle);
-	//
-	//    glBindBuffer(GL_ARRAY_BUFFER, VBO_Handle);
-	//
-	//    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	//    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) 0);
-	//    glEnableVertexAttribArray(0);
-	//
-	//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+  std::cout << "finished linking shader programs" << std::endl;
 
 	std::vector<Texture> textures;
 
-
-	//  -0.61f, +0.61f, -1.00f,
-	//  +0.61f, -0.61f, -1.00f,
-	//  +0.00f, +0.61f, -2.00f,
-
-	// creating the view matrix
 	glm::vec3 lightPos = glm::vec3(4.0, 4.0, 4.0);
 	glm::vec3 lightDir = glm::normalize(glm::vec3(-1.0, -1.0, -1.0));
 
@@ -186,76 +106,75 @@ int openGLloop()
 	glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(float), glm::value_ptr(lightPos), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	
+
 	auto start = std::chrono::system_clock::now();
 
-    float near_plane = 1.0f, far_plane = 1000.0f;
-    glm::mat4 lightProjection = glm::ortho(-8.0f, 8.0f, -8.0f, 8.0f, near_plane, far_plane);
-    glm::mat4 lightView = glm::lookAt(lightPos,
-                                      lightPos+lightDir,
-                                      glm::vec3( 0.0f, 1.0f,  0.0f));
-    glm::mat4 lightSpaceMatrix = lightProjection * lightView;
-    unsigned int depthMapFBO;
-    glGenFramebuffers(1, &depthMapFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+  float near_plane = 1.0f, far_plane = 1000.0f;
+  glm::mat4 lightProjection = glm::ortho(-8.0f, 8.0f, -8.0f, 8.0f, near_plane, far_plane);
+  glm::mat4 lightView = glm::lookAt(lightPos,
+                                    lightPos+lightDir,
+                                    glm::vec3( 0.0f, 1.0f,  0.0f));
+  glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+  unsigned int depthMapFBO;
+  glGenFramebuffers(1, &depthMapFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+  glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-    const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = SHADOW_WIDTH;
+  const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = SHADOW_WIDTH;
 
-    unsigned int startMap;
-    unsigned int endMap;
-    unsigned int centroidMap;
-    unsigned int triangleMap;
+  unsigned int startMap;
+  unsigned int endMap;
+  unsigned int centroidMap;
+  unsigned int triangleMap;
 
-    unsigned int* IDs [] = {&startMap,&endMap, &centroidMap};
-    for(unsigned int*& ID: IDs) {
-        glGenTextures(1, ID);
-        glBindTexture(GL_TEXTURE_2D, *ID);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F,
-                     SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RG, GL_HALF_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (&ID - &IDs[0]), GL_TEXTURE_2D, *ID, 0);
-        glDrawBuffer(GL_NONE);
-        glReadBuffer(GL_NONE);
-        checkError();
-    }
-
-
-    glGenTextures(1, &triangleMap);
-    glBindTexture(GL_TEXTURE_2D, triangleMap);
-    checkError();
-//    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8I,
-                 SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RGBA_INTEGER,    GL_BYTE, NULL);
-    checkError();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    checkError();
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 3, GL_TEXTURE_2D, triangleMap, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    checkError();
+  unsigned int* IDs [] = {&startMap,&endMap, &centroidMap};
+  for(unsigned int*& ID: IDs) {
+      glGenTextures(1, ID);
+      glBindTexture(GL_TEXTURE_2D, *ID);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F,
+                   SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RG, GL_HALF_FLOAT, NULL);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (&ID - &IDs[0]), GL_TEXTURE_2D, *ID, 0);
+      glDrawBuffer(GL_NONE);
+      glReadBuffer(GL_NONE);
+      checkError();
+  }
 
 
-    unsigned int depthMap;
-    glGenTextures(1, &depthMap);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-                 SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    while (!glfwWindowShouldClose(window))
+  glGenTextures(1, &triangleMap);
+  glBindTexture(GL_TEXTURE_2D, triangleMap);
+  checkError();
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8I,
+               SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RGBA_INTEGER,    GL_BYTE, NULL);
+  checkError();
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  checkError();
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 3, GL_TEXTURE_2D, triangleMap, 0);
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+  checkError();
+
+
+  unsigned int depthMap;
+  glGenTextures(1, &depthMap);
+  glBindTexture(GL_TEXTURE_2D, depthMap);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+               SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  while (!glfwWindowShouldClose(window))
 	{
 		consoleControl.loadMeshesInto(meshes, meshInstances);
 		consoleControl.loadOverrideTextures(overrideTextures);
@@ -264,7 +183,7 @@ int openGLloop()
 		processInput(window);
 
 
-        double time = (std::chrono::system_clock::now() - start).count() / 1000000000.0;
+        double time = (std::chrono::system_clock::now() - start).count() / 10000000.0;
 
         glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
         checkError();
@@ -294,7 +213,6 @@ int openGLloop()
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         checkError();
 
-        // 2. then render scene as normal with shadow mapping (using depth map)
         glViewport(0, 0, screenWidth, scrHeight);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         checkError();
@@ -302,23 +220,22 @@ int openGLloop()
         glBindTexture(GL_TEXTURE_2D, depthMap);
         checkError();
 
-        // creating the projection matrix
         glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3, 0.1f, 50000.0f);
 
         // don't move camera - it's a spot/sun light
-        glm::mat4 view = glm::mat4(1.0f);
+				glm::mat4 view = glm::mat4(1.0f);
         view = cameraRotation * view;
 
         checkError();
 
-        glClearColor(0.09f, 0.12f, 0.14f, 1.0f);
+        glClearColor(0.06f, 0.08f, 0.10f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         lightSourceProgram.use();
         int vLoc = glGetUniformLocation(lightSourceProgram.ID, "v");
         int pLoc = glGetUniformLocation(lightSourceProgram.ID, "p");
-		glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
+				glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(view));
+				glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(projection));
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glDrawArrays(GL_POINTS, 0, 1);
@@ -355,10 +272,10 @@ int openGLloop()
         }
 
         int timeLoc = glGetUniformLocation(meshProgram.ID, "time");
-		glUniform1f(timeLoc, time);
+				glUniform1f(timeLoc, time);
 
         glUniform1f(glGetUniformLocation(meshProgram.ID, "shadowMapSize"), (float)SHADOW_WIDTH);
-        glUniform1f(glGetUniformLocation(meshProgram.ID, "ambientLight"), 0.2);
+        glUniform1f(glGetUniformLocation(meshProgram.ID, "ambientLight"), 0.23);
         glUniform3fv(glGetUniformLocation(meshProgram.ID, "lightPos"), 1, glm::value_ptr(lightPos));
         glUniform3fv(glGetUniformLocation(meshProgram.ID, "lightDir"), 1, glm::value_ptr(lightDir));
         glUniform1f(glGetUniformLocation(meshProgram.ID, "lightPower"), 40);
@@ -383,8 +300,6 @@ int openGLloop()
 	}
 
 	glfwTerminate();
-	//	std::string lmao;
-	//	std::cin >> lmao;
 	return 0;
 }
 
@@ -392,11 +307,8 @@ void checkError() {
     auto ErrorCheckValue = glGetError();
     if (ErrorCheckValue != GL_NO_ERROR)
     {
-        fprintf(
-                stderr,
-                "ERROR: Could not create a VBO: %s \n");
+        fprintf(stderr, " error encountered \n");
         std::cout << std::endl;
-        //exit(-1);
     }
 }
 
@@ -430,27 +342,8 @@ void shadowPassDrawMeshes(const ShaderProgram &shadowProgram) {
 
 int main(int argcp, char** argv)
 {
-	std::vector<char> buffer;
-	//encode(1.46f,tolerance,buffer,index);
-	//index = 0;
-	//float f = decode(buffer, tolerance, index);
-	// while (true) {
-	int index = 0;
-	// 	std::vector<char> buffer;
-	// 	std::vector<float> floats = { -1.0f, -0.1f, -0.01f, -0.001f,-0.0001f, -0.0f, +0.0f, +0.0001f, +0.001f };
-	// 	index = 0;
-	// 	encodeArray(buffer, index, floats, tolerance);
-	// 	index = 0;
-	// 	std::vector<float> decoded = decodeArray(buffer, index, floats.size(), tolerance);
-	// }
-	//
-
-	writeInt32(buffer, index, 5);
-	index = 0;
-	int read = readInt32(buffer, index);
-
-
 	std::thread navigation([] { consoleControl.loopNavigation(); });
+	navigation.detach();
 	return openGLloop();
 }
 

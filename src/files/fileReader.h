@@ -11,7 +11,7 @@
 #include <chrono>
 #include <functional>
 #include <vector>
-#include "../src/fs.h"
+#include "fs.h"
 
 inline std::string separator()
 {

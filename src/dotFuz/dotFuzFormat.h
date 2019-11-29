@@ -1,7 +1,7 @@
 #ifndef dot_fuz_h
 #define dot_fuz_h
 
-#include "Mesh.h"
+#include "../graphics/Mesh.h"
 #include <map>
 #include <vector>
 #include "GMM.h"
@@ -135,7 +135,7 @@ void encodeMultiMesh(MultiMesh* meshToEncode, float tolerance, std::vector<char>
 			processTriangle(triangleIndexes, triangle);
 		}
 	}
-	
+
 	std::vector<float> floatsToCluster;
 	for (auto& pair : floatLookup)
 	{
@@ -186,7 +186,7 @@ void encodeMultiMesh(MultiMesh* meshToEncode, float tolerance, std::vector<char>
 	}
 
 	std::cout << std::endl << "clusters: " << distributionFloatCounts.size() << std::endl;
-	
+
 	int index = 0;
 	int maxEnd = 0;
 	std::map<int, int> distributionStarts;
@@ -212,7 +212,7 @@ void encodeMultiMesh(MultiMesh* meshToEncode, float tolerance, std::vector<char>
 		int finalIdx = inDistIdx + distStartIdx;
 		finalLookup.push_back( finalIdx);
 	}
-	
+
 	lastEncodeTriangleIndexes = triangleIndexes;
 	lastEncodeFloatIndexes = finalLookup;
 	lastFloatBuffer = std::vector<float>();
@@ -279,7 +279,6 @@ MeshData decodeMultiMesh(std::vector<char>& buffer){
 		problem |= abs(lastFloatBuffer[i] - floatBuffer[i])>2*tolerance;
 	}
 
-	std::cout << "read" << std::endl;
 	std::vector<Vertex> outputVertexes;
 	std::vector<Triangle> outputTriangles;
 	for(int i = 0;i < finalLookup.size();i+=11)

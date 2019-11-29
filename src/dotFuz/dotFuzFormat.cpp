@@ -5,7 +5,7 @@
 #include <vector>
 #include "bitBuffer.h"
 #include "GMM.h"
-#include "Mesh.h"
+#include "../graphics/Mesh.h"
 
 void writeFloat32(std::vector<char>& buffer, int& bitIndex, float toWrite){
     //Write bits

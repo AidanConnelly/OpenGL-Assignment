@@ -1,9 +1,9 @@
 ﻿#pragma once
 
 #include "objParser.h"
-#include "safeIndex.h"
-#include "daeParsing/stringToFloatFast.h"
-#include "fileReader.h"
+#include "../safeIndex.h"
+#include "../daeParsing/stringToFloatFast.h"
+#include "../files/fileReader.h"
 
 glm::vec3 parseColour(int&i,std::vector<char>&buffer){
 	i += 2;
@@ -167,12 +167,11 @@ void objParser::assertVertexesArePlanarAndConvex(std::vector<Vertex> vertexes)
 		glm::vec3 middleToPrev = vec3FromVertex(vertexes[(i + n - 1) % n]) - vec3FromVertex(vertexes[i % n]);
 		glm::vec3 middleToNext = vec3FromVertex(vertexes[(i + 0 + 1) % n]) - vec3FromVertex(vertexes[i % n]);
 		glm::vec3 thisNorm = glm::normalize(glm::cross(middleToPrev, middleToNext));
-		//0.0101 in pouf 
-		const double THRESHOLD = 1.4;
+
+		const double THRESHOLD = 0.00001;
 		float diff = glm::length(normal-thisNorm);
 		if(diff>THRESHOLD)
 		{
-			//ignore
 		}
 	}
 }
@@ -238,7 +237,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 			{
 				if(mtlLibParseResult->materials.count(materialName)==1){
 					mtlMaterial m = mtlLibParseResult->materials[materialName];
-					
+
 					if(m.hasDiffuseMap){
 						std::string toPush = m.diffuseMap;
 						toReturn[materialName].texturePaths.push_back(toPush);
@@ -251,7 +250,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 					toReturn[materialName].specular = m.specular;
 					toReturn[materialName].opacity = m.opacity;
 					toReturn[materialName].specularExponent = m.specularExponent;
-				}	
+				}
 			}
 			nextLine(i, buffer);
 			//"usemtl"
@@ -305,6 +304,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 					glm::vec3 vertexPosition;
 					glm::vec3 vertexNormal;
 					glm::vec2 vertexCoordinate;
+					bool vertexCoordinateInitialized = false;
 					int vertexPositionIndex = parseAnInt(&i, buffer) - 1;
 					vertexPosition = safeAt(vertexPositions,vertexPositionIndex);
 					if (buffer[i] == '/')
@@ -315,6 +315,7 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 							//Was n/n/n or n/n
 							int vertexCoordinateIndex = parseAnInt(&i, buffer) - 1;
 							vertexCoordinate = safeAt(vertexCoordinates,vertexCoordinateIndex);
+							vertexCoordinateInitialized = true;
 						}
 						else
 						{
@@ -337,8 +338,14 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 					making.nX = vertexNormal.x;
 					making.nY = vertexNormal.y;
 					making.nZ = vertexNormal.z;
-					making.u = vertexCoordinate.x;
-					making.v = vertexCoordinate.y;
+					if (vertexCoordinateInitialized) {
+						making.u = vertexCoordinate.x;
+						making.v = vertexCoordinate.y;
+					}
+					else {
+						making.u = 0;
+						making.v = 0;
+					}
 					vertexes.push_back(making);
 				}
 				nextLine(i, buffer);
@@ -353,11 +360,10 @@ std::vector<MeshData> objParser::parse(std::vector<char>& buffer, std::string di
 						toReturn[materialName].triangles.push_back(Triangle{ offset+0,offset+j - 1,offset+j });
 					}
 				}
-				//todo
 				break;
 			}
 		default:
-			throw std::invalid_argument("todo");
+			throw std::invalid_argument("invalid state");
 			break;
 		}
 	}

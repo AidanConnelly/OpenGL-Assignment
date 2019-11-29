@@ -36,7 +36,7 @@ private:
             glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
             if (!success) {
                 glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-                std::cout << "shader compilation error" << type << "\n" << infoLog
+                std::cout << "shader error" << type << "\n" << infoLog
                           << "\n --- " << std::endl;
             }
         } else {

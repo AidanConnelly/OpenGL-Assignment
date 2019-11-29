@@ -115,18 +115,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\main.cpp" />
-    <ClCompile Include="..\..\src\bitBuffer.cpp" />
     <ClCompile Include="..\..\src\daeParsing\daeParser.cpp" />
     <ClCompile Include="..\..\src\daeParsing\stringToFloatFast.cpp" />
-    <ClCompile Include="..\..\src\dotFuzFormat.cpp" />
-    <ClCompile Include="..\..\src\Mesh.cpp" />
-    <ClCompile Include="..\..\src\objParser.cpp" />
+    <ClCompile Include="..\..\src\dotFuz\bitBuffer.cpp" />
+    <ClCompile Include="..\..\src\dotFuz\dotFuzFormat.cpp" />
+    <ClCompile Include="..\..\src\graphics\Mesh.cpp" />
+    <ClCompile Include="..\..\src\graphics\Texture.cpp" />
+    <ClCompile Include="..\..\src\graphics\Vertex.cpp" />
+    <ClCompile Include="..\..\src\objParsing\objParser.cpp" />
     <ClCompile Include="..\..\src\shaders\shaderType.cpp" />
-    <ClCompile Include="..\..\src\Texture.cpp" />
-    <ClCompile Include="..\..\src\Vertex.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\bitBuffer.h" />
     <ClInclude Include="..\..\src\consoleControl.h" />
     <ClInclude Include="..\..\src\daeParsing\bufferParseResult.h" />
     <ClInclude Include="..\..\src\daeParsing\daeParser.h" />
@@ -135,20 +134,20 @@
     <ClInclude Include="..\..\src\daeParsing\xmlNode.h" />
     <ClInclude Include="..\..\src\daeParsing\XMLParseState.h" />
     <ClInclude Include="..\..\src\daeParsing\xmlParsingStackMember.h" />
-    <ClInclude Include="..\..\src\DoParallel.h" />
-    <ClInclude Include="..\..\src\dotFuzFormat.h" />
-    <ClInclude Include="..\..\src\fileReader.h" />
-    <ClInclude Include="..\..\src\fs.h" />
-    <ClInclude Include="..\..\src\GMM.h" />
-    <ClInclude Include="..\..\src\HuffmanCoding.h" />
-    <ClInclude Include="..\..\src\Mesh.h" />
-    <ClInclude Include="..\..\src\objParser.h" />
+    <ClInclude Include="..\..\src\dotFuz\bitBuffer.h" />
+    <ClInclude Include="..\..\src\dotFuz\dotFuzFormat.h" />
+    <ClInclude Include="..\..\src\dotFuz\GMM.h" />
+    <ClInclude Include="..\..\src\dotFuz\HuffmanCoding.h" />
+    <ClInclude Include="..\..\src\files\fileReader.h" />
+    <ClInclude Include="..\..\src\files\fs.h" />
+    <ClInclude Include="..\..\src\graphics\Mesh.h" />
+    <ClInclude Include="..\..\src\graphics\Texture.h" />
+    <ClInclude Include="..\..\src\graphics\Vertex.h" />
+    <ClInclude Include="..\..\src\objParsing\objParser.h" />
     <ClInclude Include="..\..\src\safeIndex.h" />
     <ClInclude Include="..\..\src\shaders\shader.h" />
     <ClInclude Include="..\..\src\shaders\shaderProgram.h" />
     <ClInclude Include="..\..\src\shaders\shaderType.h" />
-    <ClInclude Include="..\..\src\Texture.h" />
-    <ClInclude Include="..\..\src\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\experiments\preliminary\fileThroughput\results.md" />

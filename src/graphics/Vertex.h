@@ -17,9 +17,9 @@ struct Vertex
 	float nY;
 	float nZ;
 
-    float r;
-    float g;
-    float b;
+  float r;
+  float g;
+  float b;
 
 	float u;
 	float v;

@@ -9,16 +9,16 @@
 // Created by m on 23/11/2019.
 //
 
-#include "src/dotFuzFormat.h"
-#include "src/GMM.h"
-#include "src/HuffmanCoding.h"
+#include "src/dotFuz/dotFuzFormat.h"
+#include "src/dotFuz/GMM.h"
+#include "src/dotFuz/HuffmanCoding.h"
 #include "src/daeParsing/daeParser.h"
 #include <thread>
 #include <filesystem>
-#include "../src/objParser.h"
+#include "objParsing/objParser.h"
 #include <iostream>
-#include "src/Mesh.h"
-#include "src/Texture.h"
+#include "src/graphics/Mesh.h"
+#include "src/graphics/Texture.h"
 #include "GLFW/glfw3.h"
 #include "GL/freeglut.h"
 #include "GL/glew.h"

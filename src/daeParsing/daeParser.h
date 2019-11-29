@@ -11,8 +11,8 @@
 #include <vector>
 #include <functional>
 #include <set>
-#include "../Vertex.h"
-#include "../Mesh.h"
+#include "../graphics/Vertex.h"
+#include "../graphics/Mesh.h"
 #include "xmlNode.h"
 #include "xmlParsingStackMember.h"
 #include "bufferParseResult.h"

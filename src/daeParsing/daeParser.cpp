@@ -9,9 +9,9 @@
 #include "bufferParseResult.h"
 #include "typedefs.h"
 #include "XMLParseState.h"
-#include "../Vertex.h"
-#include "../DoParallel.h"
-#include "../Mesh.h"
+#include "../graphics/Vertex.h"
+#include "DoParallel.h"
+#include "../graphics/Mesh.h"
 #include <vector>
 
 void daeParser::parseNodeTagNames(std::vector<char> &buffer, xmlNodeStore &nodes) {
@@ -258,7 +258,6 @@ meshParseResult daeParser::parseTriangleTag(bufferParseResult *largeBuffers,
     paramInfo nZParam = prepareParam("Z", &normalSourceTag, nrmlFloat);
 
     for (int triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++) {
-        //region Region_1
         for (int i = 0; i < 3; i++) {
             Vertex building{};
 
@@ -316,7 +315,6 @@ std::vector<meshParseResult> daeParser::parseMeshTags(std::vector<char> buffer, 
             throw std::invalid_argument("unexpected state");
         }
         xmlNodeStore triangles = filterByTagName(tag.children, "triangles");
-        //todo use doParallel
         auto fx = [&largeBuffers, id, tag, triangles, &mtx, &results,&texCoordDataToClean, &colDataToClear](int i) {
             const auto toPush = parseTriangleTag(largeBuffers, id, tag, triangles[i],texCoordDataToClean,colDataToClear);
             mtx.lock();
