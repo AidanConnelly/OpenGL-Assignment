@@ -120,6 +120,15 @@ shaders:
  - **shadows off**: turns off shadows
  - **remove file**: asks which file you want to remove, and removes it, freeing memory
 
+Key presses:
+ * Exit - escape
+ * Switch model - hold z or x
+ * Delete instance - delete
+ * Scale model - hold 5 or 6
+ * Move model - TFGH
+ * Move camera - WASD SHIFT CTRL
+ * Turn camera - IJKL QE
+
 ### Dot fuz ###
 
 ### Shadow mapping technique ###
