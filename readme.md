@@ -131,4 +131,17 @@ Key presses:
 
 ### Dot fuz ###
 
+As entertainment systems become more connected, space taken for assets will be more and more of a burden. And even while most assets are not downloaded on the fly, AAA games are approaching the limits of a sensible download (users are not keen to wait for dozens of gigabytes).
+
+Dot-FUZ (Distribution, Optimization, Three-D, Format, Used for, Zipping) uses information theory to code the data into as few bits as possible.
+
+**key term: nat, the unit of information arcording 1 base e digit**
+
+It fits a gaussian mixture model to mazimise the entropy of the distribution, i.e. is most likely to give the data to be encoded. A maximum entropy model of the underlying data is extreamly useful, as when the length of a symbol is proportional to the negative logarithm of the probability of the symbol, the maximum entropy distribution minimizes the average message length.
+
+The format can either be lossless or lossy depending on a tolerance setting, if the tolerance setting is set to be the minimum value of a float/double, it's effectively lossless. However the tolerance is used twice, once to deduplicate all float values (all colour values, positions, normal values, and texture coordinates), and once to specifiy the bits of precisison when encoding that float into a binary string.
+
+The overall process then is to bucket all the floating point values, fit a GMM to the bucketed floats, and then write these floats in an ultra-compressed format, which could take around a dozen bits, rather than 32
+  
+
 ### Shadow mapping technique ###
