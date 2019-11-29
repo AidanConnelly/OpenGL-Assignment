@@ -11,6 +11,9 @@
 #include <vector>
 #include <functional>
 #include <set>
+#include <glm/include/glm/gtc/type_ptr.hpp>
+#include <src/Vertex.h>
+#include <src/Mesh.h>
 #include "xmlNode.h"
 #include "xmlParsingStackMember.h"
 #include "bufferParseResult.h"
@@ -69,7 +72,7 @@ public:
 			index++;
 			floatIndex++;
 		}
-		this->transform = transpose(glm::make_mat4(floatArray));
+		this->transform = glm::transpose(glm::make_mat4(floatArray));
 		this->hasTransform = true;
 	}
 
