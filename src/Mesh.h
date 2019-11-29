@@ -42,6 +42,8 @@ class MeshData
 	std::vector<Vertex> vertexes;
 	std::vector<Texture> textures;
 
+	glm::mat4 pendingTransform = glm::mat4(1.0);
+
 	float opacity = 1;
 	float specularExponent = 2;
 	glm::vec3 ambient = glm::vec3(1.0,1.0,1.0);
@@ -115,22 +117,18 @@ public:
 		}
 	}
 	
-	Mesh(
-		std::vector<Vertex>* vrtxes,
-		std::vector<Triangle>* triags,
-		std::vector<Texture>* textures
-	)
-	{
-		this->vertexes = *vrtxes;
-		this->triangles = *triags;
-		this->textures = *textures;
-
-		createThisMesh();
-	}
-
 	Mesh(MeshData mesh_data){
 
-		this->vertexes = mesh_data.vertexes;
+	    glm::mat4 inv = glm::inverse(mesh_data.pendingTransform);
+		for(Vertex& v: mesh_data.vertexes){
+		    glm::vec4 v4 = glm::vec4(v.x,v.y,v.z,1.0);
+		    glm::vec4 dest4 = mesh_data.pendingTransform * v4;
+		    v.x = dest4.x;
+		    v.y = dest4.y;
+		    v.z = dest4.z;
+		    this->vertexes.push_back(v);
+		}
+
 		this->triangles = mesh_data.triangles;
 		this->textures = mesh_data.textures;
 		this->ambient = mesh_data.ambient;

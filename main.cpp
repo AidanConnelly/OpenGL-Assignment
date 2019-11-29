@@ -116,7 +116,7 @@ int openGLloop()
 	const ShaderType& vertexShaderType = VertexShaderType();
     const ShaderType& geometryShaderType = GeometryShaderType();
     const ShaderType& fragmentShaderType = FragmentShaderType();
-	std::string prefix = "..\\shaders\\";
+	std::string prefix = "C:\\Users\\m\\Documents\\v15\\Projects\\soft356a3\\shaders\\";
 
     Shader meshShadowVertexShader = Shader(prefix+"shadowMeshVertex.glsl", &vertexShaderType);
     Shader meshShadowGeometryShader = Shader(prefix+"shadowMeshGeometry.glsl", &geometryShaderType);

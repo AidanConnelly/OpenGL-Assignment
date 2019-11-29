@@ -1,4 +1,5 @@
-#pragma once
+#ifndef dot_fuz_cpp
+#define dot_fuz_cpp
 
 #include <map>
 #include <vector>
@@ -117,3 +118,4 @@ void readVertexFloatIndexes(std::vector<char>& buffer, int& bitIndex, std::vecto
     }
 }
 
+#endif

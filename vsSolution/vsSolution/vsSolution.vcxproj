@@ -69,7 +69,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\m\Documents\v15\Projects\soft356a3\src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -123,9 +123,12 @@
     <ClCompile Include="..\..\experiments\preliminary\prototypeParsers\xmlParsingStackMember.cpp" />
     <ClCompile Include="..\..\main.cpp" />
     <ClCompile Include="..\..\shaderType.cpp" />
+    <ClCompile Include="..\..\src\consoleControl.cpp" />
+    <ClCompile Include="..\..\src\dotFuzFormat.cpp" />
     <ClCompile Include="..\..\src\Mesh.cpp" />
     <ClCompile Include="..\..\src\Texture.cpp" />
     <ClCompile Include="..\..\src\Vertex.cpp" />
+    <ClCompile Include="bitBuffer.cpp" />
     <ClCompile Include="objParser.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -141,7 +144,13 @@
     <ClInclude Include="..\..\shader.h" />
     <ClInclude Include="..\..\shaderProgram.h" />
     <ClInclude Include="..\..\shaderType.h" />
+    <ClInclude Include="..\..\src\bitBuffer.h" />
+    <ClInclude Include="..\..\src\consoleControl.h" />
+    <ClInclude Include="..\..\src\dotFuzFormat.h" />
+    <ClInclude Include="..\..\src\GMM.h" />
+    <ClInclude Include="..\..\src\HuffmanCoding.h" />
     <ClInclude Include="..\..\src\Mesh.h" />
+    <ClInclude Include="..\..\src\safeIndex.h" />
     <ClInclude Include="..\..\src\Texture.h" />
     <ClInclude Include="..\..\src\Vertex.h" />
     <ClInclude Include="..\..\stb_image.h" />

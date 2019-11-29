@@ -63,27 +63,17 @@ public:
 		index++;
 		int floatIndex = 0;
 		float floatArray[16];
-		while (buffer[index] >= '0' && buffer[index] <= '9')
+		while ((buffer[index] >= '0' && buffer[index] <= '9')||buffer[index]=='-')
 		{
 			floatArray[floatIndex] = parseAFloat(&index, buffer);
 			index++;
 			floatIndex++;
 		}
-		this->transform = glm::make_mat4(floatArray);
+		this->transform = transpose(glm::make_mat4(floatArray));
+		this->hasTransform = true;
 	}
 
-	void processInstanceGeometryTags(xmlNodeStore instance_geometryTags)
-	{
-		auto beginning = instance_geometryTags.begin();
-		auto ending = instance_geometryTags.end();
-		auto forEach = [&](xmlNode* node) -> void
-		{
-			auto IDs = this->IDs;
-			auto id = node->getAttribute("url");
-			IDs.insert(id);
-		};
-		std::for_each(beginning, ending, forEach);
-	}
+	void processInstanceGeometryTags(xmlNodeStore instance_geometryTags);
 
 	parseNodeTagsResult(xmlNode matrix, xmlNodeStore instance_geometryTags)
 	{
@@ -95,6 +85,7 @@ public:
 		processInstanceGeometryTags(instance_geometryTags);
 	}
 
+	bool hasTransform = false;
 	glm::mat4 transform;
 	std::set<std::string> IDs;
 };
@@ -112,12 +103,14 @@ class daeParser
 {
 public:
 	static std::vector<MeshData> parse(std::vector<char> &buffer, std::string directory);
+    static std::string removeLeadingHash(const std::string& toRemove);
 
 private:
 	static void parseNodeTagNames(std::vector<char>& buffer, xmlNodeStore& nodes);
 	static void populateMeshDataWithCorrectColourAndTextures(std::string directory, xmlNodeStore nodes,
-	                                                         std::vector<MeshData>& toReturn,
-	                                                         std::vector<meshParseResult>::value_type& a);
+                                                             std::vector<MeshData> &toReturn,
+                                                             std::vector<meshParseResult>::value_type &a,
+                                                             std::vector<parseNodeTagsResult> &nodesTagsResults);
 
 	static xmlNodeVector filterByTagName(const xmlNodeVector& nodes, const std::string& tagName);
 
@@ -156,7 +149,6 @@ private:
 	static float getViaParam(std::string toGet, xmlNode* sourceTag, xmlNode* parsedFloatArray, unsigned index);
 
 
-	static std::string removeLeadingHash(const std::string& toRemove);
 
     static paramInfo prepareParam(std::string toGet, xmlNode *sourceTag, xmlNode *parsedFloatArray);
 

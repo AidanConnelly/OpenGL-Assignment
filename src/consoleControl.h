@@ -252,7 +252,7 @@ public:
     void loadMeshesInto(std::vector<MultiMesh *> &meshes, std::vector<MeshInstance> &meshInstances) {
         for (int i = numMeshDataRead; i < numMeshDataWrtn; i++) {
             std::vector<Mesh *> toMakeMultiMeshOf;
-            for (auto &a : *loaded[i]) {
+            for (MeshData &a : *loaded[i]) {
                 a.BindTextures();
                 Mesh *meshPtr = new Mesh(a);
                 toMakeMultiMeshOf.push_back(meshPtr);

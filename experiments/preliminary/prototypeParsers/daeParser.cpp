@@ -2,7 +2,7 @@
 // Created by m on 14/10/2019.
 //
 
-#include <src/safeIndex.h>
+#include "../../../src/safeIndex.h"
 #include "daeParser.h"
 #include "stringToFloatFast.h"
 #include "xmlNode.h"
@@ -27,11 +27,13 @@ void daeParser::parseNodeTagNames(std::vector<char> &buffer, xmlNodeStore &nodes
     });
 }
 
-void daeParser::populateMeshDataWithCorrectColourAndTextures(std::string directory, xmlNodeStore nodes, std::vector<MeshData> &toReturn,
-                                                             std::vector<meshParseResult>::value_type &a) {
+void daeParser::populateMeshDataWithCorrectColourAndTextures(std::string directory, xmlNodeStore nodes,
+                                                             std::vector<MeshData> &toReturn,
+                                                             std::vector<meshParseResult>::value_type &meshParseResult,
+                                                             std::vector<parseNodeTagsResult> &nodesTagsResults) {
     diffuseTextureOrColour *diffuse = NULL;
     std::vector<std::string> textures;
-    for (auto &b : a.textureIds) {
+    for (auto &b : meshParseResult.textureIds) {
         auto texture = getFileNameFromMaterialID(nodes, b);
         diffuse = &texture;
         if (diffuse->which == diffuseTextureOrColour::tex) {
@@ -39,15 +41,23 @@ void daeParser::populateMeshDataWithCorrectColourAndTextures(std::string directo
             textures.push_back(fullFileName);
         }
     }
-    if (diffuse && diffuse->which == diffuseTextureOrColour::col && (!a.hasColourFromVertex)) {
-        for (int i = 0; i < a.vertexes.size(); i++) {
+    if (diffuse && diffuse->which == diffuseTextureOrColour::col && (!meshParseResult.hasColourFromVertex)) {
+        for (int i = 0; i < meshParseResult.vertexes.size(); i++) {
             //todo - GCC 4.6 note
-            a.vertexes[i].r = diffuse->colour.x;
-            a.vertexes[i].g = diffuse->colour.y;
-            a.vertexes[i].b = diffuse->colour.z;
+            meshParseResult.vertexes[i].r = diffuse->colour.x;
+            meshParseResult.vertexes[i].g = diffuse->colour.y;
+            meshParseResult.vertexes[i].b = diffuse->colour.z;
         }
     }
-    toReturn.push_back(MeshData(a.vertexes, a.triangles, textures));
+    MeshData toPush = MeshData(meshParseResult.vertexes, meshParseResult.triangles, textures);
+    for(auto& result : nodesTagsResults){
+		if (result.IDs.count(meshParseResult.meshID)) {
+			if (result.hasTransform) {
+				toPush.pendingTransform = result.transform;
+			}
+		}
+    }
+    toReturn.push_back(toPush);
 }
 
 std::vector<MeshData> daeParser::parse(std::vector<char> &buffer, std::string directory) {
@@ -55,14 +65,14 @@ std::vector<MeshData> daeParser::parse(std::vector<char> &buffer, std::string di
     auto nodes = parseNodes(buffer,toClean);
     parseNodeTagNames(buffer, nodes);
     auto result = parseLargeBuffers(nodes);
-    auto nodeParseResults = parseNodeTags(buffer, nodes);
+    std::vector<parseNodeTagsResult> nodeParseResults = parseNodeTags(buffer, nodes);
     std::vector<textureCoordinateData*> texCoordDataToClean;
     std::vector<colourData*> colDataToClear;
     auto meshParseResults = parseMeshTags(buffer, nodes, &result,texCoordDataToClean,colDataToClear);
     //todo apply transforms to instance_geometries???
     std::vector<MeshData> toReturn;
     for (auto &a : meshParseResults) {
-        populateMeshDataWithCorrectColourAndTextures(directory, nodes, toReturn, a);
+        populateMeshDataWithCorrectColourAndTextures(directory, nodes, toReturn, a, nodeParseResults);
     }
     for(xmlNode* cleanMe:toClean){
         delete cleanMe;
@@ -155,7 +165,7 @@ meshParseResult daeParser::parseTriangleTag(bufferParseResult *largeBuffers,
 
     if (triangleTagPtr->hasAttribute("material")) {
         //todo change this
-        thisResult2.meshID += triangleTagPtr->getAttribute("material");
+//        thisResult2.meshID += triangleTagPtr->getAttribute("material");
         thisResult2.textureIds.push_back(triangleTagPtr->getAttribute("material"));
     }
     auto triangleTag = *triangleTagPtr;
@@ -625,4 +635,15 @@ std::string daeParser::removeLeadingHash(const std::string &toRemove) {
 paramInfo::paramInfo(int stride, int idx) {
     this->stride = stride;
     this->idx = idx;
+}
+
+void parseNodeTagsResult::processInstanceGeometryTags(xmlNodeStore instance_geometryTags) {
+    auto beginning = instance_geometryTags.begin();
+    auto ending = instance_geometryTags.end();
+    auto forEach = [&](xmlNode* node) -> void
+    {
+        auto id = daeParser::removeLeadingHash(node->getAttribute("url"));
+        this->IDs.insert(id);
+    };
+    std::for_each(beginning, ending, forEach);
 }
