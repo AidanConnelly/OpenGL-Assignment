@@ -20,39 +20,44 @@ link_directories(vsSolution/packages/nupengl.core.redist.0.1.0.1/build/native/bi
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_executable(soft356a3
+        src/daeParsing
         src/daeParsing/bufferParseResult.h
         src/daeParsing/daeParser.cpp
         src/daeParsing/daeParser.h
+        src/daeParsing/DoParallel.h
         src/daeParsing/stringToFloatFast.cpp
         src/daeParsing/stringToFloatFast.h
         src/daeParsing/typedefs.h
         src/daeParsing/xmlNode.h
         src/daeParsing/XMLParseState.h
         src/daeParsing/xmlParsingStackMember.h
+        src/dotFuz
+        src/dotFuz/bitBuffer.cpp
+        src/dotFuz/bitBuffer.h
+        src/dotFuz/dotFuzFormat.cpp
+        src/dotFuz/dotFuzFormat.h
+        src/dotFuz/GMM.h
+        src/dotFuz/HuffmanCoding.h
+        src/files
+        src/files/fileReader.h
+        src/files/fs.h
+        src/graphics
+        src/graphics/Mesh.cpp
+        src/graphics/Mesh.h
+        src/graphics/Texture.cpp
+        src/graphics/Texture.h
+        src/graphics/Vertex.cpp
+        src/graphics/Vertex.h
+        src/objParsing
+        src/objParsing/objParser.cpp
+        src/objParsing/objParser.h
         src/shaders
         src/shaders/shader.h
         src/shaders/shaderProgram.h
         src/shaders/shaderType.cpp
         src/shaders/shaderType.h
-        src/bitBuffer.cpp
-        src/bitBuffer.h
         src/consoleControl.h
-        src/DoParallel.h
-        src/dotFuzFormat.cpp
-        src/dotFuzFormat.h
-        src/fileReader.h
-        src/fs.h
-        src/GMM.h
-        src/HuffmanCoding.h
-        src/Mesh.cpp
-        src/Mesh.h
-        src/objParser.cpp
-        src/objParser.h
         src/safeIndex.h
-        src/Texture.cpp
-        src/Texture.h
-        src/Vertex.cpp
-        src/Vertex.h
         main.cpp
         stb_image.h)
 

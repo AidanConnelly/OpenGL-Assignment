@@ -157,7 +157,7 @@ float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
 
 
             if (currentDepth  - bias>closestDepth){
-                //In shadow
+                //In shadow according to "bias" method
 
                 vec2 start = result.starts[i];
                 vec2 end = result.ends[i];
@@ -168,9 +168,22 @@ float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
 
                 vec2 along = end - start;
                 vec2 alongNorm = normalize(along);
-                vec2 closestPointOnLine = start + (alongNorm * (dot(x-start, alongNorm)));
+                vec2 centrdToStart = start - centrd;
 
+                //1 = practically 0 degress, 0 = practically right angles
+                float cosAngle_centrdToStart_alongNorm = dot(centrdToStart,alongNorm) / length(centrdToStart);
+                vec2 perpOut = centrdToStart - cosAngle_centrdToStart_alongNorm * (-alongNorm);
+
+                vec2 closestPointOnLine = start + (alongNorm * (dot(x-start, alongNorm)));
                 vec2 lineToX = x - closestPointOnLine;
+
+                vec2 lineToXNorm = normalize(lineToX);
+                fColor.r = +dot(lineToX,perpOut)*shadowMapSize;
+                fColor.g = -dot(lineToX,perpOut)*shadowMapSize;
+                fColor.g = 0.5*lineToXNorm.x+0.5;
+                fColor.b = 0.5*lineToXNorm.y+0.5;
+
+                // todo this line wrong
                 if(dot(lineToX,centrd-start)>0){
                     shadowCoef = 0;
                 }
@@ -178,7 +191,6 @@ float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
                     float dist = clamp(distance(x, closestPointOnLine)*shadowMapSize,0,1);
                     shadowCoef *= dist;
                 }
-                //
             }
             else{
                 anyNotInShadow = 1;
@@ -198,7 +210,6 @@ void main()
 
     float dist = length(lightPos - worldVPos);
     float dist2rd = dist * dist;
-    vec4 shadowVec4 = vec4(1.0, 1.0, 1.0, 1.0);//ShadowCalculation(FragPosLightSpace,worldVPos,-posToLight);
     float shadow = shadowCoef(FragPosLightSpace, worldVPos, -posToLight);
     float power = shadow * max((dot(posToLight, -lightDir)-(1-spotlightWidth))/spotlightWidth, 0) * lightPower/dist2rd;
     vec4 baseColour = fragColour + hasTexture*texture(ourTexture, texCoord);
@@ -214,5 +225,5 @@ void main()
     vec4 specular = power*specCoef * vec4(specCol, 1.0);
     vec4 ambient = ambientLight*baseColour*vec4(ambCol, 1.0);
     vec4 selected = sin(6*time)*selected*vec4(1.0, 1.0, 1.0, 1.0);
-    fColor = diffuse + ambient + specular + selected;
-}
+//    fColor = diffuse + ambient + specular + selected;
+}	
