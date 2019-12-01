@@ -16,9 +16,9 @@ flat in float triangleIndex;
 uniform mat4 vp;
 uniform vec3 cameraLocation;
 
-uniform sampler2D startMap;
-uniform sampler2D endMap;
-uniform sampler2D centroidMap;
+uniform isampler2D startMap;
+uniform isampler2D endMap;
+uniform isampler2D centroidMap;
 uniform isampler2D triangleMap;
 uniform sampler2D depthMap;
 uniform sampler2D ourTexture;
@@ -45,15 +45,9 @@ uniform float specularSurfaceRoughness;
 
 #define spotlightWidth 0.2
 
-struct triangleShadow{
-    vec4 start;
-    vec4 end;
-    vec4 centrd;
-    float depth;
-    float tIdx;
-};
-
-#define NUMBER_OF_TRIANGLES_IN_TRIANGLE_LIST 9
+#define NEIGHBOURS 1
+#define SQRT_NUM_TRIAGS 1+2*NEIGHBOURS
+#define NUMBER_OF_TRIANGLES_IN_TRIANGLE_LIST SQRT_NUM_TRIAGS*SQRT_NUM_TRIAGS
 
 struct triangleShadowList{
     int index;
@@ -64,24 +58,41 @@ struct triangleShadowList{
     int tIdxs[NUMBER_OF_TRIANGLES_IN_TRIANGLE_LIST];
 };
 
+#define MAX_UINT16 32767.0
+#define MARGIN 0.5
+
+float toFloat(int toConvert){
+    float intInput = float(toConvert);
+    float addedMargin = intInput/MAX_UINT16;
+    float fn1to1 = addedMargin*(1.0+MARGIN);
+    return fn1to1;
+}
+
+vec2 toFloatVec(ivec2 toConvert){
+    vec2 tr = vec2(toFloat(toConvert.x), toFloat(toConvert.y));
+//    fColor.r = tr.x;
+//    fColor.b = tr.y;
+    return tr;
+}
+
 triangleShadowList GetShadowsOnPoint(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 {
     // perform perspective divide
-    vec3 fragProjCoords = fragPosLightSpace.xyz / (-fragPosLightSpace.z);
+    vec3 fragProjCoords = fragPosLightSpace.xyz ;/// (-fragPosLightSpace.z);
     triangleShadowList list;
     list.index = 0;
 
-    int indexes[NUMBER_OF_TRIANGLES_IN_TRIANGLE_LIST];
-
-    for (int x = -1;x<=+1;x+=1){
-        for (int y = -1;y<=+1;y+=1){
+    triangleShadowList undeduped;
+    for (int x = -NEIGHBOURS;x<=+NEIGHBOURS;x+=1){
+        for (int y = -NEIGHBOURS;y<=+NEIGHBOURS;y+=1){
             // transform to [0,1] range
-            vec3 projCoords = fragProjCoords * 0.5 + 0.5;
-            projCoords.x += (x) * (1.0/shadowMapSize);
-            projCoords.y += (y) * (1.0/shadowMapSize);
-            // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-            ivec4 shadowTriangleIndexAsVec = texture(triangleMap, projCoords.xy);
+            vec3 projCoord = fragProjCoords * 0.5 + 0.5;
+            projCoord.x += (x) * (1.0/shadowMapSize);
+            projCoord.y += (y) * (1.0/shadowMapSize);
+            int i =(x+NEIGHBOURS)+(y+NEIGHBOURS)*SQRT_NUM_TRIAGS;
 
+            // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+            ivec4 shadowTriangleIndexAsVec = texture(triangleMap, projCoord.xy);
 
             int cr = ((shadowTriangleIndexAsVec.r)  + 128);
             int cg = ((shadowTriangleIndexAsVec.g) + 128);
@@ -89,48 +100,30 @@ triangleShadowList GetShadowsOnPoint(vec4 fragPosLightSpace, vec3 normal, vec3 l
             int ca = ((shadowTriangleIndexAsVec.a) + 128);
 
             int shadowTriangleIndex = (cr<<0) + (cg<<8) + (cb << 16) + (ca << 24);
-            indexes[x+y*3] = shadowTriangleIndex;
+            undeduped.tIdxs[i] = shadowTriangleIndex;
+            undeduped.starts[i] = toFloatVec(texture(startMap, projCoord.xy).xy);
+            undeduped.ends[i] = toFloatVec(texture(endMap, projCoord.xy).xy);
+            undeduped.centrds[i] = toFloatVec(texture(centroidMap, projCoord.xy).xy);
+            undeduped.depths[i] = texture(depthMap,projCoord.xy).r;
         }
     }
 
-//	int positions[4];
-//    for (int i = 0;i<4;i++){
-//		int shadowTriangleIndex = indexes[i];
-//		int pos = 0;
-//		for (int j = 0;j<4;j++){
-//			if (i!=j){
-//				if (indexes[i]<indexes[j]){
-//					pos++;
-//				}
-//			}
-//		}
-//		positions[i] = pos;
-//    }
-
-	int lastIndex = 0;
     for(int i = 0;i<NUMBER_OF_TRIANGLES_IN_TRIANGLE_LIST;i++){
         bool alreadyCounted = false;
         for(int j = 0;j<i;j++){
-            if(indexes[i]==indexes[j]){
+            if(undeduped.tIdxs[i]==undeduped.tIdxs[j]){
                 alreadyCounted = true;
             }
 		}
         if(!alreadyCounted){
-            int x = (i % 3) - 1;
-            int y = (i / 3) - 1;
 
-            vec3 projCoords = fragProjCoords * 0.5 + 0.5;
-            projCoords.x += (x) * (1.0/shadowMapSize);
-            projCoords.y += (y) * (1.0/shadowMapSize);
-            vec4 start = texture(startMap, projCoords.xy);
-            vec4 end = texture(endMap, projCoords.xy);
-            vec4 centrd = texture(centroidMap, projCoords.xy);
+
             int idx = list.index;//list.index;
-            list.starts[idx] = start.xy;
-            list.ends[idx] = end.xy;
-            list.centrds[idx] = centrd.xy;
-            list.tIdxs[idx] = indexes[i];
-            list.depths[idx] = texture(depthMap, projCoords.xy).r;
+            list.starts[idx] = undeduped.starts[i].xy;
+            list.ends[idx] = undeduped.ends[i].xy;
+            list.centrds[idx] = undeduped.centrds[i].xy;
+            list.tIdxs[idx] = undeduped.tIdxs[i];
+            list.depths[idx] = undeduped.depths[i];
             list.index++;
 
         }
@@ -140,7 +133,7 @@ triangleShadowList GetShadowsOnPoint(vec4 fragPosLightSpace, vec3 normal, vec3 l
 }
 
 float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
-    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    vec3 projCoords = fragPosLightSpace.xyz;// / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
     float currentDepth = projCoords.z;
 
@@ -149,57 +142,59 @@ float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
     float shadowCoef = 1.0;
 
     float anyNotInShadow = 0;
+    float shadowCoefs[NUMBER_OF_TRIANGLES_IN_TRIANGLE_LIST];
+    fColor = vec4(1.0,1.0,1.0,1.0);
     for (int i = 0;i<NUMBER_OF_TRIANGLES_IN_TRIANGLE_LIST;i++){
+        shadowCoefs[i] = 1.0;
         if (i< result.index){
             float closestDepth = result.depths[i];
-            float bias = 0.00010;
+            float bias = 0.00080;
 
 
 
             if (currentDepth  - bias>closestDepth){
                 //In shadow according to "bias" method
 
-                vec2 start = result.starts[i];
-                vec2 end = result.ends[i];
+                vec2 start = -result.starts[i];
+                vec2 end = -result.ends[i];
 
-                vec2 centrd = result.centrds[i];
+                vec2 centrd = -result.centrds[i];
 
-                vec2 x = fragPosLightSpace.xy / (-fragPosLightSpace.z);
+                vec2 x = fragPosLightSpace.xy ;// (-fragPosLightSpace.z);
 
-                vec2 along = end - start;
+                vec2 along = start - end;
                 vec2 alongNorm = normalize(along);
                 vec2 centrdToStart = start - centrd;
 
                 //1 = practically 0 degress, 0 = practically right angles
-                float cosAngle_centrdToStart_alongNorm = dot(centrdToStart,alongNorm) / length(centrdToStart);
-                vec2 perpOut = centrdToStart - cosAngle_centrdToStart_alongNorm * (-alongNorm);
+                float cosAngle_centrdToStart_alongNorm = dot(normalize(start - centrd),alongNorm);
+                vec2 perpOut = centrdToStart - cosAngle_centrdToStart_alongNorm * alongNorm;
+                vec2 perpOutNorm = normalize(perpOut);
 
-                vec2 closestPointOnLine = start + (alongNorm * (dot(x-start, alongNorm)));
+                float amountAlong = -dot(x-start, alongNorm);
+                float endAlong = length(along);
+                vec2 closestPointOnLine = start + (-alongNorm * amountAlong);
                 vec2 lineToX = x - closestPointOnLine;
-
                 vec2 lineToXNorm = normalize(lineToX);
-                fColor.r = +dot(lineToX,perpOut)*shadowMapSize;
-                fColor.g = -dot(lineToX,perpOut)*shadowMapSize;
-                fColor.g = 0.5*lineToXNorm.x+0.5;
-                fColor.b = 0.5*lineToXNorm.y+0.5;
+                bool shadow = (dot(lineToX-2*perpOutNorm,perpOutNorm)<0);//&&amountAlong>0&&amountAlong<endAlong;
+                float adjustedDistanceFromLine = (length(lineToX)*shadowMapSize*0.5);
+                float multIfInShadow = clamp(-1*adjustedDistanceFromLine,0.0,1.0);
+                fColor *= shadow?multIfInShadow:1;
 
-                // todo this line wrong
-                if(dot(lineToX,centrd-start)>0){
-                    shadowCoef = 0;
-                }
-                else {
-                    float dist = clamp(distance(x, closestPointOnLine)*shadowMapSize,0,1);
-                    shadowCoef *= dist;
-                }
             }
             else{
-                anyNotInShadow = 1;
+                    anyNotInShadow = 1.0;
             }
+
         }
     }
 
-    shadowCoef *= anyNotInShadow;
+    for(int i = 0;i<NUMBER_OF_TRIANGLES_IN_TRIANGLE_LIST;i++
+    ){
+//        shadowCoef *= shadowCoefs[i];
+    }
 
+    fColor *= shadowCoef;
     return shadowCoef;
 }
 

@@ -5,13 +5,17 @@ layout(triangle_strip, max_vertices = 9) out;
 
 out vec4 tCentroid;
 out vec3 tNormal;
-out vec3 edgeAlong;
 out vec3 start;
+out vec3 end;
 
 out vec3 vPos;
 out int triangleIndex;
 
 in vec3 wPos[3];
+
+
+
+uniform mat4 lightSpaceMatrix;
 
 void doVertex(int index){
     gl_Position = gl_in[index].gl_Position;
@@ -23,10 +27,6 @@ void doCentroid(vec4 tCentroid){
     gl_Position = tCentroid;
     vPos = vec3(gl_Position);
     EmitVertex();
-}
-
-void setEdgeDir(vec4 posFrom, vec4 posTo,vec3 tNormal){
-    edgeAlong = posTo.xyz - posFrom.xyz;
 }
 
 int shift(int toShift){
@@ -53,22 +53,22 @@ void main(){
     tCentroid = (1.0/3.0) * (posA + posB + posC);
     tNormal = cross((posC -posB).xyz, (posA- posB).xyz);
 
-    start = posA.xyz;
-    setEdgeDir(posA, posB,tNormal);
+    start = (posA.xyz);
+    end = (posB.xyz);
     doVertex(0);
     doVertex(1);
     doCentroid(tCentroid);
     EndPrimitive();
 
-    start = posB.xyz;
-    setEdgeDir(posB, posC,tNormal);
+    start = (posB.xyz);
+    end = (posC.xyz);
     doVertex(1);
     doVertex(2);
     doCentroid(tCentroid);
     EndPrimitive();
 
-    start = posC.xyz;
-    setEdgeDir(posC, posA,tNormal);
+    start = (posC.xyz);
+    end = (posA.xyz);
     doVertex(2);
     doVertex(0);
     doCentroid(tCentroid);

@@ -97,12 +97,11 @@ int openGLloop() {
 
     std::vector<Texture> textures;
 
-    glm::vec3 lightPos = glm::vec3(4.0, 4.0, 4.0);
-    glm::vec3 lightDir = glm::normalize(glm::vec3(-1.0, -1.0, -1.0));
-
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
+
+    glm::vec3 lightPos = glm::vec3(0,0,0);
 
     unsigned int VBO;
     glGenBuffers(1, &VBO);
@@ -113,18 +112,12 @@ int openGLloop() {
 
     auto start = std::chrono::system_clock::now();
 
-    float near_plane = 1.0f, far_plane = 1000.0f;
-    glm::mat4 lightProjection = glm::ortho(-8.0f, 8.0f, -8.0f, 8.0f, near_plane, far_plane);
-    glm::mat4 lightView = glm::lookAt(lightPos,
-                                      lightPos + lightDir,
-                                      glm::vec3(0.0f, 0.0f, 1.0f));
-    glm::mat4 lightSpaceMatrix = lightProjection * lightView;
     unsigned int depthMapFBO;
     glGenFramebuffers(1, &depthMapFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-    const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = SHADOW_WIDTH;
+    const unsigned int SHADOW_WIDTH = 3*256, SHADOW_HEIGHT = SHADOW_WIDTH;
 
     unsigned int startMap;
     unsigned int endMap;
@@ -135,8 +128,10 @@ int openGLloop() {
     for (unsigned int *&ID: IDs) {
         glGenTextures(1, ID);
         glBindTexture(GL_TEXTURE_2D, *ID);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F,
-                     SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RG, GL_HALF_FLOAT, NULL);
+//        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F,
+//                     SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RG, GL_HALF_FLOAT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16I,
+                SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RG_INTEGER, GL_SHORT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -179,6 +174,17 @@ int openGLloop() {
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     while (!glfwWindowShouldClose(window)) {
+
+        lightPos = glm::vec3(4.0, 4.0, 4.0);
+        glm::vec3 lightDir = glm::normalize(glm::vec3(-1.0, -1.0, -1.0+0.1*sin(thisTime)));
+
+        float near_plane = 1.0f, far_plane = 1000.0f;
+        glm::mat4 lightProjection = glm::ortho(-8.0f, 8.0f, -8.0f, 8.0f, near_plane, far_plane);
+        glm::mat4 lightView = glm::lookAt(lightPos,
+                                          lightPos + lightDir,
+                                          glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
         consoleControl.loadMeshesInto(meshes, meshInstances);
         consoleControl.loadOverrideTextures(overrideTextures);
         consoleControl.exportMesh(meshes, meshInstances);
@@ -404,14 +410,15 @@ void processInput(GLFWwindow *window) {
         }
     }
 
+    float scaleSpeed = 0.51;
     if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) {
-        meshInstances[selected].scale(-0.01);
+        meshInstances[selected].scale(scaleSpeed*secondsPassed*-1);
     }
     if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) {
-        meshInstances[selected].scale(+0.01);
+        meshInstances[selected].scale(scaleSpeed*secondsPassed*+1);
     }
 
-    float moveSpeed = 14.0;
+    float moveSpeed = 4.4;
     ifKeyMoveMesh(window, moveSpeed *secondsPassed*glm::vec3(-1.0, 0.0, 0.0), GLFW_KEY_F);
     ifKeyMoveMesh(window, moveSpeed *secondsPassed*glm::vec3(+1.0, 0.0, 0.0), GLFW_KEY_H);
     ifKeyMoveMesh(window, moveSpeed *secondsPassed*glm::vec3(0.0, +1.0, 0.0), GLFW_KEY_G);
@@ -419,20 +426,21 @@ void processInput(GLFWwindow *window) {
     ifKeyMoveMesh(window, moveSpeed *secondsPassed*glm::vec3(0.0, 0.0,+1.0), GLFW_KEY_4);
     ifKeyMoveMesh(window, moveSpeed *secondsPassed*glm::vec3(0.0, 0.0, -1.0), GLFW_KEY_R);
 
-    float lookSpeed = 7.0;
-    ifKeyRotateCamera(window, cameraRotation, glm::vec3(1.0, 0.0, 0.0),lookSpeed* -0.01, GLFW_KEY_I);
-    ifKeyRotateCamera(window, cameraRotation, glm::vec3(1.0, 0.0, 0.0),lookSpeed* +0.01, GLFW_KEY_K);
-    ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 1.0, 0.0),lookSpeed* -0.01, GLFW_KEY_J);
-    ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 1.0, 0.0),lookSpeed* +0.01, GLFW_KEY_L);
-    ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 0.0, 1.0),lookSpeed* -0.01, GLFW_KEY_Q);
-    ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 0.0, 1.0),lookSpeed* +0.01, GLFW_KEY_E);
+    float lookSpeed = 57.0;
+    ifKeyRotateCamera(window, cameraRotation, glm::vec3(1.0, 0.0, 0.0),lookSpeed*secondsPassed* -0.01, GLFW_KEY_I);
+    ifKeyRotateCamera(window, cameraRotation, glm::vec3(1.0, 0.0, 0.0),lookSpeed*secondsPassed* +0.01, GLFW_KEY_K);
+    ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 1.0, 0.0),lookSpeed*secondsPassed* -0.01, GLFW_KEY_J);
+    ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 1.0, 0.0),lookSpeed*secondsPassed* +0.01, GLFW_KEY_L);
+    ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 0.0, 1.0),lookSpeed*secondsPassed* -0.01, GLFW_KEY_Q);
+    ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 0.0, 1.0),lookSpeed*secondsPassed* +0.01, GLFW_KEY_E);
 
-    ifKeyMoveCamera(window, cameraPosition, moveSpeed*glm::vec3(0.0, 0.0, -0.01), GLFW_KEY_LEFT_CONTROL);
-    ifKeyMoveCamera(window, cameraPosition, moveSpeed*glm::vec3(0.0, 0.0, +0.01), GLFW_KEY_LEFT_SHIFT);
-    ifKeyMoveCamera(window, cameraPosition, moveSpeed*glm::vec3(0.0, -0.01, 0.0), GLFW_KEY_S);
-    ifKeyMoveCamera(window, cameraPosition, moveSpeed*glm::vec3(0.0, +0.01, 0.0), GLFW_KEY_W);
-    ifKeyMoveCamera(window, cameraPosition, moveSpeed*glm::vec3(-0.01, 0.0, 0.0), GLFW_KEY_A);
-    ifKeyMoveCamera(window, cameraPosition, moveSpeed*glm::vec3(+0.01, 0.0, 0.0), GLFW_KEY_D);
+    float cameraMoveSpeed = 4.4;
+    ifKeyMoveCamera(window, cameraPosition,cameraMoveSpeed* secondsPassed*glm::vec3(0.0, 0.0, -1.0), GLFW_KEY_LEFT_CONTROL);
+    ifKeyMoveCamera(window, cameraPosition,cameraMoveSpeed* secondsPassed*glm::vec3(0.0, 0.0, +1.0), GLFW_KEY_LEFT_SHIFT);
+    ifKeyMoveCamera(window, cameraPosition, cameraMoveSpeed*secondsPassed*glm::vec3(0.0, -1.0, 0.0), GLFW_KEY_S);
+    ifKeyMoveCamera(window, cameraPosition, cameraMoveSpeed*secondsPassed*glm::vec3(0.0, +1.0, 0.0), GLFW_KEY_W);
+    ifKeyMoveCamera(window, cameraPosition, cameraMoveSpeed*secondsPassed*glm::vec3(-1.0, 0.0, 0.0), GLFW_KEY_A);
+    ifKeyMoveCamera(window, cameraPosition, cameraMoveSpeed*secondsPassed*glm::vec3(+1.0, 0.0, 0.0), GLFW_KEY_D);
 }
 
 
