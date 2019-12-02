@@ -19,7 +19,7 @@ out vec3 tNormal;
 out vec3 edgeAlong;
 out vec3 edgePerpendicular;
 
-out float triangleIndex;
+out int triangleIndex;
 
 int shift(int toShift){
     return (toShift<<7)|(toShift>>(32-7));
@@ -65,7 +65,7 @@ void main()
     temp = shift(temp) ^ floatBitsToInt(WposC.x);
     temp = shift(temp) ^ floatBitsToInt(WposC.y);
     temp = shift(temp) ^ floatBitsToInt(WposC.z);
-    triangleIndex = intBitsToFloat(temp);
+    triangleIndex = temp;
 
     tCentroid = (1.0/3.0) * (posA + posB + posC);
     tNormal = cross((posC -posB).xyz, (posA- posB).xyz);
@@ -73,18 +73,6 @@ void main()
     setEdgeDir(posA, posB,tNormal);
     doVertex(0);
     doVertex(1);
-//    doCentroid(tCentroid);
-//    EndPrimitive();
-//
-//    setEdgeDir(posB, posC,tNormal);
-//    doVertex(1);
-//    doVertex(2);
-//    doCentroid(tCentroid);
-//    EndPrimitive();
-//
-//    setEdgeDir(posC, posA,tNormal);
     doVertex(2);
-//    doVertex(0);
-//    doCentroid(tCentroid);
     EndPrimitive();
 }

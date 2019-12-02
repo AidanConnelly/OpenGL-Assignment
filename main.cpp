@@ -34,12 +34,15 @@ void checkError();
 unsigned int screenWidth = 800;
 unsigned int scrHeight = 600;
 
-glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, +4.5f);
-glm::mat4 cameraRotation = glm::mat4(1.0f);
+glm::vec3 cameraPosition = glm::vec3(0.0f, +4.5f, 0.0f);
+glm::mat4 zUpRotation = glm::rotate(glm::mat4(1.0), ((float) PI / 2), glm::vec3(1.0, 0, 0));
+glm::mat4 cameraRotation = glm::rotate(zUpRotation, ((float) PI / 2), glm::vec3(0, 1.0, 0));
 
 int selected = 0;
 int selectedMicro = 0;
 
+double lastTime = 0;
+double thisTime = 0;
 int openGLloop()
 {
 	glfwInit();
@@ -56,7 +59,7 @@ int openGLloop()
   const ShaderType& geometryShaderType = GeometryShaderType();
   const ShaderType& fragmentShaderType = FragmentShaderType();
 
-	std::string prefix = "C:\\Users\\aconnelly\\source\\repos\\AidanConnelly\\soft356a3\\shaders\\";
+    std::string prefix = "..\\shaders\\";
 
   Shader meshShadowVertexShader = Shader(prefix+"shadowMeshVertex.glsl", &vertexShaderType);
   Shader meshShadowGeometryShader = Shader(prefix+"shadowMeshGeometry.glsl", &geometryShaderType);
@@ -94,12 +97,11 @@ int openGLloop()
 
 	std::vector<Texture> textures;
 
-	glm::vec3 lightPos = glm::vec3(4.0, 4.0, 4.0);
-	glm::vec3 lightDir = glm::normalize(glm::vec3(-1.0, -1.0, -1.0));
-
 	unsigned int VAO;
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
+
+    glm::vec3 lightPos = glm::vec3(0,0,0);
 
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
@@ -110,18 +112,12 @@ int openGLloop()
 
 	auto start = std::chrono::system_clock::now();
 
-  float near_plane = 1.0f, far_plane = 1000.0f;
-  glm::mat4 lightProjection = glm::ortho(-8.0f, 8.0f, -8.0f, 8.0f, near_plane, far_plane);
-  glm::mat4 lightView = glm::lookAt(lightPos,
-                                    lightPos+lightDir,
-                                    glm::vec3( 0.0f, 1.0f,  0.0f));
-  glm::mat4 lightSpaceMatrix = lightProjection * lightView;
   unsigned int depthMapFBO;
   glGenFramebuffers(1, &depthMapFBO);
   glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
   glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-  const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = SHADOW_WIDTH;
+    const unsigned int SHADOW_WIDTH = 3*256, SHADOW_HEIGHT = SHADOW_WIDTH;
 
   unsigned int startMap;
   unsigned int endMap;
@@ -177,6 +173,16 @@ int openGLloop()
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   while (!glfwWindowShouldClose(window))
 	{
+        lightPos = glm::vec3(4.0, 4.0, 4.0);
+        glm::vec3 lightDir = glm::normalize(glm::vec3(-1.0, -1.0, -1.0+0.0*sin(thisTime)));
+
+        float near_plane = 1.0f, far_plane = 1000.0f;
+        glm::mat4 lightProjection = glm::ortho(-8.0f, 8.0f, -8.0f, 8.0f, near_plane, far_plane);
+        glm::mat4 lightView = glm::lookAt(lightPos,
+                                          lightPos + lightDir,
+                                          glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
 		consoleControl.loadMeshesInto(meshes, meshInstances);
 		consoleControl.loadOverrideTextures(overrideTextures);
 		consoleControl.exportMesh(meshes, meshInstances);
@@ -184,7 +190,14 @@ int openGLloop()
 		processInput(window);
 
 
-        double time = (std::chrono::system_clock::now() - start).count() / 10000000.0;
+#ifdef _MSC_VER
+        const double timeConversion = 1.0 / 10000000.0;
+#endif
+#ifdef __MINGW32__
+        const double timeConversion = 1.0 / 1000000000.0;
+#endif
+        lastTime = thisTime;
+        thisTime = (std::chrono::system_clock::now() - start).count() * timeConversion;
 
         glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
         checkError();
@@ -273,7 +286,7 @@ int openGLloop()
         }
 
         int timeLoc = glGetUniformLocation(meshProgram.ID, "time");
-				glUniform1f(timeLoc, time);
+        glUniform1f(timeLoc, thisTime);
 
         glUniform1f(glGetUniformLocation(meshProgram.ID, "shadowMapSize"), (float)SHADOW_WIDTH);
         glUniform1f(glGetUniformLocation(meshProgram.ID, "ambientLight"), 0.23);
@@ -369,16 +382,24 @@ void ifKeyMoveMesh(GLFWwindow* window, glm::vec3 direction, int key)
 {
 	if (glfwGetKey(window, key) == GLFW_PRESS)
 	{
-		glm::vec3 toMove = glm::normalize(direction);
-		toMove *= 0.01;
+        glm::vec3 toMove = direction;
 		meshInstances[selected].move(toMove);
 	}
 }
 
+void ifKeyRotateMesh(GLFWwindow* window, float amount, glm::vec3 around, int key)
+{
+    if (glfwGetKey(window, key) == GLFW_PRESS)
+    {
+        meshInstances[selected].rotate(around,amount);
+    }
+}
+
 bool deleteKeyDown = false;
 
-void processInput(GLFWwindow* window)
-{
+void processInput(GLFWwindow *window) {
+    float secondsPassed = thisTime - lastTime;
+
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, true);
@@ -410,33 +431,42 @@ void processInput(GLFWwindow* window)
         }
     }
 
-	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-	{
-		meshInstances[selected].scale(-0.01);
+    float scaleSpeed = 0.51;
+    if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) {
+        meshInstances[selected].scale(scaleSpeed*secondsPassed*-1);
 	}
 	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
 	{
-		meshInstances[selected].scale(+0.01);
+        meshInstances[selected].scale(scaleSpeed*secondsPassed*+1);
 	}
 
-	ifKeyMoveMesh(window, glm::vec3(-1.0, 0.0, 0.0), GLFW_KEY_F);
-	ifKeyMoveMesh(window, glm::vec3(+1.0, 0.0, 0.0), GLFW_KEY_H);
-	ifKeyMoveMesh(window, glm::vec3(0.0, +1.0, 0.0), GLFW_KEY_G);
-	ifKeyMoveMesh(window, glm::vec3(0.0, -1.0, 0.0), GLFW_KEY_T);
+    float moveSpeed = 4.4;
+    ifKeyMoveMesh(window, moveSpeed *secondsPassed*glm::vec3(-1.0, 0.0, 0.0), GLFW_KEY_F);
+    ifKeyMoveMesh(window, moveSpeed *secondsPassed*glm::vec3(+1.0, 0.0, 0.0), GLFW_KEY_H);
+    ifKeyMoveMesh(window, moveSpeed *secondsPassed*glm::vec3(0.0, +1.0, 0.0), GLFW_KEY_G);
+    ifKeyMoveMesh(window, moveSpeed *secondsPassed*glm::vec3(0.0, -1.0, 0.0), GLFW_KEY_T);
+    ifKeyMoveMesh(window, moveSpeed *secondsPassed*glm::vec3(0.0, 0.0,+1.0), GLFW_KEY_4);
+    ifKeyMoveMesh(window, moveSpeed *secondsPassed*glm::vec3(0.0, 0.0, -1.0), GLFW_KEY_R);
 
-	ifKeyRotateCamera(window, cameraRotation, glm::vec3(1.0, 0.0, 0.0), -0.01, GLFW_KEY_I);
-	ifKeyRotateCamera(window, cameraRotation, glm::vec3(1.0, 0.0, 0.0), +0.01, GLFW_KEY_K);
-	ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 1.0, 0.0), -0.01, GLFW_KEY_J);
-	ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 1.0, 0.0), +0.01, GLFW_KEY_L);
-	ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 0.0, 1.0), -0.01, GLFW_KEY_Q);
-	ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 0.0, 1.0), +0.01, GLFW_KEY_E);
+    float lookSpeed = 57.0;
+    ifKeyRotateCamera(window, cameraRotation, glm::vec3(1.0, 0.0, 0.0),lookSpeed*secondsPassed* -0.01, GLFW_KEY_I);
+    ifKeyRotateCamera(window, cameraRotation, glm::vec3(1.0, 0.0, 0.0),lookSpeed*secondsPassed* +0.01, GLFW_KEY_K);
+    ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 1.0, 0.0),lookSpeed*secondsPassed* -0.01, GLFW_KEY_J);
+    ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 1.0, 0.0),lookSpeed*secondsPassed* +0.01, GLFW_KEY_L);
+    ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 0.0, 1.0),lookSpeed*secondsPassed* -0.01, GLFW_KEY_Q);
+    ifKeyRotateCamera(window, cameraRotation, glm::vec3(0.0, 0.0, 1.0),lookSpeed*secondsPassed* +0.01, GLFW_KEY_E);
 
-	ifKeyMoveCamera(window, cameraPosition, glm::vec3(0.0, 0.0, -0.01), GLFW_KEY_LEFT_CONTROL);
-	ifKeyMoveCamera(window, cameraPosition, glm::vec3(0.0, 0.0, +0.01), GLFW_KEY_LEFT_SHIFT);
-	ifKeyMoveCamera(window, cameraPosition, glm::vec3(0.0, -0.01, 0.0), GLFW_KEY_S);
-	ifKeyMoveCamera(window, cameraPosition, glm::vec3(0.0, +0.01, 0.0), GLFW_KEY_W);
-	ifKeyMoveCamera(window, cameraPosition, glm::vec3(-0.01, 0.0, 0.0), GLFW_KEY_A);
-	ifKeyMoveCamera(window, cameraPosition, glm::vec3(+0.01, 0.0, 0.0), GLFW_KEY_D);
+    float cameraMoveSpeed = 4.4;
+    ifKeyMoveCamera(window, cameraPosition,cameraMoveSpeed* secondsPassed*glm::vec3(0.0, 0.0, -1.0), GLFW_KEY_LEFT_CONTROL);
+    ifKeyMoveCamera(window, cameraPosition,cameraMoveSpeed* secondsPassed*glm::vec3(0.0, 0.0, +1.0), GLFW_KEY_LEFT_SHIFT);
+    ifKeyMoveCamera(window, cameraPosition, cameraMoveSpeed*secondsPassed*glm::vec3(0.0, -1.0, 0.0), GLFW_KEY_S);
+    ifKeyMoveCamera(window, cameraPosition, cameraMoveSpeed*secondsPassed*glm::vec3(0.0, +1.0, 0.0), GLFW_KEY_W);
+    ifKeyMoveCamera(window, cameraPosition, cameraMoveSpeed*secondsPassed*glm::vec3(-1.0, 0.0, 0.0), GLFW_KEY_A);
+    ifKeyMoveCamera(window, cameraPosition, cameraMoveSpeed*secondsPassed*glm::vec3(+1.0, 0.0, 0.0), GLFW_KEY_D);
+
+    float rotateSpeed = 2.1;
+    ifKeyRotateMesh(window, rotateSpeed * secondsPassed,glm::vec3(0.0,0.0,+1.0), GLFW_KEY_Y);
+    ifKeyRotateMesh(window, rotateSpeed * secondsPassed,glm::vec3(0.0,0.0,-1.0), GLFW_KEY_U);
 }
 
 

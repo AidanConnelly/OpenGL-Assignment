@@ -194,7 +194,7 @@ public:
 
 	void Draw(ShaderProgram program)
 	{
-		glm::mat4 m = translate*scaling;
+		glm::mat4 m = translate*scaling*rotation;
 
 		int mLoc = glGetUniformLocation(program.ID, "m");
 		int selectedLoc = glGetUniformLocation(program.ID, "selected");
@@ -228,8 +228,14 @@ public:
 	{
 		scaling = glm::scale(scaling, glm::vec3(1 + toScaleBy));
 	}
+
+	void rotate(glm::vec3 toRotateRound, float toRotateBy){
+	    rotation = glm::rotate(toRotateBy, toRotateRound)*rotation;
+	}
+
 private:
 	glm::mat4 scaling;
+	glm::mat4 rotation;
 	glm::mat4 translate;
 };
 

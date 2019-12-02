@@ -329,7 +329,7 @@ public:
         return phong;
     }
 
-    bool shadows = false;
+    bool shadows = true;
 };
 
 #endif //OPENGLSETUP_CONSOLECONTROL_H
