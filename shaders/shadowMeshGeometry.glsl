@@ -56,15 +56,15 @@ void main()
     vec3 WposC = v_worldVPos[2];
 
     int temp = 7*11*13*17;
-    temp =       temp  ^ floatBitsToInt(WposA.x);
-    temp = shift(temp) ^ floatBitsToInt(WposA.y);
-    temp = shift(temp) ^ floatBitsToInt(WposA.z);
-    temp = shift(temp) ^ floatBitsToInt(WposB.x);
-    temp = shift(temp) ^ floatBitsToInt(WposB.y);
-    temp = shift(temp) ^ floatBitsToInt(WposB.z);
-    temp = shift(temp) ^ floatBitsToInt(WposC.x);
-    temp = shift(temp) ^ floatBitsToInt(WposC.y);
-    temp = shift(temp) ^ floatBitsToInt(WposC.z);
+    temp = (      temp  ^ floatBitsToInt(WposA.x)) % 2123000501;
+    temp = (shift(temp) ^ floatBitsToInt(WposA.y)) % 2123000557;
+    temp = (shift(temp) ^ floatBitsToInt(WposA.z)) % 2123000563;
+    temp = (shift(temp) ^ floatBitsToInt(WposB.x)) % 2123000591;
+    temp = (shift(temp) ^ floatBitsToInt(WposB.y)) % 2123000597;
+    temp = (shift(temp) ^ floatBitsToInt(WposB.z)) % 2123000603;
+    temp = (shift(temp) ^ floatBitsToInt(WposC.x)) % 2123000639;
+    temp = (shift(temp) ^ floatBitsToInt(WposC.y)) % 2123000729;
+    temp = (shift(temp) ^ floatBitsToInt(WposC.z)) % 2123000753;
     triangleIndex = temp;
 
     tCentroid = (1.0/3.0) * (posA + posB + posC);

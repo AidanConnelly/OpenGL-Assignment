@@ -148,11 +148,8 @@ float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
 
     triangleShadowList result = GetShadowsOnPoint(fragPosLightSpace, worldVPos, lightDir);
 
+//    fColor = vec4(1.0,1.0,1.0,0.0);
     float shadowCoef = 1.0;
-
-    float anyNotInShadow = 0;
-    fColor = vec4(1.0,1.0,1.0,1.0);
-    int t = 0;
     for (int i = 0;i<NUMBER_OF_TRIANGLES_IN_TRIANGLE_LIST;i++){
         if (i< result.index){
             float closestDepth = result.depths[i];
@@ -161,7 +158,6 @@ float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
 
 
             if (currentDepth  - bias>closestDepth && triangleIndex!= result.tIdxs[i]){
-                t++;
                 //In shadow according to "bias" method
 
                 vec2 start = result.starts[i];
@@ -169,13 +165,13 @@ float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
 
                 vec2 centrd = result.centrds[i];
 
-                vec2 x = fragPosLightSpace.xy / (-fragPosLightSpace.z);
+                vec2 x = fragPosLightSpace.xy ;// (-fragPosLightSpace.z);
 
-                vec2 along = end - start;
+                vec2 along = start - end;
                 vec2 alongNorm = normalize(along);
-                vec2 closestPointOnLine = start + (alongNorm * (dot(x-start, alongNorm)));
+                vec2 centrdToStart = start - centrd;
 
-                mat2 mtrx = mat2(0,-1,+1,0);
+                mat2 mtrx = mat2(0, -1, +1, 0);
                 vec2 perpOutNorm = -mtrx*alongNorm;
 
                 float amountAlong = -dot(x-start, alongNorm);
@@ -184,25 +180,18 @@ float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
                 vec2 lineToX = x - closestPointOnLine;
                 float borderDist = 0.7;
                 vec2 borderToX = x - (closestPointOnLine + borderDist* perpOutNorm/shadowMapSize);
-                bool shadow1 =(dot(borderToX,perpOutNorm)<0)&&amountAlong>0&&amountAlong<endAlong;
-                bool shadow2 =(dot(lineToX,perpOutNorm)<0)&&amountAlong>0&&amountAlong<endAlong;
+                bool softShadow =(dot(borderToX, perpOutNorm)<0)&&amountAlong>0&&amountAlong<endAlong;
+                bool strictlyInShadow =(dot(lineToX, perpOutNorm)<0);//&&amountAlong>0&&amountAlong<endAlong;
                 float adjustedDistanceFromBorder = (1/(borderDist))*length(borderToX)*shadowMapSize;
-                float multIfInShadow = clamp(1.0-1.0*adjustedDistanceFromBorder, 0.0,1.0);
-                fColor.r *= shadow1?0:1;
-                fColor.b *= shadow2?0:1;
-                fColor.g *= multIfInShadow;
-
-                }
-                else {
-                    anyNotInShadow = 1.0;
-                }
-
-        }
+                float multIfInShadow = clamp(1.0-1.0*adjustedDistanceFromBorder, 0.0, 1.0);
+                float toMultBy = softShadow?multIfInShadow:1;
+                shadowCoef *= strictlyInShadow?0.0:toMultBy;
             }
+            else{
+            }
+
         }
     }
-
-//    fColor *= shadowCoef;
     return shadowCoef;
 }
 

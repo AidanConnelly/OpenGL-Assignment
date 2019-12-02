@@ -39,15 +39,15 @@ void main(){
     vec4 posC = gl_in[2].gl_Position;
 
     int temp = 7*11*13*17;
-    temp =       temp  ^ floatBitsToInt((wPos[0]).x);
-    temp = shift(temp) ^ floatBitsToInt((wPos[0]).y);
-    temp = shift(temp) ^ floatBitsToInt((wPos[0]).z);
-    temp = shift(temp) ^ floatBitsToInt((wPos[1]).x);
-    temp = shift(temp) ^ floatBitsToInt((wPos[1]).y);
-    temp = shift(temp) ^ floatBitsToInt((wPos[1]).z);
-    temp = shift(temp) ^ floatBitsToInt((wPos[2]).x);
-    temp = shift(temp) ^ floatBitsToInt((wPos[2]).y);
-    temp = shift(temp) ^ floatBitsToInt((wPos[2]).z);
+    temp = (      temp  ^ floatBitsToInt(wPos[0].x)) % 2123000501;
+    temp = (shift(temp) ^ floatBitsToInt(wPos[0].y)) % 2123000557;
+    temp = (shift(temp) ^ floatBitsToInt(wPos[0].z)) % 2123000563;
+    temp = (shift(temp) ^ floatBitsToInt(wPos[1].x)) % 2123000591;
+    temp = (shift(temp) ^ floatBitsToInt(wPos[1].y)) % 2123000597;
+    temp = (shift(temp) ^ floatBitsToInt(wPos[1].z)) % 2123000603;
+    temp = (shift(temp) ^ floatBitsToInt(wPos[2].x)) % 2123000639;
+    temp = (shift(temp) ^ floatBitsToInt(wPos[2].y)) % 2123000729;
+    temp = (shift(temp) ^ floatBitsToInt(wPos[2].z)) % 2123000753;
     triangleIndex = temp;
 
     tCentroid = (1.0/3.0) * (posA + posB + posC);

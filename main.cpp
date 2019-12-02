@@ -129,10 +129,8 @@ int openGLloop()
     for (unsigned int *&ID: IDs) {
         glGenTextures(1, ID);
         glBindTexture(GL_TEXTURE_2D, *ID);
-//        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F,
-//                     SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RG, GL_HALF_FLOAT, NULL);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16I,
-                SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RG_INTEGER, GL_SHORT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F,
+                   SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RG, GL_HALF_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
