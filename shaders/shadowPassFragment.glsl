@@ -26,4 +26,5 @@ void main()
     TxTriangle.g = ((triangleIndex>>8 )%256) - 128;
     TxTriangle.b = ((triangleIndex>>16)%256) - 128;
     TxTriangle.a = ((triangleIndex>>24)%256) - 128;
+
 }

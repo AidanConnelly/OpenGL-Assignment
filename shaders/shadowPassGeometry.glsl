@@ -13,6 +13,10 @@ out int triangleIndex;
 
 in vec3 wPos[3];
 
+
+
+uniform mat4 lightSpaceMatrix;
+
 void doVertex(int index){
     gl_Position = gl_in[index].gl_Position;
     vPos = vec3(gl_Position);
