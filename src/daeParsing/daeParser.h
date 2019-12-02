@@ -108,7 +108,7 @@ public:
     static std::string removeLeadingHash(const std::string& toRemove);
 
 private:
-	static void parseNodeTagNames(std::vector<char>& buffer, xmlNodeStore& nodes);
+	static void parseNodeTagNames(xmlNodeStore &nodes);
 	static void populateMeshDataWithCorrectColourAndTextures(std::string directory, xmlNodeStore nodes,
                                                              std::vector<MeshData> &toReturn,
                                                              std::vector<meshParseResult>::value_type &meshParseResult,

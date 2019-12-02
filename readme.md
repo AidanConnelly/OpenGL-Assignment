@@ -6,6 +6,11 @@ This model loader can load COLLADA and .OBJ files, export and load to a compress
 
 This model loader has been developed with file I/O & parsing performance as a priority. This has causes the use of a finite state machine parsing first stage, then possibly followed by a second map-reduce-esque stage, where mapping and filtering of elements can be parallelized.
 
+### All changes since demo ###
+
+ * Fix numerous bugs in the shadow mapping
+ * Implement model rotation around Z axis using Y & U
+
 ### Project aims ###
 
 Goals:
@@ -23,6 +28,8 @@ Goals:
   ☑ Implement PHONG lighting
 
   ☑ Implement shadow mapping
+  
+  ☑ Implement a custom shadow mapping algorithm "Equation mapping"
 
   ☑ Instances of models can be removed
 
@@ -69,7 +76,7 @@ Clone the project and open the VS solution, add the glm include dir to the proje
 
 #### src folder ####
 
-(loose individual files:)
+(*loose individual files*:)
  * ConsoleControl: all the console loop logic
  * SafeIndex: fast std::vector access checking as the built in is slow.
 
@@ -125,11 +132,12 @@ Key presses:
  * Switch model - hold z or x
  * Delete instance - delete
  * Scale model - hold 5 or 6
- * Move model - TFGH
+ * Move model - TFGH 4R
  * Move camera - WASD SHIFT CTRL
+ * Rotate model around Z - Y & U
  * Turn camera - IJKL QE
 
-### DAE PARSING ###
+### DAE parsing ###
 
 The parsing of the DAE is initially done in serial, as it's not clear how the most efficient way to parse a heirarchical data structure in parallel, and doing so in serial may be more efficient in terms of computing power. However this is extreamly light weight parsing only the start and end index and the children of each node. Then, the real heavy weight processing, such as converting the character arrays to floats, can be done in parallel.
 
@@ -161,9 +169,13 @@ This is done by encoding this information about the triangle causing the stairca
  * Start of edge (shadowmap texture coordinates x, y)
  * End of edge (shadowmap texture coordinates x, y)
  * The center of the triangle (shadowmap texture coordinates x, y)
- * A hash of the triangles vertexes positions, stored as 4, 8 bit floats (RGBA_8I)
+ * A 32 bit hash of the triangles vertexes positions, stored as 4, 8 bit ints (RGBA_8I)
  * And of course the standard depth to light
  
 This information requires the use of geometry shader to discover, and a geometry shader so as to divide a triangle into subtriangles which have a defined outside edge, although these are the same shader.
 
 The main difficulty with this apparoach is the **significant** nondeteminism of NVIDIA GPUs, preventing simple de-duplication of the triangles responsible for the artifact
+ 
+This approach yields much nicer results, however some artifacts of course exist, the two photos below have the same shadow map resolution:
+![](images/standardShadowMapping.png)
+![](images/equationShadowMapping.PNG)

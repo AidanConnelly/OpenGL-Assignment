@@ -14,14 +14,16 @@
 #include "../graphics/Mesh.h"
 #include <vector>
 
-void daeParser::parseNodeTagNames(std::vector<char> &buffer, xmlNodeStore &nodes) {
-    alterXmlNodes(nodes, [&](xmlNode *node) -> xmlNode {
+/// Will alter the given XML nodes so that they have tag names
+/// \param nodes The node who's tag names to populate
+void daeParser::parseNodeTagNames(xmlNodeStore &nodes) {
+    alterXmlNodes(nodes, [](xmlNode *node) -> xmlNode {
         int index = node->startIndex + 1;
-        char character = buffer[index];
+        char character = node->buffer[index];
         while (character != ' ' && character != '/' && character != '>') {
-            character = buffer[++index];
+            character = node->buffer[++index];
         }
-        std::string tagName(buffer.begin() + node->startIndex + 1, buffer.begin() + index);
+        std::string tagName(node->buffer.begin() + node->startIndex + 1, node->buffer.begin() + index);
         node->tagName = tagName;
         return *node;
     });
@@ -64,7 +66,7 @@ void daeParser::populateMeshDataWithCorrectColourAndTextures(std::string directo
 std::vector<MeshData> daeParser::parse(std::vector<char> &buffer, std::string directory) {
     std::vector<xmlNode*> toClean;
     auto nodes = parseNodes(buffer,toClean);
-    parseNodeTagNames(buffer, nodes);
+    parseNodeTagNames(nodes);
     auto result = parseLargeBuffers(nodes);
     std::vector<parseNodeTagsResult> nodeParseResults = parseNodeTags(buffer, nodes);
     std::vector<textureCoordinateData*> texCoordDataToClean;
