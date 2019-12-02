@@ -177,5 +177,5 @@ This information requires the use of geometry shader to discover, and a geometry
 The main difficulty with this apparoach is the **significant** nondeteminism of NVIDIA GPUs, preventing simple de-duplication of the triangles responsible for the artifact
  
 This approach yields much nicer results, however some artifacts of course exist, the two photos below have the same shadow map resolution:
-![](images/standardShadowMapping.png)
+![](images/standardShadowMapping.PNG)
 ![](images/equationShadowMapping.PNG)
