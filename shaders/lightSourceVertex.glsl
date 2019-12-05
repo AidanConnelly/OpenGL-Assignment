@@ -11,5 +11,4 @@ void main()
 {
     loPosition = lPosition;
     gl_Position = p * v * vec4 (lPosition,1.0);
-//    gl_Position = vp * vec4 (0.0,0.0,0.0,1.0);
 }
