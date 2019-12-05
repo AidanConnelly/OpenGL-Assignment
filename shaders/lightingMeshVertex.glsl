@@ -16,7 +16,7 @@ out vec4 FragPosLightSpace;
 
 void main()
 {
-	gl_Position = p * v * m * vec4 (vPosition,1.0);
+	gl_Position = p * v * m * vec4(vPosition,1.0);
 	fragColour = vec4(vColour,1.0);
 	texCoord = aTexCoord;
 	vNorm = vNormal;

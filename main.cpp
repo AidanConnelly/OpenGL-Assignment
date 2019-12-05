@@ -60,7 +60,7 @@ int openGLloop()
     const ShaderType &geometryShaderType = GeometryShaderType();
     const ShaderType &fragmentShaderType = FragmentShaderType();
 
-	std::string prefix = "C:\\Users\\aconnelly\\source\\repos\\AidanConnelly\\soft356a3\\shaders\\";
+	std::string prefix = "..\\..\\shaders\\";
 
     Shader meshShadowVertexShader = Shader(prefix + "shadowMeshVertex.glsl", &vertexShaderType);
     Shader meshShadowGeometryShader = Shader(prefix + "shadowMeshGeometry.glsl", &geometryShaderType);
@@ -118,7 +118,7 @@ int openGLloop()
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-  const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = SHADOW_WIDTH;
+	const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = SHADOW_WIDTH;
 
     unsigned int startMap;
     unsigned int endMap;

@@ -39,7 +39,7 @@ uniform float specularSurfaceRoughness;
 
 #define spotlightWidth 0.2
 
-    void main()
+void main()
 {
     vec3 normedVNorm = normalize(vNorm);
     vec3 posToLight = normalize(lightPos - worldVPos);

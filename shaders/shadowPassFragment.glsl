@@ -1,4 +1,4 @@
-#version 330 core
+#version 450 core
 
 out vec2 TxStart;
 out vec2 TxEnd;

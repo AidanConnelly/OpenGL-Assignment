@@ -14,7 +14,7 @@ out vec2 texCoord;
 out vec3 worldVPos;
 out vec4 FragPosLightSpace;
 
-out vec4 tCentroid;
+out vec3 tCentroid;
 out vec3 tNormal;
 out vec3 edgeAlong;
 out vec3 edgePerpendicular;
@@ -67,7 +67,7 @@ void main()
     temp = (shift(temp) ^ floatBitsToInt(WposC.z)) % 2123000753;
     triangleIndex = temp;
 
-    tCentroid = (1.0/3.0) * (posA + posB + posC);
+    tCentroid = ((1.0/3.0) * (posA + posB + posC)).xyz;
     tNormal = cross((posC -posB).xyz, (posA- posB).xyz);
 
     setEdgeDir(posA, posB,tNormal);
