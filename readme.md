@@ -187,3 +187,6 @@ The standard shadow mapping:
 
 The custom "equation" shadow mapping technique developed:
 ![](images/equationShadowMapping.PNG)
+
+A crude illustration of the algorithm:
+![](images/shadow_algo.png)
