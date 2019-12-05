@@ -120,7 +120,7 @@ shaders:
  - **..**: goes up a directory
  - **load `FILENAME`**: loads the filename if it's a .obj, .fuz or .dae
  - **`FOLDERNAME`**: goes into a folder
- - **override texture `TEXTUTE`**: loads the texture and uses it when displaying a model
+ - **override texture `TEXTURE`**: loads the texture and uses it when displaying a model
  - **export**: exports a model, will ask you which model to export and what to call it
  - **fuzz `FILENAME`**: fuzzes loading a filename with varying levels of corruption, be careful, will actually load broken models into scene
  - **list meshes**: lists the available meshes
