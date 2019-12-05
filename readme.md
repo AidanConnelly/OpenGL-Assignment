@@ -1,15 +1,16 @@
 ### Introduction ###
 
-This model loader can load COLLADA and .OBJ files, export and load to a compressed file format, move the models in 3D space, switch between PHONG spot lighting and lighting with shadows, (using a special shadow map filtering technique). It uses CPU-parallelism to speed up loading of COLLADA & OBJ files.
+This model loader can load COLLADA and .OBJ files, export and load to a compressed file format, move the models in 3D space, switch between PHONG spot lighting and PHONG spot lighting with shadows, (using a special shadow map filtering technique). It uses CPU-parallelism to speed up loading of COLLADA & OBJ files.
 
 ### Description ###
 
-This model loader has been developed with file I/O & parsing performance as a priority. This has causes the use of a finite state machine parsing first stage, then possibly followed by a second map-reduce-esque stage, where mapping and filtering of elements can be parallelized.
+This model loader has been developed with file I/O & parsing performance as a priority. This has caused the use of a finite state machine parsing first stage, then possibly followed by a second map-reduce-esque stage, where mapping and filtering of elements can be parallelized. The model loader has also been written with streaming in mind, however currently this is not performed.
 
 ### All changes since demo ###
 
  * Fix numerous bugs in the shadow mapping
  * Implement model rotation around Z axis using Y & U
+ * Upload photos of "equation" shadow mapping
 
 ### Project aims ###
 
@@ -19,7 +20,7 @@ Goals:
 
   ☑ Import DAE files
 
-  ☑ Export to another format
+  ☑ Export to a compressed format (.FUZ)
 
   ☑ Load textures from models
 
@@ -46,10 +47,10 @@ Goals:
 
 ### Used software ###
 
-The project was developed mainly in CLion with CMake, due to the authors familiarity with phpStorm, IDEA, pyCharm & RIDER, much of development was also in VS19, however not using the Cmake.
+The project was developed mainly in CLion with CMake, due to the authors familiarity with phpStorm, IDEA, pyCharm & RIDER, much of development was also in VS19, however not using Cmake.
 
 CLion was mainly used for:
- * heavy refactoring/programming, easy due to the tools provided in jetbrains IDEs
+ * heavy refactoring/programming, easy due to the semantics aware refactoring tools provided in jetbrains IDEs
  * testing WSL & MinGW support
  * using valgrind
 
@@ -62,7 +63,7 @@ Valgrind helped diagnose various problems including:
  * 2 cases of heap corruption
  * 1 case of overrite bounds of a span of memory
 
-gDebugger is an incredibly useful tool, which I've used in the development of various parts, most importantly discovering nvidia disallows a colour depth of > 10 bits on its consumer GPUs
+gDebugger is an incredibly useful tool, which I've used in the development of various parts, most helpfully is allowed me to diagnose an issue caused by nvidia disallowing a colour depth of > 10 bits on its consumer GPUs
 
 ### Used libraries ###
 
@@ -120,7 +121,7 @@ shaders:
  - **load `FILENAME`**: loads the filename if it's a .obj, .fuz or .dae
  - **`FOLDERNAME`**: goes into a folder
  - **override texture `TEXTUTE`**: loads the texture and uses it when displaying a model
- - **export**: exports a model, will ask you which and what to call it
+ - **export**: exports a model, will ask you which model to export and what to call it
  - **fuzz `FILENAME`**: fuzzes loading a filename with varying levels of corruption, be careful, will actually load broken models into scene
  - **list meshes**: lists the available meshes
  - **shadows on**: turns on shadows
@@ -177,5 +178,9 @@ This information requires the use of geometry shader to discover, and a geometry
 The main difficulty with this apparoach is the **significant** nondeteminism of NVIDIA GPUs, preventing simple de-duplication of the triangles responsible for the artifact
  
 This approach yields much nicer results, however some artifacts of course exist, the two photos below have the same shadow map resolution:
+
+The standard shadow mapping:
 ![](images/standardShadowMapping.PNG)
+
+The custom "equation" shadow mapping technique developed:
 ![](images/equationShadowMapping.PNG)
