@@ -1,12 +1,3 @@
-overrite(?) - overwrite
-therafter - thereafter
-ala(?) - aka
-TEXTUTE - TEXTURE
-extreamly (x2) - extremely
-light weight - lightweight
-precisison - precision
-nondeteminism - nondeterminism
-
 ### Introduction ###
 
 This model loader can load COLLADA and .OBJ files, export and load to a compressed file format, move the models in 3D space, switch between PHONG spot lighting and PHONG spot lighting with shadows, (using a special shadow map filtering technique). It uses CPU-parallelism to speed up loading of COLLADA & OBJ files.
