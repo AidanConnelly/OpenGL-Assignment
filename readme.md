@@ -144,6 +144,9 @@ The parsing of the DAE is initially done in serial, as it's not clear how the mo
 
 Regular expressions can be fast, however this method will surely be faster.
 
+All these performance optimizations allow the largest file, the 10MB pouf.dae to be loaded in a *lightning fast* 66 miliseconds:
+![](images/capture.PNG)
+
 ### Dot fuz ###
 
 As entertainment systems become more connected, space taken for assets will be more and more of a burden. And even while most assets are not downloaded on the fly, AAA games are approaching the limits of a sensible download (users are not keen to wait for dozens of gigabytes).
