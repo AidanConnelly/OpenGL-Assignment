@@ -144,7 +144,7 @@ The parsing of the DAE is initially done in serial, as it's not clear how the mo
 
 Regular expressions can be fast, however this method will surely be faster.
 
-All these performance optimizations allow the largest file, the 10MB pouf.dae to be loaded in a *lightning fast* 66 miliseconds:
+All these performance optimizations allow the largest file, the 10MB pouf.dae, to be loaded on the underwhelming university hardware in a *lightning fast* 66 miliseconds, a throughput of 150MBs, reaching the limits of disk IO:
 
 ![](images/Capture.PNG)
 
