@@ -190,6 +190,7 @@ public:
 		this->instanceOf = toMakeInstanceOf;
 		scaling = glm::mat4(1.0f);
 		translate = glm::mat4(1.0f);
+		rotation = glm::mat4(1.0f);
 	}
 
 	void Draw(ShaderProgram program)
