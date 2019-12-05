@@ -88,21 +88,7 @@ triangleShadowList GetShadowsOnPoint(vec4 fragPosLightSpace, vec3 normal, vec3 l
         }
     }
 
-//	int positions[4];
-//    for (int i = 0;i<4;i++){
-//		int shadowTriangleIndex = indexes[i];
-//		int pos = 0;
-//		for (int j = 0;j<4;j++){
-//			if (i!=j){
-//				if (indexes[i]<indexes[j]){
-//					pos++;
-//				}
-//			}
-//		}
-//		positions[i] = pos;
-//    }
-
-	int lastIndex = 0;
+    int lastIndex = 0;
     for(int i = 0;i<NUMBER_OF_TRIANGLES_IN_TRIANGLE_LIST;i++){
         bool alreadyCounted = false;
         for (int j = 0;j<i;j++){
@@ -113,12 +99,6 @@ triangleShadowList GetShadowsOnPoint(vec4 fragPosLightSpace, vec3 normal, vec3 l
         if(!alreadyCounted){
             int x = (i % SQRT_NUM_TRIAGS)- NEIGHBOURS;
             int y = (i / SQRT_NUM_TRIAGS) - NEIGHBOURS;
-
-//            if((x+NEIGHBOURS)+(y+NEIGHBOURS)*SQRT_NUM_TRIAGS!=i){
-//                fColor = vec4(0.5,1.0,0.5,1.0);
-//                list.index = -1;
-//                return list;
-//            }
 
             vec3 projCoords = fragProjCoords * 0.5 + 0.5;
             projCoords.x += (x) * (1.0/shadowMapSize);
@@ -142,30 +122,27 @@ triangleShadowList GetShadowsOnPoint(vec4 fragPosLightSpace, vec3 normal, vec3 l
 }
 
 float shadowCoef(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
-    vec3 projCoords = fragPosLightSpace.xyz;// / fragPosLightSpace.w;
+    vec3 projCoords = fragPosLightSpace.xyz;
     projCoords = projCoords * 0.5 + 0.5;
     float currentDepth = projCoords.z;
 
     triangleShadowList result = GetShadowsOnPoint(fragPosLightSpace, worldVPos, lightDir);
 
-//    fColor = vec4(1.0,1.0,1.0,0.0);
     float shadowCoef = 1.0;
     for (int i = 0;i<NUMBER_OF_TRIANGLES_IN_TRIANGLE_LIST;i++){
         if (i< result.index){
             float closestDepth = result.depths[i];
-            float bias = 0.00010;
-
-
-
+            float bias = 0.0001;
+	    
+            //In shadow according to "bias" method
             if (currentDepth  - bias>closestDepth && triangleIndex!= result.tIdxs[i]){
-                //In shadow according to "bias" method
 
                 vec2 start = result.starts[i];
                 vec2 end = result.ends[i];
 
                 vec2 centrd = result.centrds[i];
 
-                vec2 x = fragPosLightSpace.xy ;// (-fragPosLightSpace.z);
+                vec2 x = fragPosLightSpace.xy ;
 
                 vec2 along = start - end;
                 vec2 alongNorm = normalize(along);
@@ -202,7 +179,7 @@ void main()
 
     float dist = length(lightPos - worldVPos);
     float dist2rd = dist * dist;
-    vec4 shadowVec4 = vec4(1.0, 1.0, 1.0, 1.0);//ShadowCalculation(FragPosLightSpace,worldVPos,-posToLight);
+    vec4 shadowVec4 = vec4(1.0, 1.0, 1.0, 1.0);
     float shadow = shadowCoef(FragPosLightSpace, worldVPos, -posToLight);
     float power = shadow * max((dot(posToLight, -lightDir)-(1-spotlightWidth))/spotlightWidth, 0) * lightPower/dist2rd;
     vec4 baseColour = fragColour + hasTexture*texture(ourTexture, texCoord);
